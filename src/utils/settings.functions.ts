@@ -252,7 +252,18 @@ export const testConnection = createServerFn({ method: 'POST' })
         });
         
         if (response.status === 401 || response.status === 403) {
-          return { success: false, message: 'Evolution API Error: Kredensial API Key tidak valid.' };
+          return { success: false, message: 'Evolution API Error: Kredensial API Key tidak valid (401/403).' };
+        }
+
+        if (response.status >= 500) {
+          return { success: false, message: `Evolution API Server Error: Server mengembalikan status ${response.status} (${response.statusText || 'Bad Gateway'}). Pastikan server/container Evolution API Anda di wa.ve-lora.my.id sudah aktif.` };
+        }
+
+        const contentType = response.headers.get('content-type') || '';
+        if (!contentType.includes('application/json')) {
+          const rawText = await response.text();
+          const cleanText = rawText.replace(/<[^>]*>/g, '').trim().substring(0, 80);
+          return { success: false, message: `Evolution API Error: Respon dari server bukan JSON (${response.status}). Pesan: ${cleanText || 'Nginx/Proxy Error'}` };
         }
 
         const resBody = await response.json() as any;
