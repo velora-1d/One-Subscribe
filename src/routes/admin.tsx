@@ -159,6 +159,25 @@ function AdminLayout() {
               </>
             )}
           </Link>
+
+          {/* Link: Profile */}
+          <Link
+            to="/admin/profile"
+            className="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 no-underline"
+            activeProps={{ className: 'bg-slate-100 text-slate-900 font-bold shadow-sm' }}
+            inactiveProps={{ className: 'text-slate-600 hover:bg-slate-50' }}
+          >
+            {({ isActive }) => (
+              <>
+                <span className={`material-symbols-outlined ${isActive ? 'text-slate-900 font-bold' : 'text-slate-500'}`} style={isActive ? { fontVariationSettings: "'FILL' 1" } : undefined}>
+                  person
+                </span>
+                <span className={`text-sm font-semibold ${isActive ? 'text-slate-900 font-bold' : 'text-slate-600'}`}>
+                  Profile
+                </span>
+              </>
+            )}
+          </Link>
         </div>
 
         {/* Bottom Section: Navigation & Logout */}
@@ -323,6 +342,25 @@ function AdminLayout() {
                     </span>
                     <span className={`text-sm font-semibold ${isActive ? 'text-slate-900 font-bold' : 'text-slate-600'}`}>
                       Settings
+                    </span>
+                  </>
+                )}
+              </Link>
+
+              <Link
+                to="/admin/profile"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 no-underline"
+                activeProps={{ className: 'bg-slate-100 text-slate-900 font-bold shadow-sm' }}
+                inactiveProps={{ className: 'text-slate-600 hover:bg-slate-50' }}
+              >
+                {({ isActive }) => (
+                  <>
+                    <span className={`material-symbols-outlined ${isActive ? 'text-slate-900 font-bold' : 'text-slate-500'}`} style={isActive ? { fontVariationSettings: "'FILL' 1" } : undefined}>
+                      person
+                    </span>
+                    <span className={`text-sm font-semibold ${isActive ? 'text-slate-900 font-bold' : 'text-slate-600'}`}>
+                      Profile
                     </span>
                   </>
                 )}
