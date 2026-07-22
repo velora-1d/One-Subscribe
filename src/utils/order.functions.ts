@@ -199,7 +199,7 @@ export const getMyOrders = createServerFn({ method: 'GET' }).handler(async () =>
  * Server function to fetch detailed info of a single order.
  */
 export const getOrderById = createServerFn({ method: 'GET' })
-  .validator((id: string) => id)
+  .validator((data: unknown) => z.string().parse(data))
   .handler(async ({ data: id }) => {
     const user = getSessionUser();
     if (!user) {
@@ -246,7 +246,7 @@ export const getOrderById = createServerFn({ method: 'GET' })
  * Changes order status to 'menunggu_aktivasi'.
  */
 export const simulatePaymentSuccess = createServerFn({ method: 'POST' })
-  .validator((orderId: string) => orderId)
+  .validator((data: unknown) => z.string().parse(data))
   .handler(async ({ data: orderId }) => {
     try {
       const [order] = await db

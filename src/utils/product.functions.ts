@@ -1,5 +1,6 @@
 import { createServerFn } from '@tanstack/react-start';
 import { eq } from 'drizzle-orm';
+import { z } from 'zod';
 import { db } from '../../db';
 import { products } from '../../db/schema';
 
@@ -22,7 +23,7 @@ export const getActiveProducts = createServerFn({ method: 'GET' }).handler(async
  * Server function to fetch a single product by ID.
  */
 export const getProductById = createServerFn({ method: 'GET' })
-  .validator((id: string) => id)
+  .validator((data: unknown) => z.string().parse(data))
   .handler(async ({ data: id }) => {
     try {
       // Validate UUID format to prevent database crash on invalid UUID syntax query

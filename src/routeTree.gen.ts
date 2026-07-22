@@ -107,14 +107,14 @@ const CheckoutIndexRoute = CheckoutIndexRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const CheckoutPayRoute = CheckoutPayRouteImport.update({
-  id: '/pay',
-  path: '/pay',
-  getParentRoute: () => CheckoutRoute,
+  id: '/checkout/pay',
+  path: '/checkout/pay',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const CheckoutSuccessRoute = CheckoutSuccessRouteImport.update({
-  id: '/success',
-  path: '/success',
-  getParentRoute: () => CheckoutRoute,
+  id: '/checkout/success',
+  path: '/checkout/success',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardIndexRoute = DashboardIndexRouteImport.update({
   id: '/',
@@ -284,6 +284,8 @@ export interface RootRouteChildren {
   DashboardRoute: typeof DashboardRouteWithChildren
   LoginRoute: typeof LoginRoute
   RegisterRoute: typeof RegisterRoute
+  CheckoutPayRoute: typeof CheckoutPayRoute
+  CheckoutSuccessRoute: typeof CheckoutSuccessRoute
   ProductsProductIdRoute: typeof ProductsProductIdRoute
   CheckoutIndexRoute: typeof CheckoutIndexRoute
 }
@@ -397,17 +399,17 @@ declare module '@tanstack/react-router' {
     }
     '/checkout/pay': {
       id: '/checkout/pay'
-      path: '/pay'
+      path: '/checkout/pay'
       fullPath: '/checkout/pay'
       preLoaderRoute: typeof CheckoutPayRouteImport
-      parentRoute: typeof CheckoutRoute
+      parentRoute: typeof rootRouteImport
     }
     '/checkout/success': {
       id: '/checkout/success'
-      path: '/success'
+      path: '/checkout/success'
       fullPath: '/checkout/success'
       preLoaderRoute: typeof CheckoutSuccessRouteImport
-      parentRoute: typeof CheckoutRoute
+      parentRoute: typeof rootRouteImport
     }
     '/dashboard/': {
       id: '/dashboard/'
@@ -487,6 +489,8 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardRoute: DashboardRouteWithChildren,
   LoginRoute: LoginRoute,
   RegisterRoute: RegisterRoute,
+  CheckoutPayRoute: CheckoutPayRoute,
+  CheckoutSuccessRoute: CheckoutSuccessRoute,
   ProductsProductIdRoute: ProductsProductIdRoute,
   CheckoutIndexRoute: CheckoutIndexRoute,
 }
