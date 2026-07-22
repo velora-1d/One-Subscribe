@@ -13,9 +13,9 @@ export const Route = createFileRoute('/checkout/pay')({
       orderId: (search?.orderId as string) || '',
     }
   },
-  loader: async ({ search }) => {
+  loaderDeps: ({ search: { orderId } }) => ({ orderId }),
+  loader: async ({ deps: { orderId } }) => {
     try {
-      const orderId = search?.orderId || ''
       const res = await getOrderById({ data: orderId })
       return {
         order: res.success ? res.order : null,
