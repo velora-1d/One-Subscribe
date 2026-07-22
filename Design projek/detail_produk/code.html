@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ChatGPT Plus - OneSubscribe</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-highest": "#e4e2e4",
+                        "on-secondary": "#ffffff",
+                        "border-subtle": "#E2E8F0",
+                        "on-tertiary-fixed-variant": "#2f2ebe",
+                        "tertiary": "#000000",
+                        "on-surface-variant": "#45464d",
+                        "tertiary-fixed-dim": "#c0c1ff",
+                        "on-primary": "#ffffff",
+                        "surface-dim": "#dcd9db",
+                        "on-error": "#ffffff",
+                        "inverse-on-surface": "#f3f0f2",
+                        "error": "#ba1a1a",
+                        "on-tertiary": "#ffffff",
+                        "on-tertiary-fixed": "#07006c",
+                        "secondary-fixed": "#e1e3e4",
+                        "error-container": "#ffdad6",
+                        "surface-container-high": "#eae7e9",
+                        "on-primary-fixed": "#131b2e",
+                        "on-error-container": "#93000a",
+                        "surface-bright": "#fcf8fa",
+                        "surface": "#fcf8fa",
+                        "on-primary-container": "#7c839b",
+                        "on-primary-fixed-variant": "#3f465c",
+                        "on-background": "#1b1b1d",
+                        "inverse-primary": "#bec6e0",
+                        "primary": "#000000",
+                        "outline": "#76777d",
+                        "on-secondary-container": "#626566",
+                        "surface-container": "#f0edef",
+                        "primary-fixed": "#dae2fd",
+                        "surface-container-low": "#f6f3f5",
+                        "surface-variant": "#e4e2e4",
+                        "surface-tint": "#565e74",
+                        "primary-fixed-dim": "#bec6e0",
+                        "status-pending": "#F59E0B",
+                        "secondary": "#5c5f60",
+                        "status-active": "#10B981",
+                        "cream-bg": "#FCFBF7",
+                        "surface-container-lowest": "#ffffff",
+                        "on-secondary-fixed": "#191c1d",
+                        "outline-variant": "#c6c6cd",
+                        "inverse-surface": "#303032",
+                        "background": "#fcf8fa",
+                        "secondary-container": "#e1e3e4",
+                        "on-secondary-fixed-variant": "#454748",
+                        "tertiary-fixed": "#e1e0ff",
+                        "secondary-fixed-dim": "#c5c7c8",
+                        "on-surface": "#1b1b1d",
+                        "primary-container": "#131b2e",
+                        "on-tertiary-container": "#7073ff",
+                        "tertiary-container": "#07006c"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "stack-md": "1rem",
+                        "stack-sm": "0.5rem",
+                        "gutter": "1.5rem",
+                        "stack-lg": "2rem",
+                        "section-gap": "5rem",
+                        "container-max": "1280px"
+                    },
+                    "fontFamily": {
+                        "label-sm": ["Inter"],
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "headline-lg-mobile": ["Plus Jakarta Sans"],
+                        "label-xs": ["Inter"],
+                        "display-lg": ["Plus Jakarta Sans"],
+                        "body-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-md": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "label-sm": ["14px", { "lineHeight": "1.2", "letterSpacing": "0.01em", "fontWeight": "500" }],
+                        "headline-lg": ["32px", { "lineHeight": "1.3", "fontWeight": "600" }],
+                        "headline-lg-mobile": ["28px", { "lineHeight": "1.3", "fontWeight": "600" }],
+                        "label-xs": ["12px", { "lineHeight": "1.2", "fontWeight": "600" }],
+                        "display-lg": ["48px", { "lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "body-md": ["16px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "1.4", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-cream-bg text-on-surface antialiased min-h-screen flex flex-col">
+<!-- TopNavBar -->
+<header class="bg-surface dark:bg-surface-container-lowest sticky top-0 z-50 flex justify-between items-center w-full px-gutter max-w-container-max mx-auto py-4 border-b border-border-subtle dark:border-outline-variant">
+<div class="flex items-center gap-8">
+<a class="text-headline-md font-headline-md font-bold text-primary dark:text-on-surface tracking-tight" href="#">OneSubscribe</a>
+<nav class="hidden md:flex gap-6">
+<a class="text-label-sm font-label-sm text-primary dark:text-on-surface font-bold border-b-2 border-primary pb-1" href="#">Marketplace</a>
+<a class="text-label-sm font-label-sm text-on-surface-variant dark:text-outline hover:text-primary transition-colors duration-200" href="#">AI Tools</a>
+<a class="text-label-sm font-label-sm text-on-surface-variant dark:text-outline hover:text-primary transition-colors duration-200" href="#">Cloud</a>
+<a class="text-label-sm font-label-sm text-on-surface-variant dark:text-outline hover:text-primary transition-colors duration-200" href="#">Server</a>
+<a class="text-label-sm font-label-sm text-on-surface-variant dark:text-outline hover:text-primary transition-colors duration-200" href="#">Dashboard</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<button class="hidden md:block text-label-sm font-label-sm text-secondary hover:text-primary transition-colors duration-200 px-4 py-2 border border-border-subtle rounded hover:border-primary">Login</button>
+<button class="bg-primary text-on-primary text-label-sm font-label-sm px-6 py-2 rounded font-medium hover:scale-[0.98] transition-transform duration-200 shadow-sm">Get Started</button>
+<button class="md:hidden text-primary">
+<span class="material-symbols-outlined">menu</span>
+</button>
+</div>
+</header>
+<!-- Main Content -->
+<main class="flex-grow w-full max-w-container-max mx-auto px-gutter py-section-gap">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+<!-- Product Info Column -->
+<div class="lg:col-span-7 flex flex-col gap-stack-lg">
+<!-- Breadcrumbs -->
+<nav class="flex items-center text-label-xs font-label-xs text-secondary gap-2">
+<a class="hover:text-primary" href="#">Marketplace</a>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<a class="hover:text-primary" href="#">AI Tools</a>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span class="text-primary font-medium">ChatGPT Plus</span>
+</nav>
+<!-- Header Section -->
+<div>
+<div class="flex items-center gap-4 mb-4">
+<div class="w-16 h-16 rounded-xl bg-surface-container flex items-center justify-center border border-border-subtle shadow-sm shrink-0">
+<img class="w-10 h-10 object-contain" data-alt="A clean, minimalist 3D rendering of a generic AI chat robot icon in sleek white and subtle silver tones, isolated on a perfectly transparent background. High quality, professional UI aesthetic, soft studio lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAZVNEem5GEDnp1YSC1Zkluv3X3xn_vCbkWvrRFtFXYaZVOcocVvOX1rBrgM0N0t2aZ1DOR9_u6dWUWPq8hlkjtpXjmtQYKHy-ciEcGrsrLKsn4mvUIJsuMHPgZJeGEcF5RaC1lBGSoGjulumu6WVocRmHR4y2IXq7gX3oYNxOQ8WWonGvYzVZJBHZtJMySp5BGOpWW8qzCUaEysH4XUqHRq5be20WbtxiW5gG5yemkqLBlMhVBxCdoZ1w0ayuDQsRFP8vBleEY"/>
+</div>
+<div>
+<h1 class="text-headline-lg-mobile md:text-headline-lg font-headline-lg-mobile md:font-headline-lg text-primary mb-1">ChatGPT Plus Shared Account</h1>
+<div class="flex items-center gap-3 text-label-sm font-label-sm">
+<span class="flex items-center text-status-active bg-status-active/10 px-2 py-1 rounded gap-1"><span class="material-symbols-outlined text-[16px]">check_circle</span> In Stock</span>
+<span class="text-secondary flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">star</span> 4.9 (128 reviews)</span>
+</div>
+</div>
+</div>
+<p class="text-body-lg font-body-lg text-on-surface-variant leading-relaxed">
+                        Get instant access to OpenAI's most capable model. This shared account provides priority access during peak times, faster response speeds, and access to advanced features like data analysis and plugin integration at a fraction of the cost.
+                    </p>
+</div>
+<!-- Bento Grid Features -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="bg-surface-container-lowest border border-border-subtle p-6 rounded-xl flex flex-col gap-3">
+<span class="material-symbols-outlined text-primary text-3xl">bolt</span>
+<h3 class="text-headline-sm font-headline-sm font-bold text-primary">Priority Access</h3>
+<p class="text-body-sm text-secondary">General access to ChatGPT, even during peak times.</p>
+</div>
+<div class="bg-surface-container-lowest border border-border-subtle p-6 rounded-xl flex flex-col gap-3">
+<span class="material-symbols-outlined text-primary text-3xl">speed</span>
+<h3 class="text-headline-sm font-headline-sm font-bold text-primary">Faster Speeds</h3>
+<p class="text-body-sm text-secondary">Significantly faster response times than the free tier.</p>
+</div>
+<div class="bg-surface-container-lowest border border-border-subtle p-6 rounded-xl flex flex-col gap-3 md:col-span-2 relative overflow-hidden group">
+<div class="relative z-10">
+<span class="material-symbols-outlined text-primary text-3xl mb-3">extension</span>
+<h3 class="text-headline-sm font-headline-sm font-bold text-primary">GPT-4 &amp; Advanced Features</h3>
+<p class="text-body-sm text-secondary max-w-md mt-1">Access to the GPT-4 model, Advanced Data Analysis, plugins, and early access to new features.</p>
+</div>
+<div class="absolute right-0 bottom-0 opacity-5 group-hover:opacity-10 transition-opacity duration-300">
+<span class="material-symbols-outlined text-[120px]">extension</span>
+</div>
+</div>
+</div>
+<!-- Technical Details -->
+<div class="border-t border-border-subtle pt-8 mt-4">
+<h2 class="text-headline-md font-headline-md text-primary mb-6">Service Details</h2>
+<ul class="space-y-4 text-body-md font-body-md text-on-surface-variant">
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary mt-1">check</span>
+<div>
+<strong class="text-primary block font-medium">Delivery Method</strong>
+                                Credentials delivered instantly via email and dashboard upon payment confirmation.
+                            </div>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary mt-1">check</span>
+<div>
+<strong class="text-primary block font-medium">Account Type</strong>
+                                Shared premium account. Designed for individual use with high usage limits.
+                            </div>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary mt-1">check</span>
+<div>
+<strong class="text-primary block font-medium">Warranty</strong>
+                                Full replacement warranty for the duration of the active subscription period.
+                            </div>
+</li>
+</ul>
+</div>
+</div>
+<!-- Sticky Order Column -->
+<div class="lg:col-span-5">
+<div class="sticky top-[100px] bg-surface-container-lowest border border-border-subtle rounded-xl p-8 shadow-[0_10px_15px_-3px_rgba(0,0,0,0.04)] flex flex-col gap-6">
+<div class="flex justify-between items-end border-b border-border-subtle pb-6">
+<div>
+<span class="text-label-sm font-label-sm text-secondary uppercase tracking-wider">1 Month Subscription</span>
+<div class="flex items-baseline gap-2 mt-1">
+<span class="text-display-lg font-display-lg text-primary">$8.99</span>
+<span class="text-body-md font-body-md text-secondary line-through">$20.00</span>
+</div>
+</div>
+<div class="bg-primary/5 text-primary text-label-xs font-label-xs px-2 py-1 rounded font-bold">Save 55%</div>
+</div>
+<div class="flex flex-col gap-4">
+<div class="flex justify-between items-center text-body-md font-body-md">
+<span class="text-on-surface-variant">Duration</span>
+<span class="font-medium text-primary">30 Days</span>
+</div>
+<div class="flex justify-between items-center text-body-md font-body-md">
+<span class="text-on-surface-variant">Region</span>
+<span class="font-medium text-primary">Global</span>
+</div>
+<div class="flex justify-between items-center text-body-md font-body-md">
+<span class="text-on-surface-variant">Stock</span>
+<span class="text-status-active font-medium">Available</span>
+</div>
+</div>
+<button class="w-full bg-primary text-on-primary py-4 rounded-lg text-headline-sm font-headline-sm font-bold shadow-md hover:scale-[0.98] transition-transform duration-200 flex items-center justify-center gap-2 mt-2">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">shopping_cart</span>
+                        Order Now
+                    </button>
+<p class="text-label-xs font-label-xs text-center text-secondary">Secure payment via Stripe. Instant delivery.</p>
+<!-- Trust Badges -->
+<div class="bg-surface-container rounded-lg p-4 mt-2 flex justify-around items-center">
+<div class="flex flex-col items-center gap-1 text-center">
+<span class="material-symbols-outlined text-secondary">verified_user</span>
+<span class="text-label-xs font-label-xs text-secondary">Secure</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-center">
+<span class="material-symbols-outlined text-secondary">flash_on</span>
+<span class="text-label-xs font-label-xs text-secondary">Instant</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-center">
+<span class="material-symbols-outlined text-secondary">headset_mic</span>
+<span class="text-label-xs font-label-xs text-secondary">24/7 Support</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="bg-cream-bg dark:bg-surface-container-low w-full py-stack-lg px-gutter flex flex-col md:flex-row justify-between items-center max-w-container-max mx-auto border-t border-border-subtle dark:border-outline-variant mt-auto">
+<div class="text-headline-sm font-headline-sm font-bold text-primary mb-4 md:mb-0">
+            OneSubscribe
+        </div>
+<div class="text-body-md font-body-md text-secondary dark:text-outline text-center mb-4 md:mb-0">
+            © 2024 OneSubscribe. Professional Digital Access.
+        </div>
+<nav class="flex gap-4">
+<a class="text-label-xs font-label-xs text-secondary dark:text-outline hover:text-primary dark:hover:text-on-surface transition-opacity" href="#">Terms</a>
+<a class="text-label-xs font-label-xs text-secondary dark:text-outline hover:text-primary dark:hover:text-on-surface transition-opacity" href="#">Privacy</a>
+<a class="text-label-xs font-label-xs text-secondary dark:text-outline hover:text-primary dark:hover:text-on-surface transition-opacity" href="#">Support</a>
+<a class="text-label-xs font-label-xs text-secondary dark:text-outline hover:text-primary dark:hover:text-on-surface transition-opacity" href="#">Contact</a>
+</nav>
+</footer>
+</body></html>
