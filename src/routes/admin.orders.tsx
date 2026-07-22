@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
-import { getAdminOrders, fulfillOrder } from '../utils/admin.functions'
+import { getAdminOrders, fulfillOrder, cancelAdminOrder, deleteAdminOrder } from '../utils/admin.functions'
 
 export const Route = createFileRoute('/admin/orders')({
   loader: async () => {
@@ -39,12 +39,96 @@ function AdminOrdersPage() {
   const [isFulfilling, setIsFulfilling] = useState(false)
   const [fulfillError, setFulfillError] = useState<string | null>(null)
 
+  // Custom confirmation modal state
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    type: 'cancel' | 'delete';
+    orderId: string | null;
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    type: 'cancel',
+    orderId: null
+  })
+
+  // Custom Toast state
+  const [toast, setToast] = useState<{
+    show: boolean;
+    message: string;
+    type: 'success' | 'error' | 'info';
+  }>({
+    show: false,
+    message: '',
+    type: 'success'
+  })
+
+  const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
+    setToast({ show: true, message, type })
+    setTimeout(() => {
+      setToast(prev => ({ ...prev, show: false }))
+    }, 4000)
+  }
+
   const handleOpenFulfill = (orderId: string) => {
     setSelectedOrderId(orderId)
     setEmail('')
     setPassword('')
     setRemarks('')
     setFulfillError(null)
+  }
+
+  const handleCancelOrder = (orderId: string) => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Batalkan Pesanan',
+      message: `Apakah Anda yakin ingin membatalkan pesanan ${orderId}? Status pesanan akan disetel menjadi Expired/Batal secara permanen.`,
+      type: 'cancel',
+      orderId
+    })
+  }
+
+  const handleDeleteOrder = (orderId: string) => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Hapus Pesanan Permanen',
+      message: `Apakah Anda yakin ingin MENGHAPUS PERMANEN pesanan ${orderId}? Tindakan ini akan menghapus riwayat pesanan & kredensial terkait secara permanen dan tidak dapat dibatalkan.`,
+      type: 'delete',
+      orderId
+    })
+  }
+
+  const handleConfirmAction = async () => {
+    const { type, orderId } = confirmModal
+    if (!orderId) return
+
+    setConfirmModal(prev => ({ ...prev, isOpen: false }))
+
+    try {
+      if (type === 'cancel') {
+        const res = await cancelAdminOrder({ data: orderId })
+        if (res.success) {
+          setOrders(
+            orders.map((o) => (o.id === orderId ? { ...o, status: 'expired' } : o))
+          )
+          showToast(`Pesanan ${orderId} berhasil dibatalkan.`, 'success')
+        } else {
+          showToast(res.error || 'Gagal membatalkan pesanan.', 'error')
+        }
+      } else if (type === 'delete') {
+        const res = await deleteAdminOrder({ data: orderId })
+        if (res.success) {
+          setOrders(orders.filter((o) => o.id !== orderId))
+          showToast(`Pesanan ${orderId} berhasil dihapus permanen.`, 'success')
+        } else {
+          showToast(res.error || 'Gagal menghapus pesanan.', 'error')
+        }
+      }
+    } catch (err: any) {
+      showToast(err?.message || 'Terjadi kesalahan sistem.', 'error')
+    }
   }
 
   const handleFulfillSubmit = async (e: React.FormEvent) => {
@@ -65,11 +149,11 @@ function AdminOrdersPage() {
       })
 
       if (res.success) {
-        // Update local order status to 'aktif'
         setOrders(
           orders.map((o) => (o.id === selectedOrderId ? { ...o, status: 'aktif' } : o))
         )
         setSelectedOrderId(null)
+        showToast(`Pesanan ${selectedOrderId} berhasil diaktivasi!`, 'success')
       } else {
         setFulfillError(res.error || 'Gagal mengirim kredensial.')
       }
@@ -109,7 +193,7 @@ function AdminOrdersPage() {
       case 'expired':
         return (
           <span className="text-[10px] font-black text-slate-500 bg-slate-50 border border-slate-200 px-2.5 py-1 rounded-full whitespace-nowrap">
-            Expired
+            Batal / Expired
           </span>
         )
       default:
@@ -118,7 +202,21 @@ function AdminOrdersPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 relative">
+      {/* Custom Toast Notification */}
+      {toast.show && (
+        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2.5 bg-slate-900 text-white px-5 py-3.5 rounded-full shadow-lg border border-slate-800 animate-slideDown max-w-sm">
+          <span className={`material-symbols-outlined text-[16px] font-bold ${
+            toast.type === 'success' ? 'text-emerald-400' : toast.type === 'error' ? 'text-red-400' : 'text-blue-400'
+          }`}>
+            {toast.type === 'success' ? 'check_circle' : toast.type === 'error' ? 'error' : 'info'}
+          </span>
+          <span className="text-[10px] font-extrabold tracking-wide whitespace-nowrap">
+            {toast.message}
+          </span>
+        </div>
+      )}
+
       {/* Title Panel */}
       <div>
         <h1 className="text-2xl font-extrabold text-[var(--sea-ink)]">
@@ -192,23 +290,44 @@ function AdminOrdersPage() {
                       {formatIDR(order.price)}
                     </td>
                     <td className="px-6 py-4 text-center whitespace-nowrap">
-                      {order.status === 'menunggu_aktivasi' ? (
+                      <div className="flex items-center justify-center gap-2">
+                        {order.status === 'menunggu_aktivasi' && (
+                          <button
+                            onClick={() => handleOpenFulfill(order.id)}
+                            className="rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-sm px-3.5 py-1.5 text-[10px] font-extrabold cursor-pointer transition whitespace-nowrap"
+                          >
+                            Aktivasi Akun
+                          </button>
+                        )}
+                        {order.status === 'aktif' && (
+                          <button
+                            onClick={() => handleOpenFulfill(order.id)}
+                            className="rounded-full bg-[var(--chip-bg)] border border-[var(--chip-line)] hover:bg-slate-200 text-[var(--sea-ink)] px-3.5 py-1.5 text-[10px] font-bold cursor-pointer transition whitespace-nowrap"
+                          >
+                            Update Kredensial
+                          </button>
+                        )}
+                        
+                        {/* Cancel Button */}
+                        {(order.status === 'menunggu_pembayaran' || order.status === 'menunggu_aktivasi') && (
+                          <button
+                            onClick={() => handleCancelOrder(order.id)}
+                            title="Batalkan Pesanan"
+                            className="h-7.5 w-7.5 rounded-full bg-amber-50 hover:bg-amber-100 border border-amber-200 flex items-center justify-center text-amber-600 transition cursor-pointer shrink-0 animate-fadeIn"
+                          >
+                            <span className="material-symbols-outlined text-[14px] font-bold">block</span>
+                          </button>
+                        )}
+
+                        {/* Delete Button */}
                         <button
-                          onClick={() => handleOpenFulfill(order.id)}
-                          className="rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-sm px-4 py-1.5 text-xs font-extrabold cursor-pointer transition"
+                          onClick={() => handleDeleteOrder(order.id)}
+                          title="Hapus Pesanan"
+                          className="h-7.5 w-7.5 rounded-full bg-red-50 hover:bg-red-100 border border-red-200 flex items-center justify-center text-red-600 transition cursor-pointer shrink-0 animate-fadeIn"
                         >
-                          Aktivasi Akun
+                          <span className="material-symbols-outlined text-[14px] font-bold">delete</span>
                         </button>
-                      ) : order.status === 'aktif' ? (
-                        <button
-                          onClick={() => handleOpenFulfill(order.id)}
-                          className="rounded-full bg-[var(--chip-bg)] border border-[var(--chip-line)] hover:bg-slate-200 text-[var(--sea-ink)] px-4 py-1.5 text-xs font-bold cursor-pointer transition"
-                        >
-                          Update Kredensial
-                        </button>
-                      ) : (
-                        <span className="italic text-[10px]">No Actions</span>
-                      )}
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -224,8 +343,8 @@ function AdminOrdersPage() {
 
       {/* Fulfillment Dialog Modal */}
       {selectedOrderId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-          <div className="w-full max-w-md bg-[var(--header-bg)] border border-[var(--line)] rounded-[2rem] p-8 shadow-xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
+          <div className="w-full max-w-md bg-[var(--header-bg)] border border-[var(--line)] rounded-[2rem] p-8 shadow-xl animate-fadeIn bg-white">
             <h2 className="text-lg font-extrabold text-[var(--sea-ink)] mb-1">
               Fulfillment Akun Premium
             </h2>
@@ -249,55 +368,103 @@ function AdminOrdersPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Contoh: premiumuser@gmail.com"
-                  className="w-full rounded-xl border border-[var(--line)] bg-[var(--chip-bg)] px-4 py-2.5 text-xs text-[var(--sea-ink)] outline-none focus:border-[var(--lagoon-deep)] transition"
+                  placeholder="name@premium-service.com"
+                  className="w-full rounded-xl border border-[var(--line)] bg-[var(--chip-bg)] px-4 py-2.5 text-xs text-[var(--sea-ink)] outline-none focus:border-slate-900 transition"
                 />
               </div>
 
               <div>
                 <label className="block text-xs font-bold text-[var(--sea-ink-soft)] uppercase tracking-wider mb-1">
-                  Password Akun Premium
+                  Password Akun
                 </label>
                 <input
                   type="text"
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Password akses layanan"
-                  className="w-full rounded-xl border border-[var(--line)] bg-[var(--chip-bg)] px-4 py-2.5 text-xs text-[var(--sea-ink)] outline-none focus:border-[var(--lagoon-deep)] transition"
+                  placeholder="••••••••"
+                  className="w-full rounded-xl border border-[var(--line)] bg-[var(--chip-bg)] px-4 py-2.5 text-xs text-[var(--sea-ink)] outline-none focus:border-slate-900 transition"
                 />
               </div>
 
               <div>
                 <label className="block text-xs font-bold text-[var(--sea-ink-soft)] uppercase tracking-wider mb-1">
-                  Catatan Admin / Keterangan Lain (Opsional)
+                  Catatan Tambahan (Remarks)
                 </label>
                 <textarea
-                  rows={2}
                   value={remarks}
                   onChange={(e) => setRemarks(e.target.value)}
-                  placeholder="Contoh: Profile 1, Screen 2. Jangan ganti password utama."
-                  className="w-full rounded-xl border border-[var(--line)] bg-[var(--chip-bg)] px-4 py-2.5 text-xs text-[var(--sea-ink)] outline-none focus:border-[var(--lagoon-deep)] transition resize-none"
+                  placeholder="Tulis informasi tambahan seperti profile user, durasi garansi, dll."
+                  rows={3}
+                  className="w-full rounded-xl border border-[var(--line)] bg-[var(--chip-bg)] px-4 py-2.5 text-xs text-[var(--sea-ink)] outline-none focus:border-slate-900 transition resize-none"
                 />
               </div>
 
-              <div className="flex justify-end gap-3 pt-4 border-t border-[var(--line)]">
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-[var(--line)]">
                 <button
                   type="button"
                   onClick={() => setSelectedOrderId(null)}
-                  className="rounded-full bg-[var(--chip-bg)] border border-[var(--chip-line)] hover:bg-slate-200 px-5 py-2.5 text-xs font-bold text-[var(--sea-ink-soft)] transition cursor-pointer"
+                  className="rounded-full bg-slate-100 hover:bg-slate-200 text-slate-800 px-6 py-2.5 text-xs font-bold transition cursor-pointer"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
                   disabled={isFulfilling}
-                  className="rounded-full bg-blue-600 hover:bg-blue-700 px-6 py-2.5 text-xs font-bold text-white shadow-sm transition disabled:opacity-50 cursor-pointer"
+                  className="rounded-full bg-slate-950 hover:bg-slate-900 text-white shadow-sm px-6 py-2.5 text-xs font-black transition cursor-pointer"
                 >
-                  {isFulfilling ? 'Mengirim...' : 'Kirim & Aktifkan'}
+                  {isFulfilling ? 'Mengaktifkan...' : 'Kirim Kredensial'}
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Custom Confirmation Modal */}
+      {confirmModal.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4 animate-fadeIn">
+          <div className="w-full max-w-sm bg-white border border-[var(--line)] rounded-[2rem] p-6 shadow-xl space-y-4">
+            <div className="flex items-center gap-3">
+              <div className={`h-10 w-10 rounded-full flex items-center justify-center shrink-0 ${
+                confirmModal.type === 'delete' ? 'bg-red-50 text-red-600' : 'bg-amber-50 text-amber-600'
+              }`}>
+                <span className="material-symbols-outlined text-[20px] font-bold">
+                  {confirmModal.type === 'delete' ? 'delete' : 'block'}
+                </span>
+              </div>
+              <div>
+                <h3 className="text-sm font-extrabold text-[var(--sea-ink)]">
+                  {confirmModal.title}
+                </h3>
+                <p className="text-[9px] text-[var(--sea-ink-soft)] font-bold uppercase tracking-wider mt-0.5">
+                  Konfirmasi Admin
+                </p>
+              </div>
+            </div>
+
+            <p className="text-xs text-[var(--sea-ink-soft)] leading-relaxed font-medium">
+              {confirmModal.message}
+            </p>
+
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--line)]">
+              <button
+                type="button"
+                onClick={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+                className="rounded-full bg-slate-100 hover:bg-slate-200 text-slate-800 px-4 py-2 text-[10px] font-bold cursor-pointer transition"
+              >
+                Kembali
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmAction}
+                className={`rounded-full px-5 py-2 text-[10px] font-black text-white shadow-sm transition cursor-pointer ${
+                  confirmModal.type === 'delete' ? 'bg-red-600 hover:bg-red-700 shadow-red-200/50 shadow-md' : 'bg-amber-600 hover:bg-amber-700 shadow-amber-200/50 shadow-md'
+                }`}
+              >
+                Konfirmasi
+              </button>
+            </div>
           </div>
         </div>
       )}

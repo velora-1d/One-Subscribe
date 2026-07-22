@@ -2,7 +2,6 @@ import { db } from '../../db'
 import { systemSettings } from '../../db/schema'
 import { eq } from 'drizzle-orm'
 
-
 interface SendNotifParams {
   toEmail: string
   toWhatsapp: string
@@ -14,7 +13,72 @@ interface SendNotifParams {
 }
 
 /**
- * Sends a notification message to user via Resend (Email) and Fonnte (WhatsApp)
+ * Sends a message via the active WhatsApp provider (Fonnte or Evolution API)
+ */
+export async function sendWhatsappNotification(to: string, message: string) {
+  const provider = (process.env.WA_PROVIDER || 'fonnte').toLowerCase()
+  
+  if (provider === 'evolution') {
+    const EVO_API_URL = process.env.EVO_API_URL
+    const EVO_API_KEY = process.env.EVO_API_KEY
+    const EVO_INSTANCE = process.env.EVO_INSTANCE
+    
+    if (!EVO_API_URL || !EVO_API_KEY || !EVO_INSTANCE) {
+      console.warn('[NOTIFICATION WA] Evolution API config missing in env.')
+      return
+    }
+
+    const cleanUrl = EVO_API_URL.endsWith('/') ? EVO_API_URL.slice(0, -1) : EVO_API_URL
+    const endpoint = `${cleanUrl}/message/sendText/${EVO_INSTANCE}`
+
+    try {
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': EVO_API_KEY,
+        },
+        body: JSON.stringify({
+          number: to,
+          text: message,
+        }),
+      })
+      const result = await response.json()
+      console.log('[NOTIFICATION WA] Evolution API response:', result)
+    } catch (err) {
+      console.error('[NOTIFICATION WA] Failed to send WA via Evolution API:', err)
+    }
+  } else {
+    // Default to Fonnte
+    const FONNTE_TOKEN = process.env.FONNTE_TOKEN
+    const FONNTE_API_URL = process.env.FONNTE_API_URL || 'https://api.fonnte.com/send'
+
+    if (!FONNTE_TOKEN) {
+      console.warn('[NOTIFICATION WA] Fonnte token missing in env.')
+      return
+    }
+
+    try {
+      const response = await fetch(FONNTE_API_URL, {
+        method: 'POST',
+        headers: {
+          Authorization: FONNTE_TOKEN,
+        },
+        body: new URLSearchParams({
+          target: to,
+          message: message,
+        }),
+      })
+      const result = await response.json()
+      console.log('[NOTIFICATION WA] Fonnte response:', result)
+    } catch (err) {
+      console.error('[NOTIFICATION WA] Failed to send WA via Fonnte:', err)
+    }
+  }
+}
+
+/**
+ * Sends a notification message to user via Resend (Email) and the active WA Provider (WhatsApp)
  */
 export async function sendFulfillmentNotification({
   toEmail,
@@ -33,31 +97,15 @@ export async function sendFulfillmentNotification({
   });
 
   const RESEND_API_KEY = settingsRecord['resend_api_key'] || process.env.RESEND_API_KEY
-  const FONNTE_TOKEN = settingsRecord['fonnte_token'] || process.env.FONNTE_TOKEN
   const SENDER_EMAIL = settingsRecord['sender_email'] || process.env.SENDER_EMAIL || 'onboarding@resend.dev'
 
   const messageText = `Halo ${customerName},\n\nLayanan langganan premium Anda *${productName}* telah diaktifkan! 🎉\n\nKredensial Akses:\n- Email/Username: ${accountEmail || '-'}\n- Password: ${accountPassword || '-'}\n${remarks ? `- Catatan: ${remarks}\n` : ''}\nTerima kasih telah berlangganan di OneSubscribe!`
 
-  // 1. Dispatch WhatsApp (Fonnte)
-  if (FONNTE_TOKEN && toWhatsapp) {
-    try {
-      const response = await fetch('https://api.fonnte.com/send', {
-        method: 'POST',
-        headers: {
-          Authorization: FONNTE_TOKEN,
-        },
-        body: new URLSearchParams({
-          target: toWhatsapp,
-          message: messageText,
-        }),
-      })
-      const result = await response.json()
-      console.log('[NOTIFICATION WA] Fonnte response:', result)
-    } catch (err) {
-      console.error('[NOTIFICATION WA] Failed to send WA via Fonnte:', err)
-    }
+  // 1. Dispatch WhatsApp (Unified)
+  if (toWhatsapp) {
+    await sendWhatsappNotification(toWhatsapp, messageText)
   } else {
-    console.log('[NOTIFICATION WA SIMULATED] No Fonnte token found. Text:\n', messageText)
+    console.log('[NOTIFICATION WA SIMULATED] No WA target provided. Text:\n', messageText)
   }
 
   // 2. Dispatch Email (Resend)
@@ -126,22 +174,13 @@ export async function sendExpirationNotification({
   });
 
   const RESEND_API_KEY = settingsRecord['resend_api_key'] || process.env.RESEND_API_KEY
-  const FONNTE_TOKEN = settingsRecord['fonnte_token'] || process.env.FONNTE_TOKEN
   const SENDER_EMAIL = settingsRecord['sender_email'] || process.env.SENDER_EMAIL || 'onboarding@resend.dev'
 
   const messageText = `Halo ${customerName},\n\nLangganan premium *${productName}* Anda akan habis dalam *${daysRemaining} hari*. Jangan lupa perpanjang layanan Anda agar tidak terputus!\n\nOneSubscribe`
 
-  // Send WhatsApp
-  if (FONNTE_TOKEN && toWhatsapp) {
-    try {
-      await fetch('https://api.fonnte.com/send', {
-        method: 'POST',
-        headers: { Authorization: FONNTE_TOKEN },
-        body: new URLSearchParams({ target: toWhatsapp, message: messageText }),
-      })
-    } catch (err) {
-      console.error(err)
-    }
+  // Send WhatsApp (Unified)
+  if (toWhatsapp) {
+    await sendWhatsappNotification(toWhatsapp, messageText)
   } else {
     console.log('[NOTIFICATION EXP WA SIMULATED]', messageText)
   }

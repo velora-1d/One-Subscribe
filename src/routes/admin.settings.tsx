@@ -53,7 +53,7 @@ function AdminSettingsPage() {
     }
   }
 
-  const handleTestConnection = async (service: 'midtrans' | 'pakasir' | 'fonnte' | 'rustfs') => {
+  const handleTestConnection = async (service: 'midtrans' | 'pakasir' | 'fonnte' | 'evolution' | 'rustfs') => {
     setTestStatus(prev => ({ ...prev, [service]: { loading: true, message: undefined } }))
 
     try {
@@ -287,6 +287,39 @@ function AdminSettingsPage() {
           <p className="text-[10px] text-[var(--sea-ink-soft)] leading-relaxed italic m-0">
             Menggunakan token dari `.env`: <code className="bg-slate-100 px-1 py-0.5 rounded text-slate-700">FONNTE_TOKEN</code>.
             Pastikan device Anda di Fonnte dalam status terhubung (connected) agar pengiriman pesan WhatsApp lancar.
+          </p>
+        </div>
+
+        {/* Messaging Gateway: Evolution API */}
+        <div className="island-shell border border-[var(--line)] rounded-3xl p-6 space-y-4 bg-white shadow-xs">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-[var(--line)]">
+            <h2 className="text-sm font-extrabold text-[var(--sea-ink)]">
+              Evolution API WhatsApp
+            </h2>
+            <button
+              type="button"
+              disabled={testStatus['evolution']?.loading}
+              onClick={() => handleTestConnection('evolution')}
+              className="rounded-full bg-slate-100 hover:bg-slate-200 border border-slate-300 px-4 py-1.5 text-[10px] font-bold text-slate-800 transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+            >
+              <span className="material-symbols-outlined text-[12px] font-bold">sync_alt</span>
+              {testStatus['evolution']?.loading ? 'Menguji...' : 'Tes Koneksi'}
+            </button>
+          </div>
+
+          {testStatus['evolution']?.message && (
+            <div className={`p-3 rounded-xl text-[10px] font-semibold flex items-center gap-2 ${
+              testStatus['evolution']?.success ? 'bg-emerald-50 text-emerald-600 border border-emerald-100 animate-fadeIn' : 'bg-red-50 text-red-600 border border-red-100 animate-fadeIn'
+            }`}>
+              <span className="material-symbols-outlined text-[14px]">
+                {testStatus['evolution']?.success ? 'check_circle' : 'error'}
+              </span>
+              <span>{testStatus['evolution']?.message}</span>
+            </div>
+          )}
+
+          <p className="text-[10px] text-[var(--sea-ink-soft)] leading-relaxed italic m-0">
+            Menggunakan kredensial dari `.env`: <code className="bg-slate-100 px-1 py-0.5 rounded text-slate-700">EVO_API_URL</code>, <code className="bg-slate-100 px-1 py-0.5 rounded text-slate-700">EVO_API_KEY</code>, & <code className="bg-slate-100 px-1 py-0.5 rounded text-slate-700">EVO_INSTANCE</code>.
           </p>
         </div>
 

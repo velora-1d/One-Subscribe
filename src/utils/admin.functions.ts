@@ -607,3 +607,68 @@ export const deleteAdminCategory = createServerFn({ method: 'POST' })
       return { success: false, error: error?.message };
     }
   });
+
+/**
+ * Server function to cancel an order.
+ * Updates order status to 'expired' and logs the action.
+ */
+export const cancelAdminOrder = createServerFn({ method: 'POST' })
+  .validator((data: unknown) => z.string().parse(data))
+  .handler(async ({ data: orderId }) => {
+    const admin = verifyAdminSession();
+    console.log("CANCEL_ADMIN_ORDER - raw orderId:", orderId, "type:", typeof orderId);
+    try {
+      const [order] = await db.select().from(orders).where(eq(orders.id, orderId)).limit(1);
+      if (!order) {
+        console.log("CANCEL_ADMIN_ORDER - Order not found for ID:", orderId);
+        throw new Error('Pesanan tidak ditemukan.');
+      }
+
+      await db
+        .update(orders)
+        .set({ status: 'expired', updatedAt: new Date() })
+        .where(eq(orders.id, orderId));
+
+      await db.insert(auditLogs).values({
+        userId: admin.userId,
+        action: 'CANCEL_ORDER',
+        details: `Membatalkan pesanan ${orderId}`,
+      });
+
+      return { success: true };
+    } catch (error: any) {
+      console.error("CANCEL_ADMIN_ORDER error:", error);
+      return { success: false, error: error?.message };
+    }
+  });
+
+/**
+ * Server function to delete an order.
+ * Deletes from orders table (cascades credentials automatically) and logs the action.
+ */
+export const deleteAdminOrder = createServerFn({ method: 'POST' })
+  .validator((data: unknown) => z.string().parse(data))
+  .handler(async ({ data: orderId }) => {
+    const admin = verifyAdminSession();
+    console.log("DELETE_ADMIN_ORDER - raw orderId:", orderId, "type:", typeof orderId);
+    try {
+      const [order] = await db.select().from(orders).where(eq(orders.id, orderId)).limit(1);
+      if (!order) {
+        console.log("DELETE_ADMIN_ORDER - Order not found for ID:", orderId);
+        throw new Error('Pesanan tidak ditemukan.');
+      }
+
+      await db.delete(orders).where(eq(orders.id, orderId));
+
+      await db.insert(auditLogs).values({
+        userId: admin.userId,
+        action: 'DELETE_ORDER',
+        details: `Menghapus pesanan ${orderId}`,
+      });
+
+      return { success: true };
+    } catch (error: any) {
+      console.error("DELETE_ADMIN_ORDER error:", error);
+      return { success: false, error: error?.message };
+    }
+  });

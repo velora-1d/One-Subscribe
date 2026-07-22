@@ -5,7 +5,7 @@ import { systemSettings } from '../../db/schema';
 import { z } from 'zod';
 
 const testConnectionSchema = z.object({
-  service: z.enum(['midtrans', 'pakasir', 'fonnte', 'rustfs']),
+  service: z.enum(['midtrans', 'pakasir', 'fonnte', 'evolution', 'rustfs']),
 });
 
 /**
@@ -223,6 +223,49 @@ export const testConnection = createServerFn({ method: 'POST' })
           return { 
             success: false, 
             message: `Fonnte Error: ${resBody?.reason || 'Token tidak valid atau device belum di-scan.'}` 
+          };
+        }
+      } catch (err: any) {
+        return { success: false, message: `Koneksi Gagal: ${err.message}` };
+      }
+    }
+
+    if (data.service === 'evolution') {
+      const endpoint = process.env.EVO_API_URL;
+      const apiKey = process.env.EVO_API_KEY;
+      const instance = process.env.EVO_INSTANCE;
+
+      if (!endpoint || !apiKey || !instance) {
+        return { success: false, message: 'Koneksi Gagal: Kredensial Evolution API tidak lengkap di file konfigurasi .env' };
+      }
+
+      const cleanUrl = endpoint.endsWith('/') ? endpoint.slice(0, -1) : endpoint;
+      const connectionUrl = `${cleanUrl}/instance/connectionState/${instance}`;
+
+      try {
+        const response = await fetch(connectionUrl, {
+          method: 'GET',
+          headers: {
+            apikey: apiKey,
+            'User-Agent': 'OneSubscribe/1.0',
+          },
+        });
+        
+        if (response.status === 401 || response.status === 403) {
+          return { success: false, message: 'Evolution API Error: Kredensial API Key tidak valid.' };
+        }
+
+        const resBody = await response.json() as any;
+        if (resBody && resBody.instance) {
+          const state = resBody.instance.state || 'unknown';
+          return {
+            success: true,
+            message: `Koneksi Evolution API Berhasil! Instance: ${instance}, Status Koneksi WA: ${state.toUpperCase()}`
+          };
+        } else {
+          return {
+            success: false,
+            message: `Evolution API Error: ${resBody?.message || 'Instance tidak ditemukan atau tidak aktif.'}`
           };
         }
       } catch (err: any) {
