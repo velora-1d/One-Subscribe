@@ -2,11 +2,12 @@ import { createServerFn } from '@tanstack/react-start';
 import { z } from 'zod';
 import { eq, desc, sql, and } from 'drizzle-orm';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import bcrypt from 'bcryptjs';
 import { db } from '../../db';
-import { orders, products, users, credentials, auditLogs, categories } from '../../db/schema';
+import { orders, products, users, credentials, auditLogs, categories, messageTemplates } from '../../db/schema';
 import { getSessionUser } from './auth.server';
 import { encrypt } from './crypto.server';
-import { sendFulfillmentNotification } from './notifications.server';
+import { sendFulfillmentNotification, sendWhatsappNotification } from './notifications.server';
 
 // Middlewares check for safety
 function verifyAdminSession() {
@@ -47,15 +48,51 @@ export const getAdminStats = createServerFn({ method: 'GET' }).handler(async () 
       .select({ count: sql<number>`COUNT(*)` })
       .from(orders);
 
-    // 5. Recent orders list
+    // 5. Active orders
+    const [activeOrdersRes] = await db
+      .select({ count: sql<number>`COUNT(*)` })
+      .from(orders)
+      .where(eq(orders.status, 'aktif'));
+
+    // 6. Unpaid orders
+    const [unpaidOrdersRes] = await db
+      .select({ count: sql<number>`COUNT(*)` })
+      .from(orders)
+      .where(eq(orders.status, 'menunggu_pembayaran'));
+
+    // 7. Expired orders
+    const [expiredOrdersRes] = await db
+      .select({ count: sql<number>`COUNT(*)` })
+      .from(orders)
+      .where(eq(orders.status, 'expired'));
+
+    // 8. Total products
+    const [totalProductsRes] = await db
+      .select({ count: sql<number>`COUNT(*)` })
+      .from(products);
+
+    // 9. Total categories
+    const [totalCategoriesRes] = await db
+      .select({ count: sql<number>`COUNT(*)` })
+      .from(categories);
+
+    // 10. Average Order Value
+    const [aovRes] = await db
+      .select({ avg: sql<number>`COALESCE(AVG(${orders.price}), 0)` })
+      .from(orders)
+      .where(sql`${orders.status} IN ('aktif', 'expired', 'menunggu_aktivasi')`);
+
+    // Recent orders list
     const recentOrders = await db
       .select({
         id: orders.id,
         status: orders.status,
         price: orders.price,
+        parentOrderId: orders.parentOrderId,
         createdAt: orders.createdAt,
         productName: products.name,
         customerName: users.name,
+        customerEmail: users.email,
       })
       .from(orders)
       .innerJoin(products, eq(orders.productId, products.id))
@@ -70,6 +107,12 @@ export const getAdminStats = createServerFn({ method: 'GET' }).handler(async () 
         totalCustomers: usersRes.count,
         pendingActivations: pendingRes.count,
         totalOrders: totalOrdersRes.count,
+        activeOrders: activeOrdersRes.count,
+        unpaidOrders: unpaidOrdersRes.count,
+        expiredOrders: expiredOrdersRes.count,
+        totalProducts: totalProductsRes.count,
+        totalCategories: totalCategoriesRes.count,
+        avgOrderValue: Math.round(aovRes.avg || 0),
         recentOrders,
       },
     };
@@ -280,6 +323,7 @@ export const getAdminOrders = createServerFn({ method: 'GET' }).handler(async ()
         price: orders.price,
         paymentMethod: orders.paymentMethod,
         remainingDuration: orders.remainingDuration,
+        parentOrderId: orders.parentOrderId,
         createdAt: orders.createdAt,
         productName: products.name,
         customerName: users.name,
@@ -382,6 +426,7 @@ export const fulfillOrder = createServerFn({ method: 'POST' })
         accountEmail: email,
         accountPassword: password,
         remarks,
+        orderId: order.id,
       });
 
       return { success: true };
@@ -408,7 +453,6 @@ export const getAdminUsers = createServerFn({ method: 'GET' }).handler(async () 
         createdAt: users.createdAt,
       })
       .from(users)
-      .where(eq(users.role, 'customer'))
       .orderBy(desc(users.createdAt));
 
     return { success: true, users: list };
@@ -416,6 +460,158 @@ export const getAdminUsers = createServerFn({ method: 'GET' }).handler(async () 
     return { success: false, error: error?.message };
   }
 });
+
+// CRUD User schemas
+const createAdminUserSchema = z.object({
+  name: z.string().min(2, 'Nama minimal 2 karakter'),
+  email: z.string().email('Format email tidak valid'),
+  password: z.string().min(6, 'Password minimal 6 karakter'),
+  whatsapp: z.string().min(10, 'Nomor WhatsApp minimal 10 digit'),
+  role: z.enum(['customer', 'admin']),
+});
+
+const updateAdminUserSchema = z.object({
+  id: z.string(),
+  name: z.string().min(2, 'Nama minimal 2 karakter'),
+  email: z.string().email('Format email tidak valid'),
+  whatsapp: z.string().min(10, 'Nomor WhatsApp minimal 10 digit'),
+  role: z.enum(['customer', 'admin']),
+  password: z.string().optional(),
+});
+
+/**
+ * Server function to manually create a user.
+ */
+export const createAdminUser = createServerFn({ method: 'POST' })
+  .validator((data: unknown) => createAdminUserSchema.parse(data))
+  .handler(async ({ data }) => {
+    const admin = verifyAdminSession();
+    const { name, email, password, whatsapp, role } = data;
+
+    try {
+      const [existingUser] = await db
+        .select()
+        .from(users)
+        .where(eq(users.email, email))
+        .limit(1);
+
+      if (existingUser) {
+        throw new Error('Email sudah terdaftar di sistem.');
+      }
+
+      const passwordHash = await bcrypt.hash(password, 10);
+
+      const [inserted] = await db
+        .insert(users)
+        .values({
+          name,
+          email,
+          whatsapp,
+          role,
+          passwordHash,
+        })
+        .returning({ id: users.id });
+
+      await db.insert(auditLogs).values({
+        userId: admin.userId,
+        action: 'CREATE_USER_MANUAL',
+        details: `Membuat user manual: ${name} (${email}) dengan role ${role}`,
+      });
+
+      return { success: true, userId: inserted?.id };
+    } catch (error: any) {
+      console.error("createAdminUser error:", error);
+      return { success: false, error: error?.message || 'Gagal membuat user manual.' };
+    }
+  });
+
+/**
+ * Server function to manually update a user.
+ */
+export const updateAdminUser = createServerFn({ method: 'POST' })
+  .validator((data: unknown) => updateAdminUserSchema.parse(data))
+  .handler(async ({ data }) => {
+    const admin = verifyAdminSession();
+    const { id, name, email, whatsapp, role, password } = data;
+
+    try {
+      const [existingUser] = await db
+        .select()
+        .from(users)
+        .where(and(eq(users.email, email), sql`${users.id} != ${id}`))
+        .limit(1);
+
+      if (existingUser) {
+        throw new Error('Email sudah digunakan oleh user lain.');
+      }
+
+      const updateData: Record<string, any> = {
+        name,
+        email,
+        whatsapp,
+        role,
+        updatedAt: new Date(),
+      };
+
+      if (password && password.trim().length >= 6) {
+        updateData.passwordHash = await bcrypt.hash(password, 10);
+      }
+
+      await db
+        .update(users)
+        .set(updateData)
+        .where(eq(users.id, id));
+
+      await db.insert(auditLogs).values({
+        userId: admin.userId,
+        action: 'UPDATE_USER_MANUAL',
+        details: `Mengedit user manual: ${name} (${email})`,
+      });
+
+      return { success: true };
+    } catch (error: any) {
+      console.error("updateAdminUser error:", error);
+      return { success: false, error: error?.message || 'Gagal memperbarui data user.' };
+    }
+  });
+
+/**
+ * Server function to manually delete a user.
+ */
+export const deleteAdminUser = createServerFn({ method: 'POST' })
+  .validator((data: unknown) => z.string().parse(data))
+  .handler(async ({ data: userId }) => {
+    const admin = verifyAdminSession();
+
+    if (admin.userId === userId) {
+      throw new Error('Anda tidak dapat menghapus akun Anda sendiri.');
+    }
+
+    try {
+      const [user] = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, userId))
+        .limit(1);
+
+      if (!user) {
+        throw new Error('User tidak ditemukan.');
+      }
+
+      await db.delete(users).where(eq(users.id, userId));
+
+      await db.insert(auditLogs).values({
+        userId: admin.userId,
+        action: 'DELETE_USER_MANUAL',
+        details: `Menghapus user: ${user.name} (${user.email})`,
+      });
+
+      return { success: true };
+    } catch (error: any) {
+      console.error("deleteAdminUser error:", error);
+      return { success: false, error: error?.message || 'Gagal menghapus user.' };
+    }
+  });
 
 /**
  * Server function to toggle user block status.
@@ -670,5 +866,205 @@ export const deleteAdminOrder = createServerFn({ method: 'POST' })
     } catch (error: any) {
       console.error("DELETE_ADMIN_ORDER error:", error);
       return { success: false, error: error?.message };
+    }
+  });
+
+/**
+ * Server function to fetch all orders with full customer and product info for reports.
+ */
+export const getAdminReports = createServerFn({ method: 'GET' }).handler(async () => {
+  verifyAdminSession();
+
+  try {
+    const list = await db
+      .select({
+        id: orders.id,
+        status: orders.status,
+        price: orders.price,
+        paymentMethod: orders.paymentMethod,
+        remainingDuration: orders.remainingDuration,
+        parentOrderId: orders.parentOrderId,
+        createdAt: orders.createdAt,
+        productName: products.name,
+        productCategory: products.category,
+        customerName: users.name,
+        customerEmail: users.email,
+        customerWhatsapp: users.whatsapp,
+      })
+      .from(orders)
+      .innerJoin(products, eq(orders.productId, products.id))
+      .innerJoin(users, eq(orders.userId, users.id))
+      .orderBy(desc(orders.createdAt));
+
+    return { success: true, orders: list };
+  } catch (error: any) {
+    return { success: false, error: error?.message || 'Gagal memuat data laporan.' };
+  }
+});
+
+/**
+ * Server function to confirm/activate a renewal order.
+ * Updates parent order remaining duration and status, and sets the renewal order status to active.
+ */
+export const confirmRenewal = createServerFn({ method: 'POST' })
+  .validator((data: unknown) => z.string().parse(data))
+  .handler(async ({ data: orderId }) => {
+    const admin = verifyAdminSession();
+    try {
+      // 1. Fetch renewal order
+      const [renewalOrder] = await db
+        .select()
+        .from(orders)
+        .where(eq(orders.id, orderId))
+        .limit(1);
+
+      if (!renewalOrder) {
+        throw new Error('Pesanan tidak ditemukan.');
+      }
+
+      if (!renewalOrder.parentOrderId) {
+        throw new Error('Pesanan ini bukan bertipe perpanjangan.');
+      }
+
+      // 2. Fetch parent order
+      const [parentOrder] = await db
+        .select()
+        .from(orders)
+        .where(eq(orders.id, renewalOrder.parentOrderId))
+        .limit(1);
+
+      if (!parentOrder) {
+        throw new Error('Pesanan utama tidak ditemukan.');
+      }
+
+      // 3. Update parent order: add duration and set status to active
+      const newDuration = parentOrder.remainingDuration + renewalOrder.remainingDuration;
+      await db
+        .update(orders)
+        .set({
+          remainingDuration: newDuration,
+          status: 'aktif',
+          updatedAt: new Date(),
+        })
+        .where(eq(orders.id, parentOrder.id));
+
+      // 4. Update renewal order: status to active
+      await db
+        .update(orders)
+        .set({
+          status: 'aktif',
+          updatedAt: new Date(),
+        })
+        .where(eq(orders.id, renewalOrder.id));
+
+      // 5. Add audit log
+      await db.insert(auditLogs).values({
+        userId: admin.userId,
+        action: 'CONFIRM_RENEWAL',
+        details: `Mengonfirmasi perpanjangan masa aktif +${renewalOrder.remainingDuration} bulan untuk pesanan utama ${parentOrder.id}`,
+      });
+
+      return { success: true };
+    } catch (error: any) {
+      return { success: false, error: error?.message || 'Gagal mengonfirmasi perpanjangan.' };
+    }
+  });
+
+const sendCustomWhatsappSchema = z.object({
+  whatsapp: z.string(),
+  message: z.string(),
+});
+
+export const sendCustomWhatsapp = createServerFn({ method: 'POST' })
+  .validator((data: unknown) => sendCustomWhatsappSchema.parse(data))
+  .handler(async ({ data }) => {
+    verifyAdminSession();
+    try {
+      await sendWhatsappNotification(data.whatsapp, data.message);
+      return { success: true };
+    } catch (err: any) {
+      return { success: false, error: err.message };
+    }
+  });
+
+/**
+ * Server functions to manage message templates
+ */
+export const getAdminMessageTemplates = createServerFn({ method: 'GET' }).handler(async () => {
+  verifyAdminSession();
+  try {
+    let list = await db.select().from(messageTemplates).orderBy(desc(messageTemplates.createdAt));
+
+    // Seed default templates if database is empty
+    if (list.length === 0) {
+      const defaults = [
+        {
+          name: 'Notifikasi Pembayaran Sukses',
+          code: 'payment_success',
+          content: 'Halo {customerName},\n\nPembayaran untuk pesanan {orderId} ({productName}) telah berhasil kami terima.\n\nPesanan Anda sedang diproses oleh admin. Silakan tunggu notifikasi aktivasi berikutnya.\n\nTerima kasih!',
+        },
+        {
+          name: 'Notifikasi Aktivasi / Fulfillment Sukses',
+          code: 'fulfillment_success',
+          content: 'Halo {customerName},\n\nKabar gembira! Pesanan Anda dengan ID {orderId} ({productName}) telah aktif.\n\nDetail akun login premium Anda dikirimkan secara manual oleh admin di chat ini atau email terpisah demi keamanan.\n\nTerima kasih atas pembelian Anda!',
+        },
+      ];
+
+      for (const t of defaults) {
+        await db.insert(messageTemplates).values({
+          name: t.name,
+          code: t.code,
+          content: t.content,
+        });
+      }
+
+      list = await db.select().from(messageTemplates).orderBy(desc(messageTemplates.createdAt));
+    }
+
+    return { success: true, templates: list };
+  } catch (error: any) {
+    return { success: false, error: error?.message || 'Gagal memuat template pesan.' };
+  }
+});
+
+const saveTemplateSchema = z.object({
+  id: z.string().optional(),
+  name: z.string().min(1, 'Nama template wajib diisi'),
+  code: z.string().min(1, 'Kode template wajib diisi'),
+  content: z.string().min(1, 'Konten template wajib diisi'),
+});
+
+export const saveAdminMessageTemplate = createServerFn({ method: 'POST' })
+  .validator((data: unknown) => saveTemplateSchema.parse(data))
+  .handler(async ({ data }) => {
+    verifyAdminSession();
+    const { id, name, code, content } = data;
+
+    try {
+      if (id) {
+        // Update
+        await db
+          .update(messageTemplates)
+          .set({ name, code, content, updatedAt: new Date() })
+          .where(eq(messageTemplates.id, id));
+      } else {
+        // Create new
+        await db.insert(messageTemplates).values({ name, code, content });
+      }
+      return { success: true };
+    } catch (error: any) {
+      return { success: false, error: error?.message || 'Gagal menyimpan template.' };
+    }
+  });
+
+export const deleteAdminMessageTemplate = createServerFn({ method: 'POST' })
+  .validator((data: unknown) => z.string().parse(data))
+  .handler(async ({ data: id }) => {
+    verifyAdminSession();
+    try {
+      await db.delete(messageTemplates).where(eq(messageTemplates.id, id));
+      return { success: true };
+    } catch (error: any) {
+      return { success: false, error: error?.message || 'Gagal menghapus template.' };
     }
   });

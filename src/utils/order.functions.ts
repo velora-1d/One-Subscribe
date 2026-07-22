@@ -2,12 +2,16 @@ import { createServerFn } from '@tanstack/react-start';
 import { z } from 'zod';
 import { eq, desc, and } from 'drizzle-orm';
 import { db } from '../../db';
-import { orders, products, users, credentials, systemSettings } from '../../db/schema';
+import { orders, products, users, credentials, systemSettings, promos } from '../../db/schema';
 import { getSessionUser } from './auth.server';
 import { decrypt } from './crypto.server';
+import { triggerPaymentSuccessNotification } from './notifications.server';
 
 const createOrderSchema = z.object({
   productId: z.string(),
+  parentOrderId: z.string().optional(),
+  durationMonths: z.number().optional(),
+  appliedPromoId: z.string().optional(),
 });
 
 /**
@@ -21,7 +25,7 @@ export const createOrder = createServerFn({ method: 'POST' })
       throw new Error('Anda harus masuk terlebih dahulu untuk melakukan pemesanan.');
     }
 
-    const { productId } = data;
+    const { productId, parentOrderId, durationMonths, appliedPromoId } = data;
 
     // Fetch all configurations from database settings
     const settingsList = await db.select().from(systemSettings);
@@ -41,6 +45,58 @@ export const createOrder = createServerFn({ method: 'POST' })
 
     if (!product || !product.isActive) {
       throw new Error('Produk tidak ditemukan atau sudah tidak aktif.');
+    }
+
+    // Determine final duration and price
+    const finalDuration = durationMonths || product.durationMonths;
+    const baseMonthlyPrice = Math.round(product.price / product.durationMonths);
+    let finalPrice = baseMonthlyPrice * finalDuration;
+
+    // Apply bulk renewal discounts if it is a renewal
+    if (parentOrderId) {
+      if (finalDuration === 3) {
+        finalPrice = Math.round(finalPrice * 0.95); // 5% discount
+      } else if (finalDuration === 6) {
+        finalPrice = Math.round(finalPrice * 0.90); // 10% discount
+      } else if (finalDuration === 12) {
+        finalPrice = Math.round(finalPrice * 0.85); // 15% discount
+      }
+    }
+
+    // Apply promo/voucher discount
+    let discountAmount = 0;
+    let promoToUpdate = null;
+
+    if (appliedPromoId) {
+      const [promo] = await db
+        .select()
+        .from(promos)
+        .where(eq(promos.id, appliedPromoId))
+        .limit(1);
+
+      if (promo && promo.isActive) {
+        if (finalDuration >= promo.minDurationMonths) {
+          if (!promo.maxUses || promo.usedCount < promo.maxUses) {
+            const now = new Date();
+            const startOk = !promo.validFrom || now >= new Date(promo.validFrom);
+            const endOk = !promo.validUntil || now <= new Date(promo.validUntil);
+            const prodOk = !promo.productId || promo.productId === productId;
+
+            if (startOk && endOk && prodOk) {
+              if (promo.discountType === 'percentage') {
+                discountAmount = Math.round(finalPrice * (promo.discountValue / 100));
+                if (promo.maxDiscountAmount) {
+                  discountAmount = Math.min(discountAmount, promo.maxDiscountAmount);
+                }
+              } else if (promo.discountType === 'fixed') {
+                discountAmount = promo.discountValue;
+              }
+              finalPrice = Math.max(0, finalPrice - discountAmount);
+              promoToUpdate = promo;
+            }
+          }
+        }
+      }
     }
 
     // Generate custom Order ID: ORD-YYYYMMDD-XXXX
@@ -90,7 +146,7 @@ export const createOrder = createServerFn({ method: 'POST' })
           body: JSON.stringify({
             transaction_details: {
               order_id: orderId,
-              gross_amount: product.price,
+              gross_amount: finalPrice,
             },
             credit_card: {
               secure: true,
@@ -127,7 +183,7 @@ export const createOrder = createServerFn({ method: 'POST' })
         const redirectTarget = `${origin}/checkout/success?orderId=${orderId}`;
         
         // Construct the Pakasir direct payment URL
-        paymentRedirectUrl = `https://app.pakasir.com/pay/${slug}/${product.price}?order_id=${orderId}&redirect=${encodeURIComponent(redirectTarget)}`;
+        paymentRedirectUrl = `https://app.pakasir.com/pay/${slug}/${finalPrice}?order_id=${orderId}&redirect=${encodeURIComponent(redirectTarget)}`;
       } catch (err: any) {
         console.error('[Pakasir integration failed]', err);
         throw new Error(`Integrasi Pakasir Gagal: ${err.message}`);
@@ -142,16 +198,26 @@ export const createOrder = createServerFn({ method: 'POST' })
         userId: user.userId,
         productId: product.id,
         status: 'menunggu_pembayaran',
-        price: product.price,
+        price: finalPrice,
         paymentMethod,
         paymentRedirectUrl,
         paymentTransactionId,
-        remainingDuration: product.durationMonths, // Start with product duration
+        remainingDuration: finalDuration, // Start with selected duration
+        parentOrderId: parentOrderId || null,
+        appliedPromoId: appliedPromoId || null,
+        discountAmount,
       })
       .returning();
 
     if (!newOrder) {
       throw new Error('Gagal membuat pesanan baru.');
+    }
+
+    if (promoToUpdate) {
+      await db
+        .update(promos)
+        .set({ usedCount: promoToUpdate.usedCount + 1 })
+        .where(eq(promos.id, promoToUpdate.id));
     }
 
     return {
@@ -199,9 +265,15 @@ export const getMyOrders = createServerFn({ method: 'GET' }).handler(async () =>
  * Server function to fetch detailed info of a single order.
  */
 export const getOrderById = createServerFn({ method: 'GET' })
-  .validator((data: unknown) => z.string().parse(data))
+  .validator((data: unknown) => {
+    const val = z.string().parse(data);
+    console.log('GET_ORDER_BY_ID_VALIDATOR_OUT:', val);
+    return val;
+  })
   .handler(async ({ data: id }) => {
+    console.log('GET_ORDER_BY_ID_HANDLER_INPUT_ID:', id);
     const user = getSessionUser();
+    console.log('GET_ORDER_BY_ID_SESSION_USER:', user);
     if (!user) {
       throw new Error('Unauthorized');
     }
@@ -265,6 +337,9 @@ export const simulatePaymentSuccess = createServerFn({ method: 'POST' })
         .set({ status: 'menunggu_aktivasi', updatedAt: new Date() })
         .where(eq(orders.id, orderId));
 
+      // Send WhatsApp notification
+      await triggerPaymentSuccessNotification(orderId);
+
       return { success: true };
     } catch (error: any) {
       return { success: false, error: error?.message };
@@ -288,9 +363,12 @@ export const getActiveSubscriptions = createServerFn({ method: 'GET' })
           status: orders.status,
           remainingDuration: orders.remainingDuration,
           createdAt: orders.createdAt,
+          productId: products.id,
           productName: products.name,
           productCategory: products.category,
           productImageUrl: products.imageUrl,
+          productPrice: products.price,
+          productDurationMonths: products.durationMonths,
           encryptedAccountEmail: credentials.encryptedAccountEmail,
           encryptedAccountPassword: credentials.encryptedAccountPassword,
           remarks: credentials.remarks,
@@ -322,6 +400,9 @@ export const getActiveSubscriptions = createServerFn({ method: 'GET' })
 
         return {
           id: sub.id,
+          productId: sub.productId,
+          productPrice: sub.productPrice,
+          productDurationMonths: sub.productDurationMonths,
           productName: sub.productName,
           productCategory: sub.productCategory,
           productImageUrl: sub.productImageUrl,

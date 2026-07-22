@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
+import { useState } from 'react'
 import { getMyOrders } from '../utils/order.functions'
 
 export const Route = createFileRoute('/dashboard/orders')({
@@ -27,6 +28,7 @@ function formatIDR(amount: number): string {
 
 function DashboardOrdersPage() {
   const { orders, error } = Route.useLoaderData()
+  const [currentPage, setCurrentPage] = useState(1)
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -59,16 +61,29 @@ function DashboardOrdersPage() {
     }
   }
 
+  const itemsPerPage = 5
+  const totalPages = Math.ceil(orders.length / itemsPerPage)
+  const activePage = Math.min(currentPage, totalPages || 1)
+  const paginatedOrders = orders.slice((activePage - 1) * itemsPerPage, activePage * itemsPerPage)
+
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-extrabold text-[var(--sea-ink)]">
-          Riwayat Pesanan Saya
-        </h1>
-        <p className="text-xs text-[var(--sea-ink-soft)] mt-1">
-          Daftar seluruh transaksi pemesanan langganan digital Anda.
-        </p>
-      </div>
+    <div className="space-y-8 font-sans text-left">
+      {/* Title Panel */}
+      <header className="relative bg-white border border-slate-200/85 rounded-2xl p-6 flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-lg shadow-slate-100/30">
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-slate-900 text-white rounded-xl flex items-center justify-center shadow-md shrink-0">
+            <span className="material-symbols-outlined text-[24px]">receipt_long</span>
+          </div>
+          <div>
+            <h1 className="text-2xl font-black text-slate-900 tracking-tight font-display">
+              Riwayat Pesanan Saya
+            </h1>
+            <p className="text-xs text-slate-500 font-semibold mt-0.5">
+              Daftar seluruh transaksi pemesanan langganan digital Anda.
+            </p>
+          </div>
+        </div>
+      </header>
 
       {error && (
         <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-xs font-semibold text-red-600">
@@ -82,6 +97,7 @@ function DashboardOrdersPage() {
             <table className="w-full border-collapse text-left text-sm text-[var(--sea-ink-soft)]">
               <thead>
                 <tr className="border-b border-[var(--line)] bg-[var(--chip-bg)] text-xs font-bold uppercase tracking-wider text-[var(--sea-ink)]">
+                  <th className="pl-6 pr-2 py-4 w-16 text-left text-[var(--sea-ink)] whitespace-nowrap">No</th>
                   <th className="px-6 py-4">ID Pesanan & Tanggal</th>
                   <th className="px-6 py-4">Layanan</th>
                   <th className="px-6 py-4">Status</th>
@@ -90,8 +106,9 @@ function DashboardOrdersPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-[var(--line)] bg-[var(--header-bg)]">
-                {orders.map((order) => (
+                {paginatedOrders.map((order, index) => (
                   <tr key={order.id} className="hover:bg-[var(--link-bg-hover)] transition">
+                    <td className="pl-6 pr-2 py-4 text-left font-bold text-[var(--sea-ink-soft)] w-16 whitespace-nowrap">{((activePage - 1) * itemsPerPage) + index + 1}</td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <strong className="block text-xs font-bold text-[var(--sea-ink)]">{order.id}</strong>
                       <span className="text-[10px] text-[var(--sea-ink-soft)]">
@@ -151,6 +168,49 @@ function DashboardOrdersPage() {
                 ))}
               </tbody>
             </table>
+
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between px-6 py-4 bg-slate-50 border-t border-slate-100 text-slate-500 text-[11px] font-semibold text-left">
+                <div>
+                  Menampilkan {((activePage - 1) * itemsPerPage) + 1} - {Math.min(activePage * itemsPerPage, orders.length)} dari {orders.length} entri
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    disabled={activePage === 1}
+                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                    className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-650 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center justify-center"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">chevron_left</span>
+                  </button>
+                  {Array.from({ length: totalPages }).map((_, i) => {
+                    const pageNum = i + 1
+                    return (
+                      <button
+                        key={pageNum}
+                        type="button"
+                        onClick={() => setCurrentPage(pageNum)}
+                        className={`w-7.5 h-7.5 rounded-lg text-center cursor-pointer transition ${
+                          activePage === pageNum
+                            ? 'bg-slate-900 border border-slate-900 text-white font-extrabold shadow-sm'
+                            : 'border border-slate-200 bg-white hover:bg-slate-50 text-slate-650 font-bold'
+                        }`}
+                      >
+                        {pageNum}
+                      </button>
+                    )
+                  })}
+                  <button
+                    type="button"
+                    disabled={activePage === totalPages}
+                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                    className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-650 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center justify-center"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">chevron_right</span>
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       ) : (

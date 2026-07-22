@@ -2,6 +2,7 @@ import { createFileRoute, Link, redirect, useNavigate } from '@tanstack/react-ro
 import { useState } from 'react'
 import { getProductById } from '../utils/product.functions'
 import { createOrder } from '../utils/order.functions'
+import { validateVoucher } from '../utils/promo.functions'
 import { Route as RootRoute } from './__root'
 
 export const Route = createFileRoute('/checkout/')({
@@ -64,6 +65,62 @@ function CheckoutPage() {
     )
   }
 
+  // Voucher states
+  const [voucherCode, setVoucherCode] = useState('')
+  const [appliedVoucher, setAppliedVoucher] = useState<any | null>(null)
+  const [voucherError, setVoucherError] = useState<string | null>(null)
+  const [isValidatingVoucher, setIsValidatingVoucher] = useState(false)
+
+  const basePrice = product.promo ? product.promo.priceAfterPromo : product.price
+
+  let discountAmount = 0
+  if (appliedVoucher) {
+    if (appliedVoucher.discountType === 'percentage') {
+      discountAmount = Math.round(basePrice * (appliedVoucher.discountValue / 100))
+      if (appliedVoucher.maxDiscountAmount) {
+        discountAmount = Math.min(discountAmount, appliedVoucher.maxDiscountAmount)
+      }
+    } else {
+      discountAmount = appliedVoucher.discountValue
+    }
+  }
+
+  const finalPrice = Math.max(0, basePrice - discountAmount)
+
+  const handleApplyVoucher = async () => {
+    if (!voucherCode.trim()) return
+    setIsValidatingVoucher(true)
+    setVoucherError(null)
+    try {
+      const res = await validateVoucher({
+        data: {
+          code: voucherCode.trim().toUpperCase(),
+          productId: product.id,
+          durationMonths: product.durationMonths,
+        }
+      })
+
+      if (res.success && res.promo) {
+        setAppliedVoucher(res.promo)
+        setVoucherError(null)
+      } else {
+        setVoucherError(res.error || 'Voucher tidak valid.')
+        setAppliedVoucher(null)
+      }
+    } catch (err: any) {
+      setVoucherError(err.message || 'Terjadi kesalahan sistem.')
+      setAppliedVoucher(null)
+    } finally {
+      setIsValidatingVoucher(false)
+    }
+  }
+
+  const handleRemoveVoucher = () => {
+    setVoucherCode('')
+    setAppliedVoucher(null)
+    setVoucherError(null)
+  }
+
   const handleCheckout = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
@@ -73,6 +130,7 @@ function CheckoutPage() {
       const result = await createOrder({
         data: {
           productId: product.id,
+          appliedPromoId: appliedVoucher?.id || undefined,
         },
       })
 
@@ -240,19 +298,94 @@ function CheckoutPage() {
                 </div>
               </div>
 
+              {/* Promo / Voucher Form */}
+              <div className="pt-3 border-t border-slate-100">
+                <span className="block text-[10px] text-[var(--sea-ink-soft)] font-bold uppercase tracking-wider mb-2">
+                  Punya Kode Voucer?
+                </span>
+                
+                {appliedVoucher ? (
+                  <div className="flex items-center justify-between bg-indigo-50 border border-indigo-100 rounded-xl p-3">
+                    <div className="flex items-center gap-2">
+                      <span className="material-symbols-outlined text-indigo-600 text-sm">local_offer</span>
+                      <div className="text-left">
+                        <code className="text-xs font-black text-indigo-700 uppercase">{appliedVoucher.code}</code>
+                        <span className="block text-[9px] text-indigo-500 font-bold">
+                          Kupon berhasil dipasang
+                        </span>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleRemoveVoucher}
+                      className="text-xs font-bold text-red-600 hover:text-red-800 transition bg-transparent border-0 cursor-pointer"
+                    >
+                      Batal
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={voucherCode}
+                        onChange={(e) => setVoucherCode(e.target.value.toUpperCase())}
+                        placeholder="MASUKKAN KODE VOUCER"
+                        className="flex-1 rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2 text-xs outline-none focus:border-slate-900 transition"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleApplyVoucher}
+                        disabled={isValidatingVoucher || !voucherCode.trim()}
+                        className="rounded-xl bg-slate-900 hover:bg-slate-800 text-white px-4 text-xs font-bold border-0 cursor-pointer disabled:opacity-50 transition"
+                      >
+                        {isValidatingVoucher ? '...' : 'Gunakan'}
+                      </button>
+                    </div>
+                    {voucherError && (
+                      <p className="text-[10px] text-red-600 font-semibold mb-0 pl-1 leading-normal text-left">
+                        ⚠️ {voucherError}
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+
               {/* Billing breakdown */}
-              <div className="space-y-3 pt-3 text-xs text-slate-500">
-                <div className="flex justify-between">
-                  <span>Harga Berlangganan</span>
-                  <span className="font-semibold text-slate-800">{formatIDR(product.price)}</span>
-                </div>
+              <div className="space-y-3 pt-3 text-xs text-slate-500 border-t border-[var(--line)]">
+                {product.promo ? (
+                  <>
+                    <div className="flex justify-between">
+                      <span>Harga Normal</span>
+                      <span className="font-semibold text-slate-400 line-through">{formatIDR(product.price)}</span>
+                    </div>
+                    <div className="flex justify-between text-rose-600 font-semibold">
+                      <span>Promo Katalog ({product.promo.discountType === 'percentage' ? `${product.promo.discountValue}%` : 'Hemat'})</span>
+                      <span>-{formatIDR(product.price - product.promo.priceAfterPromo)}</span>
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex justify-between">
+                    <span>Harga Berlangganan</span>
+                    <span className="font-semibold text-slate-800">{formatIDR(product.price)}</span>
+                  </div>
+                )}
+
+                {appliedVoucher && (
+                  <div className="flex justify-between text-indigo-600 font-semibold">
+                    <span>Kupon ({appliedVoucher.code})</span>
+                    <span>-{formatIDR(discountAmount)}</span>
+                  </div>
+                )}
+
                 <div className="flex justify-between">
                   <span>Biaya Layanan & PPN</span>
                   <span className="text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded text-[10px]">Rp 0 (Gratis)</span>
                 </div>
+                
                 <div className="flex justify-between pt-4 border-t border-[var(--line)] text-sm font-black text-slate-950">
                   <span>Total Tagihan</span>
-                  <span className="text-slate-900">{formatIDR(product.price)}</span>
+                  <span className="text-slate-900 text-base">{formatIDR(finalPrice)}</span>
                 </div>
               </div>
 

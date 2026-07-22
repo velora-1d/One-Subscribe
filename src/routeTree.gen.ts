@@ -20,8 +20,10 @@ import { Route as AdminDashboardRouteImport } from './routes/admin.dashboard'
 import { Route as AdminOrdersRouteImport } from './routes/admin.orders'
 import { Route as AdminProductsRouteImport } from './routes/admin.products'
 import { Route as AdminProfileRouteImport } from './routes/admin.profile'
+import { Route as AdminPromosRouteImport } from './routes/admin.promos'
 import { Route as AdminReportsRouteImport } from './routes/admin.reports'
 import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
+import { Route as AdminTemplatesRouteImport } from './routes/admin.templates'
 import { Route as AdminUsersRouteImport } from './routes/admin.users'
 import { Route as CheckoutIndexRouteImport } from './routes/checkout.index'
 import { Route as CheckoutPayRouteImport } from './routes/checkout.pay'
@@ -86,6 +88,11 @@ const AdminProfileRoute = AdminProfileRouteImport.update({
   path: '/profile',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminPromosRoute = AdminPromosRouteImport.update({
+  id: '/promos',
+  path: '/promos',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminReportsRoute = AdminReportsRouteImport.update({
   id: '/reports',
   path: '/reports',
@@ -94,6 +101,11 @@ const AdminReportsRoute = AdminReportsRouteImport.update({
 const AdminSettingsRoute = AdminSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminTemplatesRoute = AdminTemplatesRouteImport.update({
+  id: '/templates',
+  path: '/templates',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminUsersRoute = AdminUsersRouteImport.update({
@@ -149,8 +161,10 @@ export interface FileRoutesByFullPath {
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/products': typeof AdminProductsRoute
   '/admin/profile': typeof AdminProfileRoute
+  '/admin/promos': typeof AdminPromosRoute
   '/admin/reports': typeof AdminReportsRoute
   '/admin/settings': typeof AdminSettingsRoute
+  '/admin/templates': typeof AdminTemplatesRoute
   '/admin/users': typeof AdminUsersRoute
   '/checkout/pay': typeof CheckoutPayRoute
   '/checkout/success': typeof CheckoutSuccessRoute
@@ -171,8 +185,10 @@ export interface FileRoutesByTo {
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/products': typeof AdminProductsRoute
   '/admin/profile': typeof AdminProfileRoute
+  '/admin/promos': typeof AdminPromosRoute
   '/admin/reports': typeof AdminReportsRoute
   '/admin/settings': typeof AdminSettingsRoute
+  '/admin/templates': typeof AdminTemplatesRoute
   '/admin/users': typeof AdminUsersRoute
   '/checkout/pay': typeof CheckoutPayRoute
   '/checkout/success': typeof CheckoutSuccessRoute
@@ -195,8 +211,10 @@ export interface FileRoutesById {
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/products': typeof AdminProductsRoute
   '/admin/profile': typeof AdminProfileRoute
+  '/admin/promos': typeof AdminPromosRoute
   '/admin/reports': typeof AdminReportsRoute
   '/admin/settings': typeof AdminSettingsRoute
+  '/admin/templates': typeof AdminTemplatesRoute
   '/admin/users': typeof AdminUsersRoute
   '/checkout/pay': typeof CheckoutPayRoute
   '/checkout/success': typeof CheckoutSuccessRoute
@@ -220,8 +238,10 @@ export interface FileRouteTypes {
     | '/admin/orders'
     | '/admin/products'
     | '/admin/profile'
+    | '/admin/promos'
     | '/admin/reports'
     | '/admin/settings'
+    | '/admin/templates'
     | '/admin/users'
     | '/checkout/pay'
     | '/checkout/success'
@@ -242,8 +262,10 @@ export interface FileRouteTypes {
     | '/admin/orders'
     | '/admin/products'
     | '/admin/profile'
+    | '/admin/promos'
     | '/admin/reports'
     | '/admin/settings'
+    | '/admin/templates'
     | '/admin/users'
     | '/checkout/pay'
     | '/checkout/success'
@@ -265,8 +287,10 @@ export interface FileRouteTypes {
     | '/admin/orders'
     | '/admin/products'
     | '/admin/profile'
+    | '/admin/promos'
     | '/admin/reports'
     | '/admin/settings'
+    | '/admin/templates'
     | '/admin/users'
     | '/checkout/pay'
     | '/checkout/success'
@@ -369,6 +393,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminProfileRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/promos': {
+      id: '/admin/promos'
+      path: '/promos'
+      fullPath: '/admin/promos'
+      preLoaderRoute: typeof AdminPromosRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/reports': {
       id: '/admin/reports'
       path: '/reports'
@@ -381,6 +412,13 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/admin/settings'
       preLoaderRoute: typeof AdminSettingsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/templates': {
+      id: '/admin/templates'
+      path: '/templates'
+      fullPath: '/admin/templates'
+      preLoaderRoute: typeof AdminTemplatesRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/users': {
@@ -448,8 +486,10 @@ interface AdminRouteChildren {
   AdminOrdersRoute: typeof AdminOrdersRoute
   AdminProductsRoute: typeof AdminProductsRoute
   AdminProfileRoute: typeof AdminProfileRoute
+  AdminPromosRoute: typeof AdminPromosRoute
   AdminReportsRoute: typeof AdminReportsRoute
   AdminSettingsRoute: typeof AdminSettingsRoute
+  AdminTemplatesRoute: typeof AdminTemplatesRoute
   AdminUsersRoute: typeof AdminUsersRoute
 }
 
@@ -459,8 +499,10 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminOrdersRoute: AdminOrdersRoute,
   AdminProductsRoute: AdminProductsRoute,
   AdminProfileRoute: AdminProfileRoute,
+  AdminPromosRoute: AdminPromosRoute,
   AdminReportsRoute: AdminReportsRoute,
   AdminSettingsRoute: AdminSettingsRoute,
+  AdminTemplatesRoute: AdminTemplatesRoute,
   AdminUsersRoute: AdminUsersRoute,
 }
 

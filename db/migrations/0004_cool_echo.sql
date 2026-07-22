@@ -1,0 +1,1 @@
+ALTER TABLE "orders" ADD COLUMN "parent_order_id" text;

@@ -1,6 +1,24 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
-import { getAdminOrders, fulfillOrder, cancelAdminOrder, deleteAdminOrder } from '../utils/admin.functions'
+import { toast } from 'sonner'
+import { getAdminOrders, fulfillOrder, cancelAdminOrder, deleteAdminOrder, sendCustomWhatsapp, getAdminMessageTemplates } from '../utils/admin.functions'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+
+const WhatsappIcon = ({ className = "h-4 w-4" }: { className?: string }) => (
+  <svg
+    className={className}
+    fill="currentColor"
+    viewBox="0 0 24 24"
+    aria-hidden="true"
+  >
+    <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.717-1.456L0 24zm6.59-4.846c1.6.95 3.497 1.45 5.416 1.451 5.416 0 9.825-4.41 9.829-9.823.002-2.623-1.02-5.088-2.88-6.95-1.86-1.862-4.322-2.883-6.942-2.884-5.421 0-9.83 4.41-9.834 9.822-.001 1.986.518 3.926 1.502 5.642l-.997 3.64 3.734-.979zm11.391-6.196c-.297-.148-1.758-.867-2.03-.967-.273-.099-.471-.148-.669.148-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.568-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" />
+  </svg>
+)
 
 export const Route = createFileRoute('/admin/orders')({
   loader: async () => {
@@ -30,9 +48,119 @@ function AdminOrdersPage() {
   const { orders: initialOrders, error } = Route.useLoaderData()
   const [orders, setOrders] = useState(initialOrders)
   const [activeTab, setActiveTab] = useState<'semua' | 'menunggu_pembayaran' | 'menunggu_aktivasi' | 'aktif' | 'expired'>('semua')
+  const [currentPage, setCurrentPage] = useState(1)
 
   // Fulfillment Dialog States
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null)
+
+  // WhatsApp Modal States
+  const [isWaModalOpen, setIsWaModalOpen] = useState(false)
+  const [waTargetNumber, setWaTargetNumber] = useState('')
+  const [waTargetName, setWaTargetName] = useState('')
+  const [waMessage, setWaMessage] = useState('')
+  const [isSendingWa, setIsSendingWa] = useState(false)
+  const [templates, setTemplates] = useState<any[]>([])
+  const [checkedTemplates, setCheckedTemplates] = useState<string[]>([])
+  const [waOrderDetails, setWaOrderDetails] = useState<{ id: string, productName: string, price: number } | null>(null)
+
+  const handleOpenWhatsappModal = async (
+    whatsapp: string,
+    name: string,
+    orderDetails?: { id: string, productName: string, price: number }
+  ) => {
+    setWaTargetNumber(whatsapp || '')
+    setWaTargetName(name || '')
+    setWaMessage(`Halo ${name || ''},\n\n`)
+    setCheckedTemplates([])
+    setWaOrderDetails(orderDetails || null)
+    setIsWaModalOpen(true)
+
+    try {
+      const res = await getAdminMessageTemplates()
+      if (res.success) {
+        setTemplates(res.templates)
+      }
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
+  const handleToggleTemplate = (code: string, checked: boolean) => {
+    let nextChecked = [...checkedTemplates]
+    if (checked) {
+      nextChecked.push(code)
+    } else {
+      nextChecked = nextChecked.filter((c) => c !== code)
+    }
+    setCheckedTemplates(nextChecked)
+
+    // Build the concatenated message
+    let combinedText = `Halo ${waTargetName || ''},\n\n`
+    nextChecked.forEach((c) => {
+      const template = templates.find((t) => t.code === c)
+      if (template) {
+        const parsed = template.content
+          .replaceAll('{customerName}', waTargetName)
+          .replaceAll('{orderId}', waOrderDetails?.id || '')
+          .replaceAll('{productName}', waOrderDetails?.productName || '')
+          .replaceAll('{price}', waOrderDetails ? `Rp ${waOrderDetails.price.toLocaleString('id-ID')}` : '');
+        combinedText += parsed + '\n\n'
+      }
+    })
+    setWaMessage(combinedText.trim())
+  }
+
+  const handleSendWaAutomatic = async () => {
+    if (!waTargetNumber) {
+      toast.error('Nomor WhatsApp tujuan kosong.')
+      return
+    }
+    if (!waMessage.trim()) {
+      toast.error('Pesan WhatsApp tidak boleh kosong.')
+      return
+    }
+
+    setIsSendingWa(true)
+    try {
+      const res = await sendCustomWhatsapp({
+        data: {
+          whatsapp: waTargetNumber,
+          message: waMessage,
+        }
+      })
+      if (res.success) {
+        toast.success('Pesan WhatsApp berhasil terkirim melalui gateway!')
+        setIsWaModalOpen(false)
+      } else {
+        toast.error(`Gagal: ${res.error || 'Terjadi kesalahan'}`)
+      }
+    } catch (err: any) {
+      toast.error(`Error: ${err?.message || 'Gagal mengirim pesan'}`)
+    } finally {
+      setIsSendingWa(false)
+    }
+  }
+
+  const handleSendWaManual = () => {
+    if (!waTargetNumber) {
+      toast.error('Nomor WhatsApp tujuan kosong.')
+      return
+    }
+    if (!waMessage.trim()) {
+      toast.error('Pesan WhatsApp tidak boleh kosong.')
+      return
+    }
+
+    let formattedPhone = waTargetNumber.replace(/[^0-9]/g, '')
+    if (formattedPhone.startsWith('0')) {
+      formattedPhone = '62' + formattedPhone.slice(1)
+    }
+
+    const encodedText = encodeURIComponent(waMessage)
+    const waUrl = `https://api.whatsapp.com/send?phone=${formattedPhone}&text=${encodedText}`
+    window.open(waUrl, '_blank')
+    setIsWaModalOpen(false)
+  }
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [remarks, setRemarks] = useState('')
@@ -54,22 +182,14 @@ function AdminOrdersPage() {
     orderId: null
   })
 
-  // Custom Toast state
-  const [toast, setToast] = useState<{
-    show: boolean;
-    message: string;
-    type: 'success' | 'error' | 'info';
-  }>({
-    show: false,
-    message: '',
-    type: 'success'
-  })
-
   const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
-    setToast({ show: true, message, type })
-    setTimeout(() => {
-      setToast(prev => ({ ...prev, show: false }))
-    }, 4000)
+    if (type === 'success') {
+      toast.success(message)
+    } else if (type === 'error') {
+      toast.error(message)
+    } else {
+      toast(message)
+    }
   }
 
   const handleOpenFulfill = (orderId: string) => {
@@ -170,6 +290,11 @@ function AdminOrdersPage() {
     return o.status === activeTab
   })
 
+  const itemsPerPage = 10
+  const totalPages = Math.ceil(filteredOrders.length / itemsPerPage)
+  const activePage = Math.min(currentPage, totalPages || 1)
+  const paginatedOrders = filteredOrders.slice((activePage - 1) * itemsPerPage, activePage * itemsPerPage)
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'menunggu_pembayaran':
@@ -203,19 +328,6 @@ function AdminOrdersPage() {
 
   return (
     <div className="space-y-6 relative">
-      {/* Custom Toast Notification */}
-      {toast.show && (
-        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2.5 bg-slate-900 text-white px-5 py-3.5 rounded-full shadow-lg border border-slate-800 animate-slideDown max-w-sm">
-          <span className={`material-symbols-outlined text-[16px] font-bold ${
-            toast.type === 'success' ? 'text-emerald-400' : toast.type === 'error' ? 'text-red-400' : 'text-blue-400'
-          }`}>
-            {toast.type === 'success' ? 'check_circle' : toast.type === 'error' ? 'error' : 'info'}
-          </span>
-          <span className="text-[10px] font-extrabold tracking-wide whitespace-nowrap">
-            {toast.message}
-          </span>
-        </div>
-      )}
 
       {/* Title Panel */}
       <div>
@@ -259,6 +371,7 @@ function AdminOrdersPage() {
             <table className="w-full text-left text-xs border-collapse">
               <thead>
                 <tr className="bg-[var(--chip-bg)] border-b border-[var(--line)] font-bold uppercase tracking-wider text-[var(--sea-ink)]">
+                  <th className="pl-6 pr-2 py-4 w-16 text-left whitespace-nowrap">No</th>
                   <th className="px-6 py-4">ID & Tanggal</th>
                   <th className="px-6 py-4">Pelanggan</th>
                   <th className="px-6 py-4">Layanan</th>
@@ -268,8 +381,9 @@ function AdminOrdersPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-[var(--line)] text-[var(--sea-ink-soft)]">
-                {filteredOrders.map((order) => (
+                {paginatedOrders.map((order, index) => (
                   <tr key={order.id} className="hover:bg-[var(--link-bg-hover)] transition">
+                    <td className="pl-6 pr-2 py-4 text-left font-bold text-slate-400 w-16 whitespace-nowrap">{((activePage - 1) * itemsPerPage) + index + 1}</td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <strong className="block text-xs font-bold text-[var(--sea-ink)]">{order.id}</strong>
                       <span>{new Date(order.createdAt).toLocaleDateString('id-ID', { dateStyle: 'medium' })}</span>
@@ -308,6 +422,15 @@ function AdminOrdersPage() {
                           </button>
                         )}
                         
+                        {/* WhatsApp Button */}
+                        <button
+                          onClick={() => handleOpenWhatsappModal(order.customerWhatsapp || '', order.customerName, { id: order.id, productName: order.productName, price: order.price })}
+                          title="Kirim WhatsApp"
+                          className="h-7.5 w-7.5 rounded-full bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 flex items-center justify-center text-emerald-600 transition cursor-pointer shrink-0 animate-fadeIn"
+                        >
+                          <WhatsappIcon className="h-4 w-4" />
+                        </button>
+
                         {/* Cancel Button */}
                         {(order.status === 'menunggu_pembayaran' || order.status === 'menunggu_aktivasi') && (
                           <button
@@ -333,6 +456,49 @@ function AdminOrdersPage() {
                 ))}
               </tbody>
             </table>
+
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between px-6 py-4 bg-slate-50 border-t border-slate-100 text-slate-500 text-[11px] font-semibold text-left">
+                <div>
+                  Menampilkan {((activePage - 1) * itemsPerPage) + 1} - {Math.min(activePage * itemsPerPage, filteredOrders.length)} dari {filteredOrders.length} entri
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    disabled={activePage === 1}
+                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                    className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-650 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center justify-center"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">chevron_left</span>
+                  </button>
+                  {Array.from({ length: totalPages }).map((_, i) => {
+                    const pageNum = i + 1
+                    return (
+                      <button
+                        key={pageNum}
+                        type="button"
+                        onClick={() => setCurrentPage(pageNum)}
+                        className={`w-7.5 h-7.5 rounded-lg text-center cursor-pointer transition ${
+                          activePage === pageNum
+                            ? 'bg-slate-900 border border-slate-900 text-white font-extrabold shadow-sm'
+                            : 'border border-slate-200 bg-white hover:bg-slate-50 text-slate-650 font-bold'
+                        }`}
+                      >
+                        {pageNum}
+                      </button>
+                    )
+                  })}
+                  <button
+                    type="button"
+                    disabled={activePage === totalPages}
+                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                    className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-650 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center justify-center"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">chevron_right</span>
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         ) : (
           <div className="text-center py-16 italic text-xs">
@@ -468,6 +634,88 @@ function AdminOrdersPage() {
           </div>
         </div>
       )}
+      {/* WhatsApp Modal */}
+      <Dialog open={isWaModalOpen} onOpenChange={setIsWaModalOpen}>
+        <DialogContent className="sm:max-w-[500px] rounded-3xl bg-white p-6 shadow-2xl border border-slate-200 animate-fadeIn">
+          <DialogHeader className="pb-3 border-b border-slate-100">
+            <DialogTitle className="text-base font-black text-slate-900 flex items-center gap-2">
+              <div className="p-2 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center shrink-0">
+                <WhatsappIcon className="h-5 w-5" />
+              </div>
+              <div>
+                <span className="block font-display">Kirim Pesan WhatsApp</span>
+                <span className="block text-[10px] text-slate-400 font-semibold mt-0.5">
+                  Tujuan: {waTargetName} ({waTargetNumber})
+                </span>
+              </div>
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            {/* Template Selector with Checkboxes */}
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
+                Centang Template untuk Menggabungkan Pesan:
+              </label>
+              <div className="grid grid-cols-1 gap-2 max-h-32 overflow-y-auto p-2 bg-slate-50 border border-slate-200 rounded-xl">
+                {templates.map((t) => {
+                  const isChecked = checkedTemplates.includes(t.code);
+                  return (
+                    <label key={t.id} className="flex items-start gap-2.5 text-xs text-slate-700 cursor-pointer select-none py-0.5">
+                      <input
+                        type="checkbox"
+                        checked={isChecked}
+                        onChange={(e) => handleToggleTemplate(t.code, e.target.checked)}
+                        className="rounded border-slate-300 text-slate-905 focus:ring-slate-900 mt-0.5 cursor-pointer"
+                      />
+                      <div>
+                        <span className="font-bold block text-slate-800 leading-tight">{t.name}</span>
+                        <span className="text-[9px] text-slate-400 font-mono">Trigger: {t.code}</span>
+                      </div>
+                    </label>
+                  );
+                })}
+                {templates.length === 0 && (
+                  <span className="text-[10px] text-slate-400 font-bold block text-center py-2">
+                    Belum ada template terdaftar.
+                  </span>
+                )}
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
+                Pesan WhatsApp
+              </label>
+              <textarea
+                value={waMessage}
+                onChange={(e) => setWaMessage(e.target.value)}
+                placeholder="Tulis pesan Anda di sini..."
+                rows={6}
+                className="w-full rounded-2xl border border-slate-200 bg-slate-50/50 px-4 py-3 text-xs text-slate-800 outline-none focus:border-slate-900 focus:bg-white transition resize-none font-sans"
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-center gap-3 pt-3 border-t border-slate-100">
+            <button
+              onClick={handleSendWaManual}
+              className="w-full sm:w-1/2 rounded-full border border-slate-200 bg-white hover:bg-slate-50 text-xs font-bold text-slate-700 py-3 transition cursor-pointer flex items-center justify-center gap-1.5"
+            >
+              <span className="material-symbols-outlined text-[16px]">open_in_new</span>
+              Kirim WA Manual (Web)
+            </button>
+            <button
+              onClick={handleSendWaAutomatic}
+              disabled={isSendingWa}
+              className="w-full sm:w-1/2 rounded-full bg-slate-950 hover:bg-slate-800 text-xs font-bold text-white py-3 transition disabled:opacity-50 cursor-pointer flex items-center justify-center gap-1.5"
+            >
+              <span className="material-symbols-outlined text-[16px]">send</span>
+              {isSendingWa ? 'Mengirim...' : 'Kirim WA Gateway'}
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

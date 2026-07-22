@@ -2,6 +2,7 @@ import { createAPIFileRoute } from '@tanstack/react-start/api'
 import { db } from '../../db'
 import { orders } from '../../db/schema'
 import { eq } from 'drizzle-orm'
+import { triggerPaymentSuccessNotification } from '../utils/notifications.server'
 
 export const APIRoute = createAPIFileRoute('/api/webhooks/midtrans')({
   GET: async () => {
@@ -34,6 +35,10 @@ export const APIRoute = createAPIFileRoute('/api/webhooks/midtrans')({
           .where(eq(orders.id, orderId))
           
         console.log(`[Webhook Midtrans] Updated order ${orderId} status to ${status}`)
+
+        if (status === 'menunggu_aktivasi') {
+          await triggerPaymentSuccessNotification(orderId)
+        }
       }
 
       return new Response(JSON.stringify({ success: true }), {

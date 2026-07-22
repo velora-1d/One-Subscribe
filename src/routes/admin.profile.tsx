@@ -39,7 +39,7 @@ function AdminProfilePage() {
       })
 
       if (res?.success) {
-        setProfileSuccess('✅ Profil berhasil diperbarui!')
+        setProfileSuccess('Profil berhasil diperbarui!')
         // Reload page to refresh context
         setTimeout(() => window.location.reload(), 1000)
       } else {
@@ -64,7 +64,7 @@ function AdminProfilePage() {
       })
 
       if (res?.success) {
-        setPassSuccess('✅ Password berhasil diperbarui!')
+        setPassSuccess('Password berhasil diperbarui!')
         setOldPassword('')
         setNewPassword('')
       } else {
@@ -79,14 +79,21 @@ function AdminProfilePage() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-extrabold text-[var(--sea-ink)]">
-          Pengaturan Akun & Profil Admin
-        </h1>
-        <p className="text-xs text-[var(--sea-ink-soft)] mt-1">
-          Perbarui informasi profil diri Anda atau ganti password akun Anda.
-        </p>
-      </div>
+      <header className="relative bg-white/80 backdrop-blur-md border border-slate-200/80 rounded-2xl p-6 flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-lg shadow-slate-100/30">
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-slate-900 text-white rounded-xl flex items-center justify-center shadow-md shrink-0">
+            <span className="material-symbols-outlined text-[24px]">person</span>
+          </div>
+          <div>
+            <h1 className="text-2xl font-black text-slate-900 tracking-tight font-display">
+              Pengaturan Akun & Profil Admin
+            </h1>
+            <p className="text-xs text-slate-500 font-semibold mt-0.5">
+              Perbarui informasi profil diri Anda atau ganti password akun Anda.
+            </p>
+          </div>
+        </div>
+      </header>
 
       <div className="grid gap-6 md:grid-cols-2">
         {/* Profile Info Form */}
@@ -96,7 +103,8 @@ function AdminProfilePage() {
           </h2>
 
           {profileSuccess && (
-            <div className="mb-4 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs font-semibold text-emerald-600">
+            <div className="mb-4 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs font-semibold text-emerald-600 flex items-center gap-2">
+              <span className="material-symbols-outlined text-[16px] text-emerald-500">check_circle</span>
               {profileSuccess}
             </div>
           )}
@@ -150,7 +158,7 @@ function AdminProfilePage() {
             <button
               type="submit"
               disabled={isUpdatingProfile}
-              className="w-full rounded-xl bg-slate-950 hover:bg-slate-800 py-3 text-xs font-bold text-white shadow-sm hover:scale-95 transition-all disabled:opacity-50 cursor-pointer border-0"
+              className="w-full rounded-xl bg-slate-950 hover:bg-slate-800 py-3 text-xs font-bold text-white shadow-sm hover:scale-95 transition-all disabled:opacity-50 cursor-pointer border border-slate-900"
             >
               {isUpdatingProfile ? 'Menyimpan...' : 'Perbarui Profil'}
             </button>
@@ -164,7 +172,8 @@ function AdminProfilePage() {
           </h2>
 
           {passSuccess && (
-            <div className="mb-4 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs font-semibold text-emerald-600">
+            <div className="mb-4 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs font-semibold text-emerald-600 flex items-center gap-2">
+              <span className="material-symbols-outlined text-[16px] text-emerald-500">check_circle</span>
               {passSuccess}
             </div>
           )}
@@ -243,7 +252,7 @@ function AdminProfilePage() {
             <button
               type="submit"
               disabled={isUpdatingPass}
-              className="w-full rounded-xl bg-slate-950 hover:bg-slate-800 py-3 text-xs font-bold text-white shadow-sm hover:scale-95 transition-all disabled:opacity-50 cursor-pointer border-0"
+              className="w-full rounded-xl bg-slate-950 hover:bg-slate-800 py-3 text-xs font-bold text-white shadow-sm hover:scale-95 transition-all disabled:opacity-50 cursor-pointer border border-slate-900"
             >
               {isUpdatingPass ? 'Mengubah...' : 'Ubah Password'}
             </button>

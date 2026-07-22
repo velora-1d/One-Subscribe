@@ -130,9 +130,11 @@ function CatalogPage() {
       {filteredProducts.length > 0 ? (
         <section className="grid gap-5 grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {filteredProducts.map((product, index) => (
-            <article
+            <Link
               key={product.id}
-              className="island-shell feature-card rise-in rounded-2xl p-4 flex flex-col justify-between border border-[var(--line)] hover:shadow-lg transition duration-300 relative overflow-hidden"
+              to="/products/$productId"
+              params={{ productId: product.id }}
+              className="island-shell feature-card rise-in rounded-2xl p-4 flex flex-col justify-between border border-[var(--line)] hover:shadow-lg transition duration-300 relative overflow-hidden no-underline text-left group cursor-pointer"
               style={{ animationDelay: `${index * 60}ms` }}
             >
               <div>
@@ -142,7 +144,7 @@ function CatalogPage() {
                     <img
                       src={product.imageUrl}
                       alt={product.name}
-                      className="w-full h-full object-cover hover:scale-105 transition duration-500"
+                      className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
                     />
                   ) : (
                     <div className="flex flex-col items-center justify-center text-slate-300">
@@ -150,10 +152,15 @@ function CatalogPage() {
                     </div>
                   )}
                   {/* Category overlay */}
-                  <div className="absolute top-2 left-2">
+                  <div className="absolute top-2 left-2 flex flex-col gap-1 items-start">
                     <span className="bg-white/95 backdrop-blur-sm text-slate-700 border border-slate-200/60 text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider shadow-sm">
                       {product.category}
                     </span>
+                    {product.promo && (
+                      <span className="bg-rose-500 text-white text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-wider shadow-sm border-0">
+                        Diskon {product.promo.discountType === 'percentage' ? `${product.promo.discountValue}%` : 'Hemat'}
+                      </span>
+                    )}
                   </div>
                   {/* Duration overlay */}
                   <div className="absolute top-2 right-2">
@@ -163,7 +170,7 @@ function CatalogPage() {
                   </div>
                 </div>
 
-                <h3 className="text-xs font-bold text-[var(--sea-ink)] mb-1 line-clamp-1" title={product.name}>
+                <h3 className="text-xs font-bold text-[var(--sea-ink)] mb-1 line-clamp-1 group-hover:text-[var(--lagoon)] transition" title={product.name}>
                   {product.name}
                 </h3>
                 <p className="text-[11px] text-[var(--sea-ink-soft)] leading-relaxed mb-4 line-clamp-2 min-h-[2rem]">
@@ -175,18 +182,27 @@ function CatalogPage() {
               <div className="pt-2.5 border-t border-[var(--line)] flex items-center justify-between mt-auto">
                 <div>
                   <span className="block text-[9px] text-[var(--sea-ink-soft)] font-bold uppercase tracking-wider">Harga</span>
-                  <strong className="text-xs font-extrabold text-[var(--sea-ink)]">{formatIDR(product.price)}</strong>
+                  {product.promo ? (
+                    <div className="flex flex-col text-left">
+                      <span className="line-through text-slate-400 text-[10px] font-bold leading-none">
+                        {formatIDR(product.price)}
+                      </span>
+                      <strong className="text-xs font-extrabold text-rose-600 leading-tight">
+                        {formatIDR(product.promo.priceAfterPromo)}
+                      </strong>
+                    </div>
+                  ) : (
+                    <strong className="text-xs font-extrabold text-[var(--sea-ink)]">{formatIDR(product.price)}</strong>
+                  )}
                 </div>
-                <Link
-                  to="/products/$productId"
-                  params={{ productId: product.id }}
-                  className="inline-flex items-center gap-1 rounded-lg bg-slate-900 px-3 py-1.5 text-[10px] font-extrabold text-white shadow-sm hover:scale-95 transition-all no-underline"
+                <div
+                  className="inline-flex items-center gap-1 rounded-lg bg-slate-900 px-3 py-1.5 text-[10px] font-extrabold text-white shadow-sm group-hover:scale-95 transition-all"
                 >
                   <span>Detail</span>
                   <ArrowRight size={10} weight="bold" />
-                </Link>
+                </div>
               </div>
-            </article>
+            </Link>
           ))}
         </section>
       ) : (

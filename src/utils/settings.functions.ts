@@ -5,7 +5,7 @@ import { systemSettings } from '../../db/schema';
 import { z } from 'zod';
 
 const testConnectionSchema = z.object({
-  service: z.enum(['midtrans', 'pakasir', 'fonnte', 'evolution', 'rustfs']),
+  service: z.enum(['midtrans', 'pakasir', 'fonnte', 'evolution', 'rustfs', 'midtrans_callback', 'pakasir_callback', 'email']),
 });
 
 /**
@@ -27,6 +27,7 @@ export const getAllSystemSettings = createServerFn({ method: 'GET' }).handler(as
         active_payment_gateway: settingsRecord['active_payment_gateway'] || 'midtrans',
         midtrans_env: settingsRecord['midtrans_env'] || 'sandbox',
         pakasir_env: settingsRecord['pakasir_env'] || 'sandbox',
+        active_wa_gateway: settingsRecord['active_wa_gateway'] || 'fonnte',
       }
     };
   } catch (error: any) {
@@ -310,6 +311,134 @@ export const testConnection = createServerFn({ method: 'POST' })
         return { success: true, message: 'Koneksi ke Storage RustFS Berhasil! Buckets terhubung dengan aman.' };
       } catch (err: any) {
         return { success: false, message: `Koneksi Gagal: ${err.message}` };
+      }
+    }
+
+    if (data.service === 'midtrans_callback') {
+      let origin = 'http://localhost:3000';
+      try {
+        const { getRequest } = await import('@tanstack/react-start/server');
+        const req = getRequest();
+        if (req) {
+          origin = new URL(req.url).origin;
+        }
+      } catch (e) {
+        // fallback
+      }
+
+      const endpoint = `${origin}/api/webhooks/midtrans`;
+      try {
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'User-Agent': 'OneSubscribe-Callback-Test/1.0',
+          },
+          body: JSON.stringify({
+            order_id: "", // Dummy/empty to avoid database side-effects
+            transaction_status: "settlement",
+          }),
+        });
+
+        if (response.ok) {
+          const resBody = await response.json() as any;
+          if (resBody?.success) {
+            return { success: true, message: 'Koneksi Callback Midtrans Aktif & Berhasil Merespon!' };
+          }
+        }
+        return { success: false, message: `Koneksi Callback Gagal: HTTP ${response.status} (${response.statusText})` };
+      } catch (err: any) {
+        return { success: false, message: `Koneksi Callback Gagal: ${err.message}` };
+      }
+    }
+
+    if (data.service === 'pakasir_callback') {
+      let origin = 'http://localhost:3000';
+      try {
+        const { getRequest } = await import('@tanstack/react-start/server');
+        const req = getRequest();
+        if (req) {
+          origin = new URL(req.url).origin;
+        }
+      } catch (e) {
+        // fallback
+      }
+
+      const endpoint = `${origin}/api/v1/callback/pakasir`;
+      try {
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'User-Agent': 'OneSubscribe-Callback-Test/1.0',
+          },
+          body: JSON.stringify({
+            reference: "", // Dummy/empty
+            status: "PAID",
+          }),
+        });
+
+        if (response.ok) {
+          const resBody = await response.json() as any;
+          if (resBody?.success) {
+            return { success: true, message: 'Koneksi Callback Pakasir Aktif & Berhasil Merespon!' };
+          }
+        }
+        return { success: false, message: `Koneksi Callback Gagal: HTTP ${response.status} (${response.statusText})` };
+      } catch (err: any) {
+        return { success: false, message: `Koneksi Callback Gagal: ${err.message}` };
+      }
+    }
+
+    if (data.service === 'email') {
+      const emailProvider = settingsRecord['email_provider'] || process.env.EMAIL_PROVIDER || 'resend';
+      if (emailProvider.toLowerCase() === 'smtp') {
+        const host = settingsRecord['smtp_host'] || process.env.SMTP_HOST || 'smtp.sumopod.com';
+        const portStr = settingsRecord['smtp_port'] || process.env.SMTP_PORT || '465';
+        const port = parseInt(portStr.toString(), 10) || 465;
+        const secureVal = settingsRecord['smtp_secure'] || process.env.SMTP_SECURE || 'true';
+        const secure = secureVal === 'true' || secureVal === 'True';
+        const user = settingsRecord['smtp_user'] || process.env.SMTP_USER || 'cmrwb114r5zlfr208z53dy1vi';
+        const pass = settingsRecord['smtp_pass'] || process.env.SMTP_PASS || 'ZLXzytPQcNQhTUEI8mze5Dhm1GxxupSd';
+
+        try {
+          const nodemailer = await import('nodemailer');
+          const transporter = nodemailer.createTransport({
+            host,
+            port,
+            secure,
+            auth: {
+              user,
+              pass,
+            },
+            connectionTimeout: 5000,
+          });
+
+          await transporter.verify();
+          return { success: true, message: `Koneksi SMTP (${host}:${port}) Berhasil terhubung!` };
+        } catch (err: any) {
+          return { success: false, message: `Koneksi SMTP Gagal: ${err.message}` };
+        }
+      } else {
+        const resendKey = settingsRecord['resend_api_key'] || process.env.RESEND_API_KEY;
+        if (!resendKey) {
+          return { success: false, message: 'Koneksi Gagal: API Key Resend tidak ditemukan.' };
+        }
+        try {
+          const response = await fetch('https://api.resend.com/domains', {
+            method: 'GET',
+            headers: {
+              Authorization: `Bearer ${resendKey}`,
+              'Content-Type': 'application/json',
+            },
+          });
+          if (response.ok) {
+            return { success: true, message: 'Koneksi Resend API Berhasil!' };
+          }
+          return { success: false, message: `Koneksi Resend Gagal: API Key tidak valid (${response.status})` };
+        } catch (err: any) {
+          return { success: false, message: `Koneksi Resend Gagal: ${err.message}` };
+        }
       }
     }
 

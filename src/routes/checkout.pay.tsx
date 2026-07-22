@@ -42,6 +42,7 @@ function PaymentIframePage() {
   const navigate = useNavigate()
   const [isProcessing, setIsProcessing] = useState(false)
   const [statusMsg, setStatusMsg] = useState<string | null>(null)
+  const [statusType, setStatusType] = useState<'success' | 'error' | null>(null)
   const [showDevPanel, setShowDevPanel] = useState(false)
 
   // Real-time polling to auto-redirect when payment webhook updates the order status
@@ -81,19 +82,23 @@ function PaymentIframePage() {
   const handleSimulatePayment = async () => {
     setIsProcessing(true)
     setStatusMsg(null)
+    setStatusType(null)
 
     try {
       const res = await simulatePaymentSuccess({ data: order.id })
       if (res.success) {
-        setStatusMsg('✅ Pembayaran Berhasil! Mengalihkan ke halaman sukses...')
+        setStatusType('success')
+        setStatusMsg('Pembayaran Berhasil! Mengalihkan ke halaman sukses...')
         setTimeout(() => {
           window.location.href = `/checkout/success?orderId=${order.id}`
         }, 1500)
       } else {
-        setStatusMsg('❌ Gagal memproses simulasi pembayaran.')
+        setStatusType('error')
+        setStatusMsg('Gagal memproses simulasi pembayaran.')
       }
     } catch (err: any) {
-      setStatusMsg(`❌ Error: ${err?.message || 'Terjadi kesalahan'}`)
+      setStatusType('error')
+      setStatusMsg(`Error: ${err?.message || 'Terjadi kesalahan'}`)
     } finally {
       setIsProcessing(false)
     }
@@ -198,9 +203,12 @@ function PaymentIframePage() {
             </p>
 
             {statusMsg && (
-              <div className={`p-3 rounded-xl border text-xs font-semibold ${
-                statusMsg.startsWith('✅') ? 'bg-emerald-50 border-emerald-200 text-emerald-600' : 'bg-red-50 border-red-200 text-red-600'
+              <div className={`p-3 rounded-xl border text-xs font-semibold flex items-center gap-2 ${
+                statusType === 'success' ? 'bg-emerald-50 border-emerald-200 text-emerald-600' : 'bg-red-50 border-red-200 text-red-600'
               }`}>
+                <span className="material-symbols-outlined text-[16px]">
+                  {statusType === 'success' ? 'check_circle' : 'error'}
+                </span>
                 {statusMsg}
               </div>
             )}

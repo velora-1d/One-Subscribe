@@ -2,8 +2,9 @@ import { createAPIFileRoute } from '@tanstack/react-start/api'
 import { db } from '../../db'
 import { orders } from '../../db/schema'
 import { eq } from 'drizzle-orm'
+import { triggerPaymentSuccessNotification } from '../utils/notifications.server'
 
-export const APIRoute = createAPIFileRoute('/api/webhooks/pakasir')({
+export const APIRoute = createAPIFileRoute('/api/v1/callback/pakasir')({
   GET: async () => {
     return new Response('Pakasir Webhook Active')
   },
@@ -29,6 +30,10 @@ export const APIRoute = createAPIFileRoute('/api/webhooks/pakasir')({
           .where(eq(orders.id, reference))
 
         console.log(`[Webhook Pakasir] Updated order ${reference} status to ${orderStatus}`)
+
+        if (orderStatus === 'menunggu_aktivasi') {
+          await triggerPaymentSuccessNotification(reference)
+        }
       }
 
       return new Response(JSON.stringify({ success: true }), {

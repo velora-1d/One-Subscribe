@@ -52,10 +52,10 @@ function DashboardLayout() {
         setIsVerified(true)
         setErrorMsg(null)
       } else {
-        setErrorMsg(`❌ ${res.error || 'PIN Admin salah! Silakan coba lagi.'}`)
+        setErrorMsg(res.error || 'PIN Admin salah! Silakan coba lagi.')
       }
     } catch (err: any) {
-      setErrorMsg('❌ Terjadi kesalahan saat memverifikasi PIN.')
+      setErrorMsg('Terjadi kesalahan saat memverifikasi PIN.')
     }
   }
 
@@ -79,7 +79,9 @@ function DashboardLayout() {
       <main className="page-wrap px-4 py-16 flex items-center justify-center min-h-[calc(100vh-80px)]">
         <div className="island-shell rounded-3xl p-8 max-w-md w-full border border-[var(--line)] space-y-6">
           <div className="text-center">
-            <span className="text-3xl">🔒</span>
+            <div className="mx-auto w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-700 shadow-xs mb-3">
+              <span className="material-symbols-outlined text-[24px]">lock</span>
+            </div>
             <h1 className="text-xl font-extrabold text-[var(--sea-ink)] mt-3">
               Akses Terbatas: Mode Simulasi
             </h1>
@@ -89,7 +91,8 @@ function DashboardLayout() {
           </div>
 
           {errorMsg && (
-            <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-xs font-semibold text-red-400 text-center">
+            <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-xs font-semibold text-red-500/80 text-center flex items-center justify-center gap-2">
+              <span className="material-symbols-outlined text-[16px] text-red-500">error</span>
               {errorMsg}
             </div>
           )}
@@ -373,7 +376,10 @@ function DashboardLayout() {
         <div className="max-w-container-max w-full mx-auto px-6 py-8 md:py-12 flex flex-col gap-8">
           {user?.role === 'admin' && isVerified && (
             <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs font-semibold flex flex-col sm:flex-row items-center justify-between gap-3 shadow-sm">
-              <span>⚠️ <strong>Mode Simulasi:</strong> Anda sedang melihat tampilan Dashboard Pelanggan.</span>
+              <span className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-amber-600 text-sm">warning</span>
+                <span><strong>Mode Simulasi:</strong> Anda sedang melihat tampilan Dashboard Pelanggan.</span>
+              </span>
               <button
                 onClick={handleSwitchBack}
                 className="w-full sm:w-auto bg-amber-600 hover:bg-amber-700 text-white font-bold px-3.5 py-1.5 rounded-lg transition-all cursor-pointer text-center border-0 text-xs"
@@ -382,7 +388,9 @@ function DashboardLayout() {
               </button>
             </div>
           )}
-          <Outlet />
+          <div key={router.state.location.pathname} className="page-transition flex flex-col gap-8">
+            <Outlet />
+          </div>
         </div>
       </main>
     </div>

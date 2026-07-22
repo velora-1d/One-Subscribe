@@ -29,6 +29,27 @@
       "when": 1784712371162,
       "tag": "0003_faithful_firestar",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1784736326203,
+      "tag": "0004_cool_echo",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1784736781755,
+      "tag": "0005_nifty_union_jack",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1784739869078,
+      "tag": "0006_gigantic_smiling_tiger",
+      "breakpoints": true
     }
   ]
 }

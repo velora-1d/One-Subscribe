@@ -1,6 +1,7 @@
 import { HeadContent, Scripts, createRootRouteWithContext, Link } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
+import { Toaster } from 'sonner'
 import Header from '../components/Header'
 import { getCurrentUser } from '../utils/auth.functions'
 import type { UserSession } from '../utils/auth.server'
@@ -86,6 +87,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body className="font-sans antialiased [overflow-wrap:anywhere] selection:bg-[rgba(79,184,178,0.24)]">
+        <Toaster position="top-center" richColors />
         <Header />
         {children}
         <TanStackDevtools

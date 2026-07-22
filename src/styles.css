@@ -595,3 +595,49 @@ a.rounded-full:active {
 .animate-slideDown {
   animation: slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
+/* Global Premium Button Click/Press Scale Down Easing */
+button, 
+a.inline-flex, 
+a.inline-block, 
+a[href] {
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.2s, opacity 0.2s, box-shadow 0.2s;
+}
+button:active, 
+a.inline-flex:active, 
+a.inline-block:active, 
+a[href]:active {
+  transform: scale(0.94);
+}
+
+/* Page Slide-Fade Transition */
+.page-transition {
+  animation: pageReveal 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@keyframes pageReveal {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Staggered Content Entry Animations */
+@keyframes staggerFadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-stagger-1 { animation: staggerFadeSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.05s forwards; opacity: 0; }
+.animate-stagger-2 { animation: staggerFadeSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.10s forwards; opacity: 0; }
+.animate-stagger-3 { animation: staggerFadeSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.15s forwards; opacity: 0; }
+.animate-stagger-4 { animation: staggerFadeSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.20s forwards; opacity: 0; }
+.animate-stagger-5 { animation: staggerFadeSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.25s forwards; opacity: 0; }

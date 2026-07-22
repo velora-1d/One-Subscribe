@@ -29,6 +29,25 @@ export const products = pgTable('products', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
+// Promos Table
+export const promos = pgTable('promos', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  code: text('code').unique(), // null if catalog discount
+  discountType: text('discount_type').$type<'percentage' | 'fixed'>().notNull(),
+  discountValue: integer('discount_value').notNull(),
+  maxDiscountAmount: integer('max_discount_amount'), // for percentage discounts
+  minDurationMonths: integer('min_duration_months').default(1).notNull(),
+  isCatalogSlashed: boolean('is_catalog_slashed').default(false).notNull(),
+  productId: uuid('product_id').references(() => products.id, { onDelete: 'cascade' }),
+  maxUses: integer('max_uses'),
+  usedCount: integer('used_count').default(0).notNull(),
+  validFrom: timestamp('valid_from'),
+  validUntil: timestamp('valid_until'),
+  isActive: boolean('is_active').default(true).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
 // Orders Table
 export const orders = pgTable('orders', {
   id: text('id').primaryKey(), // Custom ID format like 'ORD-XXXXXXXX'
@@ -40,6 +59,9 @@ export const orders = pgTable('orders', {
   paymentRedirectUrl: text('payment_redirect_url'),
   paymentTransactionId: text('payment_transaction_id').unique(),
   remainingDuration: integer('remaining_duration').notNull(), // Sisa saldo durasi (dalam bulan / hari)
+  parentOrderId: text('parent_order_id'),
+  appliedPromoId: uuid('applied_promo_id').references(() => promos.id, { onDelete: 'set null' }),
+  discountAmount: integer('discount_amount').default(0).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
@@ -88,6 +110,14 @@ export const ordersRelations = relations(orders, ({ one }) => ({
     fields: [orders.id],
     references: [credentials.orderId],
   }),
+  parentOrder: one(orders, {
+    fields: [orders.parentOrderId],
+    references: [orders.id],
+  }),
+  appliedPromo: one(promos, {
+    fields: [orders.appliedPromoId],
+    references: [promos.id],
+  }),
 }));
 
 export const credentialsRelations = relations(credentials, ({ one }) => ({
@@ -102,6 +132,14 @@ export const auditLogsRelations = relations(auditLogs, ({ one }) => ({
     fields: [auditLogs.userId],
     references: [users.id],
   }),
+}));
+
+export const promosRelations = relations(promos, ({ one, many }) => ({
+  product: one(products, {
+    fields: [promos.productId],
+    references: [products.id],
+  }),
+  orders: many(orders),
 }));
 
 // Categories Table
@@ -121,6 +159,16 @@ export const categoriesRelations = relations(categories, ({ many }) => ({
 export const systemSettings = pgTable('system_settings', {
   key: text('key').primaryKey(),
   value: text('value').notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+// Message Templates Table
+export const messageTemplates = pgTable('message_templates', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  name: text('name').notNull(),
+  code: text('code').notNull().unique(),
+  content: text('content').notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 

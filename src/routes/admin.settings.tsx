@@ -1,5 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
+import { toast } from 'sonner'
 import { getAllSystemSettings, updateSystemSettings, testConnection } from '../utils/settings.functions'
 
 export const Route = createFileRoute('/admin/settings')({
@@ -7,10 +8,10 @@ export const Route = createFileRoute('/admin/settings')({
     try {
       const res = await getAllSystemSettings()
       return {
-        initialSettings: res.success ? res.settings : {},
+        initialSettings: (res.success ? res.settings : {}) as Record<string, string>,
       }
     } catch (e) {
-      return { initialSettings: {} }
+      return { initialSettings: {} as Record<string, string> }
     }
   },
   component: AdminSettingsPage,
@@ -22,45 +23,44 @@ function AdminSettingsPage() {
   const [activeGateway, setActiveGateway] = useState(initialSettings.active_payment_gateway || 'midtrans')
   const [midtransEnv, setMidtransEnv] = useState(initialSettings.midtrans_env || 'sandbox')
   const [pakasirEnv, setPakasirEnv] = useState(initialSettings.pakasir_env || 'sandbox')
+  const [activeWaGateway, setActiveWaGateway] = useState(initialSettings.active_wa_gateway || 'fonnte')
   
-  const [successMsg, setSuccessMsg] = useState<string | null>(null)
   const [isSaving, setIsSaving] = useState(false)
   const [testStatus, setTestStatus] = useState<Record<string, { loading: boolean; success?: boolean; message?: string }>>({})
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSaving(true)
-    setSuccessMsg(null)
 
     const payload = {
       active_payment_gateway: activeGateway,
       midtrans_env: midtransEnv,
       pakasir_env: pakasirEnv,
+      active_wa_gateway: activeWaGateway,
     }
 
     try {
       const res = await updateSystemSettings({ data: payload })
       if (res.success) {
-        setSuccessMsg('✅ Pengaturan sistem berhasil disimpan!')
-        setTimeout(() => setSuccessMsg(null), 3000)
+        toast.success('Pengaturan sistem berhasil disimpan!')
       } else {
-        alert(res.error || 'Gagal menyimpan pengaturan.')
+        toast.error(res.error || 'Gagal menyimpan pengaturan.')
       }
     } catch (err: any) {
-      alert(err?.message || 'Terjadi kesalahan saat menyimpan pengaturan.')
+      toast.error(err?.message || 'Terjadi kesalahan saat menyimpan pengaturan.')
     } finally {
       setIsSaving(false)
     }
   }
 
-  const handleTestConnection = async (service: 'midtrans' | 'pakasir' | 'fonnte' | 'evolution' | 'rustfs') => {
+  const handleTestConnection = async (service: 'midtrans' | 'pakasir' | 'fonnte' | 'evolution' | 'rustfs' | 'midtrans_callback' | 'pakasir_callback' | 'email') => {
     setTestStatus(prev => ({ ...prev, [service]: { loading: true, message: undefined } }))
 
     try {
       const res = await testConnection({ data: { service } })
       setTestStatus(prev => ({
         ...prev,
-        [service]: { loading: false, success: res.success, message: res.message || res.error }
+        [service]: { loading: false, success: res.success, message: (res as any).message || (res as any).error }
       }))
     } catch (err: any) {
       setTestStatus(prev => ({
@@ -73,20 +73,21 @@ function AdminSettingsPage() {
   return (
     <div className="space-y-6">
       {/* Title Panel */}
-      <div>
-        <h1 className="text-2xl font-extrabold text-[var(--sea-ink)]">
-          Pengaturan Sistem & API
-        </h1>
-        <p className="text-xs text-[var(--sea-ink-soft)] mt-1">
-          Kendalikan gerbang pembayaran aktif, toggle lingkungan (sandbox/production), dan verifikasi status integrasi langsung dari variabel environment (`.env`).
-        </p>
-      </div>
-
-      {successMsg && (
-        <div className="p-3 bg-emerald-50 border border-emerald-200 text-xs font-semibold text-emerald-600 rounded-xl text-center">
-          {successMsg}
+      <header className="relative bg-white/80 backdrop-blur-md border border-slate-200/80 rounded-2xl p-6 flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-lg shadow-slate-100/30">
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-slate-900 text-white rounded-xl flex items-center justify-center shadow-md shrink-0">
+            <span className="material-symbols-outlined text-[24px]">settings</span>
+          </div>
+          <div>
+            <h1 className="text-2xl font-black text-slate-900 tracking-tight font-display">
+              Pengaturan Sistem & API
+            </h1>
+            <p className="text-xs text-slate-500 font-semibold mt-0.5">
+              Kendalikan gerbang pembayaran aktif, toggle lingkungan (sandbox/production), dan verifikasi status integrasi langsung dari variabel environment (`.env`).
+            </p>
+          </div>
         </div>
-      )}
+      </header>
 
       <form onSubmit={handleSave} className="space-y-6">
         {/* Active Payment Gateway Selector Card */}
@@ -170,15 +171,26 @@ function AdminSettingsPage() {
               <h2 className="text-sm font-extrabold text-[var(--sea-ink)]">
                 Midtrans API Settings
               </h2>
-              <button
-                type="button"
-                disabled={testStatus['midtrans']?.loading}
-                onClick={() => handleTestConnection('midtrans')}
-                className="rounded-full bg-slate-100 hover:bg-slate-200 border border-slate-300 px-4 py-1.5 text-[10px] font-bold text-slate-800 transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
-              >
-                <span className="material-symbols-outlined text-[12px] font-bold">sync_alt</span>
-                {testStatus['midtrans']?.loading ? 'Menguji...' : 'Tes Koneksi'}
-              </button>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  disabled={testStatus['midtrans']?.loading}
+                  onClick={() => handleTestConnection('midtrans')}
+                  className="rounded-full bg-slate-100 hover:bg-slate-200 border border-slate-300 px-3 py-1 text-[10px] font-bold text-slate-800 transition flex items-center gap-1 cursor-pointer disabled:opacity-50"
+                >
+                  <span className="material-symbols-outlined text-[12px] font-bold">sync_alt</span>
+                  {testStatus['midtrans']?.loading ? 'Menguji...' : 'Tes Koneksi'}
+                </button>
+                <button
+                  type="button"
+                  disabled={testStatus['midtrans_callback']?.loading}
+                  onClick={() => handleTestConnection('midtrans_callback')}
+                  className="rounded-full bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 px-3 py-1 text-[10px] font-bold text-indigo-700 transition flex items-center gap-1 cursor-pointer disabled:opacity-50"
+                >
+                  <span className="material-symbols-outlined text-[12px] font-bold">webhook</span>
+                  {testStatus['midtrans_callback']?.loading ? 'Menguji...' : 'Tes Callback'}
+                </button>
+              </div>
             </div>
 
             {testStatus['midtrans']?.message && (
@@ -189,6 +201,17 @@ function AdminSettingsPage() {
                   {testStatus['midtrans']?.success ? 'check_circle' : 'error'}
                 </span>
                 <span>{testStatus['midtrans']?.message}</span>
+              </div>
+            )}
+
+            {testStatus['midtrans_callback']?.message && (
+              <div className={`p-3 rounded-xl text-[10px] font-semibold flex items-center gap-2 ${
+                testStatus['midtrans_callback']?.success ? 'bg-emerald-50 text-emerald-600 border border-emerald-100 animate-fadeIn' : 'bg-red-50 text-red-600 border border-red-100 animate-fadeIn'
+              }`}>
+                <span className="material-symbols-outlined text-[14px]">
+                  {testStatus['midtrans_callback']?.success ? 'check_circle' : 'error'}
+                </span>
+                <span>{testStatus['midtrans_callback']?.message}</span>
               </div>
             )}
 
@@ -217,15 +240,26 @@ function AdminSettingsPage() {
               <h2 className="text-sm font-extrabold text-[var(--sea-ink)]">
                 Pakasir API Settings
               </h2>
-              <button
-                type="button"
-                disabled={testStatus['pakasir']?.loading}
-                onClick={() => handleTestConnection('pakasir')}
-                className="rounded-full bg-slate-100 hover:bg-slate-200 border border-slate-300 px-4 py-1.5 text-[10px] font-bold text-slate-800 transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
-              >
-                <span className="material-symbols-outlined text-[12px] font-bold">sync_alt</span>
-                {testStatus['pakasir']?.loading ? 'Menguji...' : 'Tes Koneksi'}
-              </button>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  disabled={testStatus['pakasir']?.loading}
+                  onClick={() => handleTestConnection('pakasir')}
+                  className="rounded-full bg-slate-100 hover:bg-slate-200 border border-slate-300 px-3 py-1 text-[10px] font-bold text-slate-800 transition flex items-center gap-1 cursor-pointer disabled:opacity-50"
+                >
+                  <span className="material-symbols-outlined text-[12px] font-bold">sync_alt</span>
+                  {testStatus['pakasir']?.loading ? 'Menguji...' : 'Tes Koneksi'}
+                </button>
+                <button
+                  type="button"
+                  disabled={testStatus['pakasir_callback']?.loading}
+                  onClick={() => handleTestConnection('pakasir_callback')}
+                  className="rounded-full bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 px-3 py-1 text-[10px] font-bold text-indigo-700 transition flex items-center gap-1 cursor-pointer disabled:opacity-50"
+                >
+                  <span className="material-symbols-outlined text-[12px] font-bold">webhook</span>
+                  {testStatus['pakasir_callback']?.loading ? 'Menguji...' : 'Tes Callback'}
+                </button>
+              </div>
             </div>
 
             {testStatus['pakasir']?.message && (
@@ -236,6 +270,17 @@ function AdminSettingsPage() {
                   {testStatus['pakasir']?.success ? 'check_circle' : 'error'}
                 </span>
                 <span>{testStatus['pakasir']?.message}</span>
+              </div>
+            )}
+
+            {testStatus['pakasir_callback']?.message && (
+              <div className={`p-3 rounded-xl text-[10px] font-semibold flex items-center gap-2 ${
+                testStatus['pakasir_callback']?.success ? 'bg-emerald-50 text-emerald-600 border border-emerald-100 animate-fadeIn' : 'bg-red-50 text-red-600 border border-red-100 animate-fadeIn'
+              }`}>
+                <span className="material-symbols-outlined text-[14px]">
+                  {testStatus['pakasir_callback']?.success ? 'check_circle' : 'error'}
+                </span>
+                <span>{testStatus['pakasir_callback']?.message}</span>
               </div>
             )}
 
@@ -291,6 +336,79 @@ function AdminSettingsPage() {
             <p className="text-[10px] text-[var(--sea-ink-soft)] leading-relaxed italic m-0">
               Menggunakan kredensial dari `.env`: <code className="bg-slate-100 px-1 py-0.5 rounded text-slate-700">RUSTFS_ENDPOINT</code>, <code className="bg-slate-100 px-1 py-0.5 rounded text-slate-700">RUSTFS_ACCESS_KEY</code>, <code className="bg-slate-100 px-1 py-0.5 rounded text-slate-700">RUSTFS_SECRET_KEY</code>, & <code className="bg-slate-100 px-1 py-0.5 rounded text-slate-700">RUSTFS_BUCKET</code>.
             </p>
+          </div>
+        </div>
+
+        {/* Active WhatsApp Gateway Selector Card */}
+        <div className="island-shell border border-[var(--line)] rounded-3xl p-6 space-y-4 bg-[var(--header-bg)] shadow-[0_10px_30px_rgba(0,0,0,0.01)]">
+          <div className="flex items-center gap-3 pb-3 border-b border-[var(--line)]">
+            <div className="h-8 w-8 rounded-xl bg-slate-900 text-white flex items-center justify-center shadow-sm">
+              <span className="material-symbols-outlined text-sm">chat</span>
+            </div>
+            <div>
+              <h2 className="text-sm font-extrabold text-[var(--sea-ink)]">
+                WhatsApp Gateway Utama (Aktif)
+              </h2>
+              <p className="text-[10px] text-[var(--sea-ink-soft)] font-medium">
+                Pilih gateway WhatsApp yang akan digunakan untuk mengirimkan notifikasi transaksi ke pembeli
+              </p>
+            </div>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            {/* Fonnte Active Card */}
+            <div
+              onClick={() => setActiveWaGateway('fonnte')}
+              className={`relative flex items-center justify-between p-5 rounded-2xl border-2 cursor-pointer transition-all ${
+                activeWaGateway === 'fonnte'
+                  ? 'border-slate-900 bg-slate-50 shadow-sm'
+                  : 'border-[var(--line)] hover:border-slate-300 bg-white'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <div className={`h-5 w-5 rounded-full border-2 flex items-center justify-center ${
+                  activeWaGateway === 'fonnte' ? 'border-slate-950' : 'border-slate-300'
+                }`}>
+                  {activeWaGateway === 'fonnte' && (
+                    <div className="h-2.5 w-2.5 rounded-full bg-slate-950" />
+                  )}
+                </div>
+                <div>
+                  <span className="text-xs font-bold text-slate-900 block">Fonnte API</span>
+                  <span className="text-[10px] text-[var(--sea-ink-soft)] font-medium">Pengiriman pesan menggunakan Fonnte WA Gateway</span>
+                </div>
+              </div>
+              <span className="text-[9px] font-black tracking-widest text-[var(--sea-ink-soft)] uppercase bg-white border border-[var(--line)] px-2.5 py-1 rounded-md shadow-2xs">
+                FONNTE
+              </span>
+            </div>
+
+            {/* Evolution API Active Card */}
+            <div
+              onClick={() => setActiveWaGateway('evolution')}
+              className={`relative flex items-center justify-between p-5 rounded-2xl border-2 cursor-pointer transition-all ${
+                activeWaGateway === 'evolution'
+                  ? 'border-slate-900 bg-slate-50 shadow-sm'
+                  : 'border-[var(--line)] hover:border-slate-300 bg-white'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <div className={`h-5 w-5 rounded-full border-2 flex items-center justify-center ${
+                  activeWaGateway === 'evolution' ? 'border-slate-950' : 'border-slate-300'
+                }`}>
+                  {activeWaGateway === 'evolution' && (
+                    <div className="h-2.5 w-2.5 rounded-full bg-slate-950" />
+                  )}
+                </div>
+                <div>
+                  <span className="text-xs font-bold text-slate-900 block">Evolution API</span>
+                  <span className="text-[10px] text-[var(--sea-ink-soft)] font-medium">Pengiriman pesan menggunakan Evolution API mandiri</span>
+                </div>
+              </div>
+              <span className="text-[9px] font-black tracking-widest text-[var(--sea-ink-soft)] uppercase bg-white border border-[var(--line)] px-2.5 py-1 rounded-md shadow-2xs">
+                EVOLUTION
+              </span>
+            </div>
           </div>
         </div>
 
@@ -364,12 +482,61 @@ function AdminSettingsPage() {
           </div>
         </div>
 
+        {/* Email Gateway Card */}
+        <div className="island-shell border border-[var(--line)] rounded-3xl p-6 space-y-4 bg-white shadow-xs animate-fadeIn">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-[var(--line)]">
+            <div className="flex items-center gap-3">
+              <div className="h-8 w-8 rounded-xl bg-slate-900 text-white flex items-center justify-center shadow-sm">
+                <span className="material-symbols-outlined text-sm">mail</span>
+              </div>
+              <div>
+                <h2 className="text-sm font-extrabold text-[var(--sea-ink)]">
+                  Email Gateway (SMTP / Resend)
+                </h2>
+                <p className="text-[10px] text-[var(--sea-ink-soft)] font-medium">
+                  Status integrasi layanan email transaksional aktif
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              disabled={testStatus['email']?.loading}
+              onClick={() => handleTestConnection('email')}
+              className="rounded-full bg-slate-100 hover:bg-slate-200 border border-slate-300 px-4 py-1.5 text-[10px] font-bold text-slate-800 transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+            >
+              <span className="material-symbols-outlined text-[12px] font-bold">sync_alt</span>
+              {testStatus['email']?.loading ? 'Menguji...' : 'Tes Koneksi'}
+            </button>
+          </div>
+
+          {testStatus['email']?.message && (
+            <div className={`p-3 rounded-xl text-[10px] font-semibold flex items-center gap-2 ${
+              testStatus['email']?.success ? 'bg-emerald-50 text-emerald-600 border border-emerald-100 animate-fadeIn' : 'bg-red-50 text-red-600 border border-red-100 animate-fadeIn'
+            }`}>
+              <span className="material-symbols-outlined text-[14px]">
+                {testStatus['email']?.success ? 'check_circle' : 'error'}
+              </span>
+              <span>{testStatus['email']?.message}</span>
+            </div>
+          )}
+
+          <p className="text-[10px] text-[var(--sea-ink-soft)] leading-relaxed italic m-0">
+            Menggunakan provider email aktif dari berkas konfigurasi `.env`. 
+            Provider aktif: <strong className="uppercase text-slate-800">{process.env.EMAIL_PROVIDER || 'resend'}</strong>. 
+            {(process.env.EMAIL_PROVIDER) === 'smtp' ? (
+              <span> Host SMTP terhubung ke <code className="bg-slate-100 px-1 py-0.5 rounded text-slate-700">{process.env.SMTP_HOST || 'smtp.sumopod.com'}</code>.</span>
+            ) : (
+              <span> Resend API terhubung menggunakan <code className="bg-slate-100 px-1 py-0.5 rounded text-slate-700">RESEND_API_KEY</code>.</span>
+            )}
+          </p>
+        </div>
+
         {/* Save button panel */}
         <div className="flex justify-end pt-4">
           <button
             type="submit"
             disabled={isSaving}
-            className="rounded-full bg-slate-950 px-8 py-3 text-xs font-bold text-white shadow-sm hover:bg-slate-800 transition disabled:opacity-50 cursor-pointer"
+            className="rounded-full bg-slate-950 border border-slate-850 px-8 py-3 text-xs font-bold text-white shadow-sm hover:bg-slate-800 transition disabled:opacity-50 cursor-pointer"
           >
             {isSaving ? 'Menyimpan...' : 'Simpan Pengaturan'}
           </button>
