@@ -8,6 +8,27 @@
       "when": 1784703200871,
       "tag": "0000_romantic_exiles",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1784706675322,
+      "tag": "0001_absurd_dragon_lord",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1784708563611,
+      "tag": "0002_parallel_purifiers",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1784712371162,
+      "tag": "0003_faithful_firestar",
+      "breakpoints": true
     }
   ]
 }
