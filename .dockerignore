@@ -1,0 +1,12 @@
+node_modules
+dist
+.git
+.github
+.gemini
+Design projek
+*.log
+.env
+.env.local
+.env.development
+.env.production
+.DS_Store

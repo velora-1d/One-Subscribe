@@ -1,187 +1,202 @@
-Welcome to your new TanStack Start app!
+# OneSubscribe - Digital Subscription Marketplace & Management System
 
-# Getting Started
+[![Developer](https://img.shields.io/badge/Developer-Velora%20Dev%20(Mahin%20Utsman%20Nawawi)-blue?style=for-the-badge)](https://github.com/velora-1d)
+[![Tech Stack](https://img.shields.io/badge/Stack-React%20%2B%20TanStack%20Start%20%2B%20PostgreSQL-emerald?style=for-the-badge)](#tech-stack)
 
-To run this application:
+**OneSubscribe** adalah platform marketplace digital dan manajemen langganan premium terpadu yang dirancang dari nol dengan visualisasi premium (*glassmorphism*, *sleek dark mode*, micro-animations) dan integrasi gerbang pembayaran dinamis.
 
-```bash
-pnpm install
-pnpm dev
-```
+Platform ini memungkinkan pengguna akhir (pelanggan) untuk menelusuri katalog dan membeli akun premium (seperti Canva Pro, ChatGPT Plus, Spotify, Netflix) secara instan, serta memberikan kendali penuh kepada administrator untuk mengelola transaksi, produk, kredensial, dan konfigurasi API eksternal.
 
-# Building For Production
+---
 
-To build this application for production:
+## 🛠️ Tech Stack
 
-```bash
-pnpm build
-```
+Platform ini menggunakan kombinasi teknologi modern berperforma tinggi:
+* **Frontend & Backend**: [React 19](https://react.dev/) & [TanStack Start](https://tanstack.com/router/v1/docs/start/overview) (SSR dengan *server functions* dan kompilasi cepat menggunakan Vite).
+* **Database**: [PostgreSQL](https://www.postgresql.org/) dengan [Drizzle ORM](https://orm.drizzle.team/) untuk manajemen skema dan migrasi.
+* **Storage Gateway**: **RustFS** (S3-compatible, self-hosted storage) untuk mengunggah dan melayani gambar/foto produk.
+* **Payment Gateways**: **Midtrans** & **Pakasir** (Dapat ditoggle dan dikonfigurasi langsung dari Admin Panel secara dinamis).
+* **Notification Gateways**: **Fonnte** (WhatsApp API) & **Resend** (Email gateway) untuk notifikasi status pesanan, kredensial, dan pengingat masa kedaluwarsa.
+* **Styling**: Vanilla CSS modern yang dioptimalkan untuk performa tinggi dan kustomisasi visual tingkat tinggi.
 
-## Styling
+---
 
-This project uses [Tailwind CSS](https://tailwindcss.com/) for styling.
+## 👥 Peran Pengguna (Roles & Permissions)
 
-### Removing Tailwind CSS
+Sistem ini mendukung 2 peran utama dengan akses yang terisolasi secara ketat:
 
-If you prefer not to use Tailwind CSS:
+### 1. Pelanggan (Customer / User)
+* **Katalog Produk**: Menelusuri seluruh katalog subscription premium yang aktif di halaman beranda.
+* **Checkout Cepat**: Melakukan checkout produk terpilih menggunakan sistem **"Pembayaran Otomatis"** yang aman tanpa dibingungkan oleh detail teknis payment gateway.
+* **User Dashboard**:
+  * Melihat daftar semua akun premium yang dibeli secara langsung.
+  * Melihat kredensial akses (**Email/Username** dan **Password**) secara aman setelah pesanan diselesaikan oleh admin.
+  * Memantau sisa durasi aktif langganan premium yang diperbarui otomatis setiap hari.
+  * Melihat riwayat pembayaran dan status pesanan (menunggu pembayaran, menunggu aktivasi, aktif, kedaluwarsa).
 
-1. Remove the demo pages in `src/routes/demo/`
-2. Replace the Tailwind import in `src/styles.css` with your own styles
-3. Remove `tailwindcss()` from the plugins array in `vite.config.ts`
-4. Remove `@tailwindcss/vite` and `tailwindcss` from `package.json`
+### 2. Administrator (Admin)
+* **Dashboard Statistik**: Memantau laporan pendapatan bulanan, jumlah pengguna aktif, dan pesanan yang membutuhkan tindakan.
+* **Product Management**: Melakukan operasi CRUD (Create, Read, Update, Delete) produk subscription premium beserta unggah gambar ke RustFS storage.
+* **Category Management**: Mengelompokkan produk ke dalam kategori yang dinamis.
+* **Order Management**: Memproses pesanan masuk, mengonfirmasi transaksi, mengisi kredensial premium untuk user, dan menulis catatan admin (*remarks*).
+* **User & Audit Logs**: Memantau pengguna terdaftar dan log aktivitas tindakan admin di dalam sistem demi keamanan.
+* **System Settings**:
+  * Mengaktifkan/menonaktifkan payment gateway utama (**Midtrans** vs **Pakasir**).
+  * Mengatur lingkungan kerja (**Sandbox/Production**) untuk Midtrans dan Pakasir.
+  * Tombol **Tes Koneksi API** instan untuk Midtrans, Pakasir, Fonnte, dan RustFS Storage untuk memastikan status API terhubung sebelum live.
 
+---
 
+## 💻 Panduan Instalasi Lokal (Development)
 
-## Routing
+### Prasyarat
+* Node.js v20+ atau yang terbaru
+* pnpm (direkomendasikan) atau npm
+* PostgreSQL database aktif
 
-This project uses [TanStack Router](https://tanstack.com/router) with file-based routing. Routes are managed as files in `src/routes`.
+### Langkah-langkah
+1. **Clone Repositori**:
+   ```bash
+   git clone https://github.com/velora-1d/One-Subscribe.git
+   cd One-Subscribe
+   ```
 
-### Adding A Route
+2. **Instal Dependensi**:
+   ```bash
+   pnpm install
+   ```
 
-To add a new route to your application just add a new file in the `./src/routes` directory.
+3. **Konfigurasi Environment Variable**:
+   Salin file contoh konfigurasi `.env.example` ke `.env` dan sesuaikan nilainya:
+   ```bash
+   cp .env.example .env
+   ```
 
-TanStack will automatically generate the content of the route file for you.
+   **Isi penting `.env`:**
+   ```env
+   # Database Connection
+   DATABASE_URL="postgres://username:password@localhost:5432/onesubscribe"
 
-Now that you have two routes you can use a `Link` component to navigate between them.
+   # Midtrans Credentials
+   MIDTRANS_SANDBOX_SERVER_KEY="SB-Mid-server-xxx"
+   MIDTRANS_PRODUCTION_SERVER_KEY="Mid-server-xxx"
 
-### Adding Links
+   # Pakasir Credentials
+   PAKASIR_SLUG="jbr-minpo"
+   PAKASIR_API_KEY="api-key-xxx"
 
-To use SPA (Single Page Application) navigation you will need to import the `Link` component from `@tanstack/react-router`.
+   # Fonnte WhatsApp API
+   FONNTE_TOKEN="fonnte-token-xxx"
 
-```tsx
-import { Link } from "@tanstack/react-router";
-```
+   # Resend Email Gateway
+   RESEND_API_KEY="re_xxx"
+   SENDER_EMAIL="onboarding@resend.dev"
 
-Then anywhere in your JSX you can use it like so:
+   # RustFS Storage Gateway
+   RUSTFS_ENDPOINT="https://rustfs.domainanda.com"
+   RUSTFS_ACCESS_KEY="access-key-xxx"
+   RUSTFS_SECRET_KEY="secret-key-xxx"
+   RUSTFS_BUCKET="onesubscribe"
+   ```
 
-```tsx
-<Link to="/about">About</Link>
-```
+4. **Migrasi Database & Seeding**:
+   ```bash
+   # Buat skema migrasi lokal
+   pnpm db:generate
+   
+   # Terapkan migrasi ke database PostgreSQL
+   pnpm db:migrate
+   
+   # Jalankan seeder (membuat user admin uji coba & produk dummy)
+   pnpm db:seed
+   ```
 
-This will create a link that will navigate to the `/about` route.
+5. **Jalankan Aplikasi**:
+   ```bash
+   pnpm dev
+   ```
+   Buka `http://localhost:3000` pada browser Anda.
 
-More information on the `Link` component can be found in the [Link documentation](https://tanstack.com/router/v1/docs/framework/react/api/router/linkComponent).
+---
 
-### Using A Layout
+## 🚀 Panduan Deployment (Production)
 
-In the File Based Routing setup the layout is located in `src/routes/__root.tsx`. Anything you add to the root route will appear in all the routes. The route content will appear in the JSX where you render `{children}` in the `shellComponent`.
+### Metode 1: Menggunakan Docker (Direkomendasikan)
+Aplikasi ini sudah dilengkapi dengan Dockerfile multi-stage yang dioptimalkan untuk ukuran image yang kecil dan performa runtime yang andal.
 
-Here is an example layout that includes a header:
+1. **Build Docker Image**:
+   ```bash
+   docker build -t onesubscribe:latest .
+   ```
 
-```tsx
-import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
+2. **Jalankan Container**:
+   Jalankan container dengan memetakan port internal 3000 ke port host Anda (misalnya 3000) dan menyertakan file konfigurasi `.env` Anda:
+   ```bash
+   docker run -d \
+     --name onesubscribe-app \
+     -p 3000:3000 \
+     --env-file .env \
+     onesubscribe:latest
+   ```
 
-export const Route = createRootRoute({
-  head: () => ({
-    meta: [
-      { charSet: 'utf-8' },
-      { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { title: 'My App' },
-    ],
-  }),
-  shellComponent: ({ children }) => (
-    <html lang="en">
-      <head>
-        <HeadContent />
-      </head>
-      <body>
-        <header>
-          <nav>
-            <Link to="/">Home</Link>
-            <Link to="/about">About</Link>
-          </nav>
-        </header>
-        {children}
-        <Scripts />
-      </body>
-    </html>
-  ),
-})
-```
+3. **Deployment dengan Docker Compose**:
+   Jika ingin menjalankan aplikasi sekaligus dengan PostgreSQL secara otomatis, buat file `docker-compose.yml`:
+   ```yaml
+   version: '3.8'
 
-More information on layouts can be found in the [Layouts documentation](https://tanstack.com/router/latest/docs/framework/react/guide/routing-concepts#layouts).
+   services:
+     db:
+       image: postgres:15-alpine
+       container_name: onesubscribe-db
+       restart: always
+       environment:
+         POSTGRES_USER: postgres
+         POSTGRES_PASSWORD: mysecretpassword
+         POSTGRES_DB: onesubscribe
+       ports:
+         - "5432:5432"
+       volumes:
+         - pgdata:/var/lib/postgresql/data
 
-## Server Functions
+     app:
+       image: onesubscribe:latest
+       container_name: onesubscribe-app
+       restart: always
+       ports:
+         - "3000:3000"
+       env_file:
+         - .env
+       depends_on:
+         - db
 
-TanStack Start provides server functions that allow you to write server-side code that seamlessly integrates with your client components.
+   volumes:
+     pgdata:
+   ```
+   Jalankan dengan perintah:
+   ```bash
+   docker compose up -d
+   ```
 
-```tsx
-import { createServerFn } from '@tanstack/react-start'
+### Metode 2: VPS Manual (Dokploy / Coolify / Node.js Runner)
+1. Lakukan instalasi dependensi dan pastikan file `.env` sudah sesuai dengan data produksi.
+2. Jalankan perintah kompilasi produksi:
+   ```bash
+   pnpm build
+   ```
+3. Jalankan migrasi database produksi:
+   ```bash
+   pnpm db:migrate
+   ```
+4. Jalankan aplikasi di port yang diinginkan menggunakan Node.js secara langsung atau via PM2:
+   ```bash
+   # Menjalankan langsung
+   PORT=3000 node dist/server/server.js
 
-const getServerTime = createServerFn({
-  method: 'GET',
-}).handler(async () => {
-  return new Date().toISOString()
-})
+   # Menggunakan PM2 agar tetap hidup di background
+   pm2 start dist/server/server.js --name "onesubscribe"
+   ```
 
-// Use in a component
-function MyComponent() {
-  const [time, setTime] = useState('')
-  
-  useEffect(() => {
-    getServerTime().then(setTime)
-  }, [])
-  
-  return <div>Server time: {time}</div>
-}
-```
+---
 
-## API Routes
-
-You can create API routes by using the `server` property in your route definitions:
-
-```tsx
-import { createFileRoute } from '@tanstack/react-router'
-import { json } from '@tanstack/react-start'
-
-export const Route = createFileRoute('/api/hello')({
-  server: {
-    handlers: {
-      GET: () => json({ message: 'Hello, World!' }),
-    },
-  },
-})
-```
-
-## Data Fetching
-
-There are multiple ways to fetch data in your application. You can use TanStack Query to fetch data from a server. But you can also use the `loader` functionality built into TanStack Router to load the data for a route before it's rendered.
-
-For example:
-
-```tsx
-import { createFileRoute } from '@tanstack/react-router'
-
-export const Route = createFileRoute('/people')({
-  loader: async () => {
-    const response = await fetch('https://swapi.dev/api/people')
-    return response.json()
-  },
-  component: PeopleComponent,
-})
-
-function PeopleComponent() {
-  const data = Route.useLoaderData()
-  return (
-    <ul>
-      {data.results.map((person) => (
-        <li key={person.name}>{person.name}</li>
-      ))}
-    </ul>
-  )
-}
-```
-
-Loaders simplify your data fetching logic dramatically. Check out more information in the [Loader documentation](https://tanstack.com/router/latest/docs/framework/react/guide/data-loading#loader-parameters).
-
-
-# Demo files
-
-Files prefixed with `demo` can be safely deleted. They are there to provide a starting point for you to play around with the features you've installed.
-
-
-# Learn More
-
-You can learn more about all of the offerings from TanStack in the [TanStack documentation](https://tanstack.com).
-
-For TanStack Start specific documentation, visit [TanStack Start](https://tanstack.com/start).
+## 👥 Kontributor
+* **Velora Dev** - *Creator & Architect* - [Mahin Utsman Nawawi](https://github.com/velora-1d)
