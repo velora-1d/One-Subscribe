@@ -76,9 +76,12 @@ function CheckoutPage() {
         },
       })
 
-      if (result?.success && result.redirectUrl) {
-        // Redirect langsung ke payment gateway halaman eksternal
-        window.location.href = result.redirectUrl
+      if (result?.success && result.order?.id) {
+        // Arahkan ke halaman pembayaran internal
+        navigate({
+          to: '/checkout/pay',
+          search: { orderId: result.order.id },
+        })
       } else {
         setSubmitError('Gagal memproses checkout. Silakan coba kembali.')
       }

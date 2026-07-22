@@ -1,5 +1,5 @@
 import { createFileRoute, Link, redirect, useNavigate } from '@tanstack/react-router'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { getOrderById, simulatePaymentSuccess } from '../utils/order.functions'
 
 export const Route = createFileRoute('/checkout/pay')({
@@ -25,7 +25,7 @@ export const Route = createFileRoute('/checkout/pay')({
       return { order: null, error: err?.message || 'Gagal memuat detail pesanan' }
     }
   },
-  component: PaymentSimulatorPage,
+  component: PaymentIframePage,
 })
 
 function formatIDR(amount: number): string {
@@ -37,19 +37,40 @@ function formatIDR(amount: number): string {
   }).format(amount)
 }
 
-function PaymentSimulatorPage() {
+function PaymentIframePage() {
   const { order, error } = Route.useLoaderData()
   const navigate = useNavigate()
   const [isProcessing, setIsProcessing] = useState(false)
   const [statusMsg, setStatusMsg] = useState<string | null>(null)
+  const [showDevPanel, setShowDevPanel] = useState(false)
+
+  // Real-time polling to auto-redirect when payment webhook updates the order status
+  useEffect(() => {
+    if (!order || order.status !== 'menunggu_pembayaran') return
+
+    const interval = setInterval(async () => {
+      try {
+        const res = await getOrderById({ data: order.id })
+        if (res.success && res.order && res.order.status !== 'menunggu_pembayaran') {
+          clearInterval(interval)
+          // Redirect to success page
+          window.location.href = `/checkout/success?orderId=${order.id}`
+        }
+      } catch (e) {
+        console.error('Error polling order status:', e)
+      }
+    }, 3000)
+
+    return () => clearInterval(interval)
+  }, [order])
 
   if (error || !order) {
     return (
       <main className="page-wrap px-4 py-16 text-center">
-        <div className="island-shell rounded-3xl p-8 max-w-md mx-auto">
+        <div className="island-shell rounded-3xl p-8 max-w-md mx-auto border border-[var(--line)] bg-white shadow-xs">
           <h2 className="text-xl font-bold text-red-600 mb-2">Error</h2>
           <p className="text-sm text-[var(--sea-ink-soft)] mb-6">{error || 'Pesanan tidak ditemukan.'}</p>
-          <Link to="/" className="rounded-full bg-[var(--lagoon-deep)] px-6 py-2.5 text-xs font-bold text-white no-underline">
+          <Link to="/" className="rounded-full bg-slate-950 px-6 py-2.5 text-xs font-bold text-white no-underline">
             Kembali ke Katalog
           </Link>
         </div>
@@ -79,77 +100,120 @@ function PaymentSimulatorPage() {
   }
 
   return (
-    <main className="flex min-h-[85vh] items-center justify-center px-4 py-12">
-      <div className="w-full max-w-lg rounded-[2.5rem] border border-[var(--line)] bg-[var(--header-bg)] p-8 shadow-[0_30px_60px_rgba(0,0,0,0.08)] backdrop-blur-md relative overflow-hidden">
-        {/* Aesthetic background gradients */}
-        <div className="pointer-events-none absolute -left-20 -top-20 h-48 w-48 rounded-full bg-[radial-gradient(circle,rgba(79,184,178,0.15),transparent_70%)]" />
-        <div className="pointer-events-none absolute -right-20 -bottom-20 h-48 w-48 rounded-full bg-[radial-gradient(circle,rgba(47,106,74,0.12),transparent_70%)]" />
-
-        <div className="text-center mb-8 relative">
-          <span className="text-[10px] uppercase font-black tracking-widest text-[var(--lagoon-deep)] bg-[rgba(79,184,178,0.1)] px-3.5 py-1.5 rounded-full inline-block mb-3">
-            Simulasi Gateway {order.paymentMethod === 'midtrans' ? 'Midtrans Snap' : 'Pakasir Invoice'}
-          </span>
-          <h1 className="text-2xl font-extrabold tracking-tight text-[var(--sea-ink)]">
-            Halaman Simulasi Pembayaran
-          </h1>
-          <p className="text-xs text-[var(--sea-ink-soft)] mt-1.5">
-            Gunakan halaman ini untuk memverifikasi alur checkout dan status update webhook.
-          </p>
-        </div>
-
-        {/* Order Details Panel */}
-        <div className="bg-[var(--chip-bg)] border border-[var(--chip-line)] rounded-3xl p-6 mb-8 relative space-y-4 text-sm text-[var(--sea-ink-soft)]">
-          <div className="flex justify-between items-center pb-3 border-b border-[var(--line)]">
-            <span className="font-bold text-xs uppercase tracking-wider">ID Pesanan</span>
-            <span className="font-extrabold text-[var(--sea-ink)]">{order.id}</span>
-          </div>
-
-          <div className="flex justify-between items-center">
-            <span>Produk</span>
-            <span className="font-bold text-[var(--sea-ink)]">{order.productName} ({order.productCategory})</span>
-          </div>
-
-          <div className="flex justify-between items-center">
-            <span>Durasi Paket</span>
-            <span className="font-bold text-[var(--sea-ink)]">{order.remainingDuration} Bulan</span>
-          </div>
-
-          <div className="flex justify-between items-center">
-            <span>Metode Bayar</span>
-            <span className="font-bold text-[var(--sea-ink)] uppercase">{order.paymentMethod}</span>
-          </div>
-
-          <div className="flex justify-between items-center pt-3 border-t border-[var(--line)] text-base font-black text-[var(--sea-ink)]">
-            <span>Total Tagihan</span>
-            <span>{formatIDR(order.price)}</span>
-          </div>
-        </div>
-
-        {statusMsg && (
-          <div className={`mb-6 p-4 rounded-xl border text-center text-xs font-semibold ${
-            statusMsg.startsWith('✅') ? 'bg-emerald-50 border-emerald-200 text-emerald-600' : 'bg-red-50 border-red-200 text-red-600'
-          }`}>
-            {statusMsg}
-          </div>
-        )}
-
-        <div className="flex flex-col gap-3 relative">
-          <button
-            onClick={handleSimulatePayment}
-            disabled={isProcessing || order.status !== 'menunggu_pembayaran'}
-            className="w-full rounded-xl bg-emerald-600 py-3.5 text-sm font-extrabold text-white shadow-md hover:bg-emerald-700 transition disabled:opacity-50 cursor-pointer"
-          >
-            {isProcessing ? 'Memproses Simulasi...' : order.status === 'menunggu_pembayaran' ? 'Simulasikan Pembayaran Sukses' : 'Pesanan Sudah Terbayar'}
-          </button>
-          
+    <main className="page-wrap px-4 py-8 max-w-6xl mx-auto space-y-6 animate-fadeIn">
+      {/* Top Header Card */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[var(--header-bg)] border border-[var(--line)] rounded-3xl p-6 shadow-[0_10px_30px_rgba(0,0,0,0.01)]">
+        <div className="flex items-center gap-3">
           <Link
             to="/"
-            disabled={isProcessing}
-            className="w-full text-center rounded-xl bg-[var(--chip-bg)] border border-[var(--chip-line)] py-3 text-xs font-bold text-[var(--sea-ink-soft)] hover:bg-[var(--link-bg-hover)] transition no-underline"
+            className="h-9 w-9 rounded-full bg-white border border-[var(--line)] flex items-center justify-center text-slate-800 hover:bg-slate-50 transition shadow-xs no-underline"
           >
-            Batalkan Pembayaran
+            <span className="material-symbols-outlined text-[18px]">arrow_back</span>
           </Link>
+          <div>
+            <h1 className="text-base font-extrabold text-[var(--sea-ink)] flex items-center gap-2">
+              Pembayaran Pesanan
+              <span className="text-xs bg-slate-100 border border-slate-200 text-slate-800 px-2 py-0.5 rounded-md font-mono">
+                {order.id}
+              </span>
+            </h1>
+            <p className="text-[10px] text-[var(--sea-ink-soft)] font-medium mt-0.5">
+              Selesaikan transaksi Anda melalui gerbang pembayaran aman di bawah ini.
+            </p>
+          </div>
         </div>
+
+        <div className="flex items-center gap-4 text-xs font-bold text-[var(--sea-ink)]">
+          <div className="text-right">
+            <span className="text-[10px] text-[var(--sea-ink-soft)] block uppercase tracking-wider">Total Tagihan</span>
+            <span className="text-sm font-black text-slate-900">{formatIDR(order.price)}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Payment Iframe Section */}
+      <div className="bg-white border border-[var(--line)] rounded-[2rem] shadow-xs overflow-hidden flex flex-col min-h-[680px]">
+        {/* Frame Title Bar */}
+        <div className="px-6 py-3.5 bg-slate-50 border-b border-[var(--line)] flex items-center justify-between text-xs text-[var(--sea-ink-soft)] font-semibold">
+          <div className="flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="capitalize">Gerbang Pembayaran Resmi ({order.paymentMethod})</span>
+          </div>
+          <a
+            href={order.paymentRedirectUrl || undefined}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[var(--lagoon-deep)] hover:underline flex items-center gap-1 text-[11px] no-underline font-bold"
+          >
+            Buka di Tab Baru
+            <span className="material-symbols-outlined text-[12px] font-bold">open_in_new</span>
+          </a>
+        </div>
+
+        {/* Embedded Iframe */}
+        <div className="flex-grow bg-slate-100 relative min-h-[600px]">
+          {order.paymentRedirectUrl ? (
+            <iframe
+              src={order.paymentRedirectUrl}
+              className="absolute inset-0 w-full h-full border-0 bg-white"
+              title="Secure Payment Gateway Frame"
+              allow="payment"
+            />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center p-6 text-center">
+              <div>
+                <span className="material-symbols-outlined text-[48px] text-red-500 mb-2">error</span>
+                <p className="text-xs font-bold text-slate-800">URL Pembayaran tidak valid.</p>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Helper notice */}
+      <div className="text-center text-[10px] text-[var(--sea-ink-soft)] font-medium max-w-lg mx-auto leading-relaxed">
+        Jendela pembayaran ini terhubung langsung secara aman. Jangan menutup halaman ini setelah membayar; Anda akan dialihkan secara otomatis setelah pembayaran terdeteksi.
+      </div>
+
+      {/* collapsible developer simulation panel */}
+      <div className="border border-amber-200 bg-amber-50/40 rounded-3xl p-5 space-y-3">
+        <button
+          type="button"
+          onClick={() => setShowDevPanel(!showDevPanel)}
+          className="flex items-center justify-between w-full text-xs font-bold text-amber-800 bg-transparent border-0 cursor-pointer outline-none"
+        >
+          <span className="flex items-center gap-2">
+            <span className="material-symbols-outlined text-[16px]">bug_report</span>
+            Simulasi Pembayaran (Developer Mode)
+          </span>
+          <span className="material-symbols-outlined text-[16px]">
+            {showDevPanel ? 'expand_less' : 'expand_more'}
+          </span>
+        </button>
+
+        {showDevPanel && (
+          <div className="space-y-3 pt-2 border-t border-amber-200/50">
+            <p className="text-[10px] text-amber-700 leading-relaxed m-0">
+              Gunakan opsi ini untuk mensimulasikan status sukses pembayaran tanpa menyelesaikan tagihan riil pada gerbang pembayaran.
+            </p>
+
+            {statusMsg && (
+              <div className={`p-3 rounded-xl border text-xs font-semibold ${
+                statusMsg.startsWith('✅') ? 'bg-emerald-50 border-emerald-200 text-emerald-600' : 'bg-red-50 border-red-200 text-red-600'
+              }`}>
+                {statusMsg}
+              </div>
+            )}
+
+            <button
+              onClick={handleSimulatePayment}
+              disabled={isProcessing || order.status !== 'menunggu_pembayaran'}
+              className="rounded-xl bg-amber-600 hover:bg-amber-700 px-5 py-2.5 text-xs font-bold text-white shadow-xs transition disabled:opacity-50 cursor-pointer border-0"
+            >
+              {isProcessing ? 'Memproses...' : 'Simulasikan Sukses Instan'}
+            </button>
+          </div>
+        )}
       </div>
     </main>
   )
