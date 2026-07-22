@@ -1,6 +1,6 @@
 # OneSubscribe - Digital Subscription Marketplace & Management System
 
-[![Developer](https://img.shields.io/badge/Developer-Velora%20Dev%20(Mahin%20Utsman%20Nawawi)-blue?style=for-the-badge)](https://github.com/velora-1d)
+[![Developer](https://img.shields.io/badge/Developer-Velora%20Dev%20(Mahin%20Utsman%20Nawawi%2C%20S.H)-blue?style=for-the-badge)](https://github.com/velora-1d)
 [![Tech Stack](https://img.shields.io/badge/Stack-React%20%2B%20TanStack%20Start%20%2B%20PostgreSQL-emerald?style=for-the-badge)](#tech-stack)
 
 **OneSubscribe** adalah platform marketplace digital dan manajemen langganan premium terpadu yang dirancang dari nol dengan visualisasi premium (*glassmorphism*, *sleek dark mode*, micro-animations) dan integrasi gerbang pembayaran dinamis.
@@ -199,4 +199,4 @@ Aplikasi ini sudah dilengkapi dengan Dockerfile multi-stage yang dioptimalkan un
 ---
 
 ## 👥 Kontributor
-* **Velora Dev** - *Creator & Architect* - [Mahin Utsman Nawawi](https://github.com/velora-1d)
+* **Velora Dev** - *Creator & Architect* - [Mahin Utsman Nawawi, S.H](https://github.com/velora-1d)
