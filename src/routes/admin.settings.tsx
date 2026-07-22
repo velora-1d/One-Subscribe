@@ -163,9 +163,9 @@ function AdminSettingsPage() {
         </div>
 
         {/* Row 1 Grid: 3 Columns (Midtrans, Pakasir, RustFS) */}
-        <div className="grid gap-6 md:grid-cols-3 items-start animate-fadeIn">
+        <div className="grid gap-6 md:grid-cols-3 animate-fadeIn">
           {/* Payment Gateway: Midtrans */}
-          <div className="island-shell border border-[var(--line)] rounded-3xl p-6 space-y-4 bg-white shadow-xs">
+          <div className="island-shell border border-[var(--line)] rounded-3xl p-6 space-y-4 bg-white shadow-xs h-full">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-[var(--line)]">
               <h2 className="text-sm font-extrabold text-[var(--sea-ink)]">
                 Midtrans API Settings
@@ -212,7 +212,7 @@ function AdminSettingsPage() {
           </div>
 
           {/* Payment Gateway: Pakasir */}
-          <div className="island-shell border border-[var(--line)] rounded-3xl p-6 space-y-4 bg-white shadow-xs">
+          <div className="island-shell border border-[var(--line)] rounded-3xl p-6 space-y-4 bg-white shadow-xs h-full">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-[var(--line)]">
               <h2 className="text-sm font-extrabold text-[var(--sea-ink)]">
                 Pakasir API Settings
@@ -259,32 +259,34 @@ function AdminSettingsPage() {
           </div>
 
           {/* Storage Gateway: RustFS */}
-          <div className="island-shell border border-[var(--line)] rounded-3xl p-6 space-y-4 bg-white shadow-xs">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-[var(--line)]">
-              <h2 className="text-sm font-extrabold text-[var(--sea-ink)]">
-                RustFS Storage Gateway
-              </h2>
-              <button
-                type="button"
-                disabled={testStatus['rustfs']?.loading}
-                onClick={() => handleTestConnection('rustfs')}
-                className="rounded-full bg-slate-100 hover:bg-slate-200 border border-slate-300 px-4 py-1.5 text-[10px] font-bold text-slate-800 transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
-              >
-                <span className="material-symbols-outlined text-[12px] font-bold">sync_alt</span>
-                {testStatus['rustfs']?.loading ? 'Menguji...' : 'Tes Koneksi'}
-              </button>
-            </div>
-
-            {testStatus['rustfs']?.message && (
-              <div className={`p-3 rounded-xl text-[10px] font-semibold flex items-center gap-2 ${
-                testStatus['rustfs']?.success ? 'bg-emerald-50 text-emerald-600 border border-emerald-100 animate-fadeIn' : 'bg-red-50 text-red-600 border border-red-100 animate-fadeIn'
-              }`}>
-                <span className="material-symbols-outlined text-[14px]">
-                  {testStatus['rustfs']?.success ? 'check_circle' : 'error'}
-                </span>
-                <span>{testStatus['rustfs']?.message}</span>
+          <div className="island-shell border border-[var(--line)] rounded-3xl p-6 space-y-4 bg-white shadow-xs h-full flex flex-col justify-between">
+            <div className="space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-[var(--line)]">
+                <h2 className="text-sm font-extrabold text-[var(--sea-ink)]">
+                  RustFS Storage Gateway
+                </h2>
+                <button
+                  type="button"
+                  disabled={testStatus['rustfs']?.loading}
+                  onClick={() => handleTestConnection('rustfs')}
+                  className="rounded-full bg-slate-100 hover:bg-slate-200 border border-slate-300 px-4 py-1.5 text-[10px] font-bold text-slate-800 transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                >
+                  <span className="material-symbols-outlined text-[12px] font-bold">sync_alt</span>
+                  {testStatus['rustfs']?.loading ? 'Menguji...' : 'Tes Koneksi'}
+                </button>
               </div>
-            )}
+
+              {testStatus['rustfs']?.message && (
+                <div className={`p-3 rounded-xl text-[10px] font-semibold flex items-center gap-2 ${
+                  testStatus['rustfs']?.success ? 'bg-emerald-50 text-emerald-600 border border-emerald-100 animate-fadeIn' : 'bg-red-50 text-red-600 border border-red-100 animate-fadeIn'
+                }`}>
+                  <span className="material-symbols-outlined text-[14px]">
+                    {testStatus['rustfs']?.success ? 'check_circle' : 'error'}
+                  </span>
+                  <span>{testStatus['rustfs']?.message}</span>
+                </div>
+              )}
+            </div>
 
             <p className="text-[10px] text-[var(--sea-ink-soft)] leading-relaxed italic m-0">
               Menggunakan kredensial dari `.env`: <code className="bg-slate-100 px-1 py-0.5 rounded text-slate-700">RUSTFS_ENDPOINT</code>, <code className="bg-slate-100 px-1 py-0.5 rounded text-slate-700">RUSTFS_ACCESS_KEY</code>, <code className="bg-slate-100 px-1 py-0.5 rounded text-slate-700">RUSTFS_SECRET_KEY</code>, & <code className="bg-slate-100 px-1 py-0.5 rounded text-slate-700">RUSTFS_BUCKET</code>.
@@ -293,9 +295,9 @@ function AdminSettingsPage() {
         </div>
 
         {/* Row 2 Grid: 2 Columns (Fonnte, Evolution) */}
-        <div className="grid gap-6 md:grid-cols-2 items-start animate-fadeIn">
+        <div className="grid gap-6 md:grid-cols-2 animate-fadeIn">
           {/* Messaging Gateway: Fonnte */}
-          <div className="island-shell border border-[var(--line)] rounded-3xl p-6 space-y-4 bg-white shadow-xs">
+          <div className="island-shell border border-[var(--line)] rounded-3xl p-6 space-y-4 bg-white shadow-xs h-full">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-[var(--line)]">
               <h2 className="text-sm font-extrabold text-[var(--sea-ink)]">
                 Fonnte WhatsApp API
@@ -329,7 +331,7 @@ function AdminSettingsPage() {
           </div>
 
           {/* Messaging Gateway: Evolution API */}
-          <div className="island-shell border border-[var(--line)] rounded-3xl p-6 space-y-4 bg-white shadow-xs">
+          <div className="island-shell border border-[var(--line)] rounded-3xl p-6 space-y-4 bg-white shadow-xs h-full">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-[var(--line)]">
               <h2 className="text-sm font-extrabold text-[var(--sea-ink)]">
                 Evolution API WhatsApp
