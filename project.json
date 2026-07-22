@@ -1,0 +1,33 @@
+{
+  "name": "onesubscribe",
+  "description": "Marketplace langganan digital premium satu pintu via WhatsApp & Email dengan TanStack Start",
+  "version": "1.0.0",
+  "lastUpdated": "2026-07-22",
+  "stack": {
+    "frontend": "tanstack-start",
+    "backend": "tanstack-start",
+    "database": "postgresql",
+    "orm": "drizzle",
+    "auth": "custom-jwt / cookie-session",
+    "realtime": null,
+    "mobile": null
+  },
+  "mode": "fullstack",
+  "platform": ["web"],
+  "multiTenant": false,
+  "tenantStrategy": null,
+  "scale": "small",
+  "team": "solo",
+  "hosting": {
+    "development": "local",
+    "staging": null,
+    "production": "vps-dokploy"
+  },
+  "infraBudget": "free-tier-db",
+  "activeRules": [
+    "tanstack-start-fullstack",
+    "postgresql",
+    "drizzle-orm"
+  ],
+  "notes": "TanStack Start fullstack routing. Integrasi payment Pakasir & Midtrans, Fonnte WA gateway, dan Resend email."
+}
