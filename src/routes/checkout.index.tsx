@@ -4,7 +4,7 @@ import { getProductById } from '../utils/product.functions'
 import { createOrder } from '../utils/order.functions'
 import { Route as RootRoute } from './__root'
 
-export const Route = createFileRoute('/checkout')({
+export const Route = createFileRoute('/checkout/')({
   beforeLoad: ({ context }) => {
     if (!context.user) {
       throw redirect({ to: '/login' })
