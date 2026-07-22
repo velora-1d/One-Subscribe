@@ -88,9 +88,9 @@ function AdminSettingsPage() {
         </div>
       )}
 
-      <form onSubmit={handleSave} className="grid gap-6 md:grid-cols-2 items-start">
+      <form onSubmit={handleSave} className="space-y-6">
         {/* Active Payment Gateway Selector Card */}
-        <div className="island-shell border border-[var(--line)] rounded-3xl p-6 space-y-4 bg-[var(--header-bg)] md:col-span-2 shadow-[0_10px_30px_rgba(0,0,0,0.01)]">
+        <div className="island-shell border border-[var(--line)] rounded-3xl p-6 space-y-4 bg-[var(--header-bg)] shadow-[0_10px_30px_rgba(0,0,0,0.01)]">
           <div className="flex items-center gap-3 pb-3 border-b border-[var(--line)]">
             <div className="h-8 w-8 rounded-xl bg-slate-900 text-white flex items-center justify-center shadow-sm">
               <span className="material-symbols-outlined text-sm">settings_input_component</span>
@@ -162,202 +162,208 @@ function AdminSettingsPage() {
           </div>
         </div>
 
-        {/* Payment Gateway: Midtrans */}
-        <div className="island-shell border border-[var(--line)] rounded-3xl p-6 space-y-4 bg-white shadow-xs">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-[var(--line)]">
-            <h2 className="text-sm font-extrabold text-[var(--sea-ink)]">
-              Midtrans API Settings
-            </h2>
-            <button
-              type="button"
-              disabled={testStatus['midtrans']?.loading}
-              onClick={() => handleTestConnection('midtrans')}
-              className="rounded-full bg-slate-100 hover:bg-slate-200 border border-slate-300 px-4 py-1.5 text-[10px] font-bold text-slate-800 transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
-            >
-              <span className="material-symbols-outlined text-[12px] font-bold">sync_alt</span>
-              {testStatus['midtrans']?.loading ? 'Menguji...' : 'Tes Koneksi'}
-            </button>
-          </div>
-
-          {testStatus['midtrans']?.message && (
-            <div className={`p-3 rounded-xl text-[10px] font-semibold flex items-center gap-2 ${
-              testStatus['midtrans']?.success ? 'bg-emerald-50 text-emerald-600 border border-emerald-100 animate-fadeIn' : 'bg-red-50 text-red-600 border border-red-100 animate-fadeIn'
-            }`}>
-              <span className="material-symbols-outlined text-[14px]">
-                {testStatus['midtrans']?.success ? 'check_circle' : 'error'}
-              </span>
-              <span>{testStatus['midtrans']?.message}</span>
+        {/* Row 1 Grid: 3 Columns (Midtrans, Pakasir, RustFS) */}
+        <div className="grid gap-6 md:grid-cols-3 items-start animate-fadeIn">
+          {/* Payment Gateway: Midtrans */}
+          <div className="island-shell border border-[var(--line)] rounded-3xl p-6 space-y-4 bg-white shadow-xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-[var(--line)]">
+              <h2 className="text-sm font-extrabold text-[var(--sea-ink)]">
+                Midtrans API Settings
+              </h2>
+              <button
+                type="button"
+                disabled={testStatus['midtrans']?.loading}
+                onClick={() => handleTestConnection('midtrans')}
+                className="rounded-full bg-slate-100 hover:bg-slate-200 border border-slate-300 px-4 py-1.5 text-[10px] font-bold text-slate-800 transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+              >
+                <span className="material-symbols-outlined text-[12px] font-bold">sync_alt</span>
+                {testStatus['midtrans']?.loading ? 'Menguji...' : 'Tes Koneksi'}
+              </button>
             </div>
-          )}
 
-          <div>
-            <label className="block text-[10px] font-bold text-[var(--sea-ink-soft)] uppercase tracking-wider mb-1">
-              Environment Mode
-            </label>
-            <select
-              value={midtransEnv}
-              onChange={(e) => setMidtransEnv(e.target.value)}
-              className="w-full rounded-xl border border-[var(--line)] bg-[var(--chip-bg)] px-4 py-2.5 text-xs text-[var(--sea-ink)] outline-none focus:border-slate-900 transition"
-            >
-              <option value="sandbox">Sandbox (Development / Testing)</option>
-              <option value="production">Production (Live)</option>
-            </select>
+            {testStatus['midtrans']?.message && (
+              <div className={`p-3 rounded-xl text-[10px] font-semibold flex items-center gap-2 ${
+                testStatus['midtrans']?.success ? 'bg-emerald-50 text-emerald-600 border border-emerald-100 animate-fadeIn' : 'bg-red-50 text-red-600 border border-red-100 animate-fadeIn'
+              }`}>
+                <span className="material-symbols-outlined text-[14px]">
+                  {testStatus['midtrans']?.success ? 'check_circle' : 'error'}
+                </span>
+                <span>{testStatus['midtrans']?.message}</span>
+              </div>
+            )}
+
+            <div>
+              <label className="block text-[10px] font-bold text-[var(--sea-ink-soft)] uppercase tracking-wider mb-1">
+                Environment Mode
+              </label>
+              <select
+                value={midtransEnv}
+                onChange={(e) => setMidtransEnv(e.target.value)}
+                className="w-full rounded-xl border border-[var(--line)] bg-[var(--chip-bg)] px-4 py-2.5 text-xs text-[var(--sea-ink)] outline-none focus:border-slate-900 transition"
+              >
+                <option value="sandbox">Sandbox (Development / Testing)</option>
+                <option value="production">Production (Live)</option>
+              </select>
+            </div>
+
+            <p className="text-[10px] text-[var(--sea-ink-soft)] leading-relaxed italic m-0">
+              Menggunakan kredensial dari `.env`: <code className="bg-slate-100 px-1 py-0.5 rounded text-slate-700">{midtransEnv === 'production' ? 'MIDTRANS_PRODUCTION_SERVER_KEY' : 'MIDTRANS_SANDBOX_SERVER_KEY'}</code>.
+            </p>
           </div>
 
-          <p className="text-[10px] text-[var(--sea-ink-soft)] leading-relaxed italic m-0">
-            Menggunakan kredensial dari `.env`: <code className="bg-slate-100 px-1 py-0.5 rounded text-slate-700">{midtransEnv === 'production' ? 'MIDTRANS_PRODUCTION_SERVER_KEY' : 'MIDTRANS_SANDBOX_SERVER_KEY'}</code>.
-          </p>
+          {/* Payment Gateway: Pakasir */}
+          <div className="island-shell border border-[var(--line)] rounded-3xl p-6 space-y-4 bg-white shadow-xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-[var(--line)]">
+              <h2 className="text-sm font-extrabold text-[var(--sea-ink)]">
+                Pakasir API Settings
+              </h2>
+              <button
+                type="button"
+                disabled={testStatus['pakasir']?.loading}
+                onClick={() => handleTestConnection('pakasir')}
+                className="rounded-full bg-slate-100 hover:bg-slate-200 border border-slate-300 px-4 py-1.5 text-[10px] font-bold text-slate-800 transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+              >
+                <span className="material-symbols-outlined text-[12px] font-bold">sync_alt</span>
+                {testStatus['pakasir']?.loading ? 'Menguji...' : 'Tes Koneksi'}
+              </button>
+            </div>
+
+            {testStatus['pakasir']?.message && (
+              <div className={`p-3 rounded-xl text-[10px] font-semibold flex items-center gap-2 ${
+                testStatus['pakasir']?.success ? 'bg-emerald-50 text-emerald-600 border border-emerald-100 animate-fadeIn' : 'bg-red-50 text-red-600 border border-red-100 animate-fadeIn'
+              }`}>
+                <span className="material-symbols-outlined text-[14px]">
+                  {testStatus['pakasir']?.success ? 'check_circle' : 'error'}
+                </span>
+                <span>{testStatus['pakasir']?.message}</span>
+              </div>
+            )}
+
+            <div>
+              <label className="block text-[10px] font-bold text-[var(--sea-ink-soft)] uppercase tracking-wider mb-1">
+                Environment Mode
+              </label>
+              <select
+                value={pakasirEnv}
+                onChange={(e) => setPakasirEnv(e.target.value)}
+                className="w-full rounded-xl border border-[var(--line)] bg-[var(--chip-bg)] px-4 py-2.5 text-xs text-[var(--sea-ink)] outline-none focus:border-slate-900 transition"
+              >
+                <option value="sandbox">Sandbox (Development / Testing)</option>
+                <option value="production">Production (Live)</option>
+              </select>
+            </div>
+
+            <p className="text-[10px] text-[var(--sea-ink-soft)] leading-relaxed italic m-0">
+              Menggunakan kredensial dari `.env`: <code className="bg-slate-100 px-1 py-0.5 rounded text-slate-700">PAKASIR_SLUG</code> & <code className="bg-slate-100 px-1 py-0.5 rounded text-slate-700">{pakasirEnv === 'production' ? 'PAKASIR_PRODUCTION_API_KEY' : 'PAKASIR_API_KEY'}</code>.
+            </p>
+          </div>
+
+          {/* Storage Gateway: RustFS */}
+          <div className="island-shell border border-[var(--line)] rounded-3xl p-6 space-y-4 bg-white shadow-xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-[var(--line)]">
+              <h2 className="text-sm font-extrabold text-[var(--sea-ink)]">
+                RustFS Storage Gateway
+              </h2>
+              <button
+                type="button"
+                disabled={testStatus['rustfs']?.loading}
+                onClick={() => handleTestConnection('rustfs')}
+                className="rounded-full bg-slate-100 hover:bg-slate-200 border border-slate-300 px-4 py-1.5 text-[10px] font-bold text-slate-800 transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+              >
+                <span className="material-symbols-outlined text-[12px] font-bold">sync_alt</span>
+                {testStatus['rustfs']?.loading ? 'Menguji...' : 'Tes Koneksi'}
+              </button>
+            </div>
+
+            {testStatus['rustfs']?.message && (
+              <div className={`p-3 rounded-xl text-[10px] font-semibold flex items-center gap-2 ${
+                testStatus['rustfs']?.success ? 'bg-emerald-50 text-emerald-600 border border-emerald-100 animate-fadeIn' : 'bg-red-50 text-red-600 border border-red-100 animate-fadeIn'
+              }`}>
+                <span className="material-symbols-outlined text-[14px]">
+                  {testStatus['rustfs']?.success ? 'check_circle' : 'error'}
+                </span>
+                <span>{testStatus['rustfs']?.message}</span>
+              </div>
+            )}
+
+            <p className="text-[10px] text-[var(--sea-ink-soft)] leading-relaxed italic m-0">
+              Menggunakan kredensial dari `.env`: <code className="bg-slate-100 px-1 py-0.5 rounded text-slate-700">RUSTFS_ENDPOINT</code>, <code className="bg-slate-100 px-1 py-0.5 rounded text-slate-700">RUSTFS_ACCESS_KEY</code>, <code className="bg-slate-100 px-1 py-0.5 rounded text-slate-700">RUSTFS_SECRET_KEY</code>, & <code className="bg-slate-100 px-1 py-0.5 rounded text-slate-700">RUSTFS_BUCKET</code>.
+            </p>
+          </div>
         </div>
 
-        {/* Payment Gateway: Pakasir */}
-        <div className="island-shell border border-[var(--line)] rounded-3xl p-6 space-y-4 bg-white shadow-xs">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-[var(--line)]">
-            <h2 className="text-sm font-extrabold text-[var(--sea-ink)]">
-              Pakasir API Settings
-            </h2>
-            <button
-              type="button"
-              disabled={testStatus['pakasir']?.loading}
-              onClick={() => handleTestConnection('pakasir')}
-              className="rounded-full bg-slate-100 hover:bg-slate-200 border border-slate-300 px-4 py-1.5 text-[10px] font-bold text-slate-800 transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
-            >
-              <span className="material-symbols-outlined text-[12px] font-bold">sync_alt</span>
-              {testStatus['pakasir']?.loading ? 'Menguji...' : 'Tes Koneksi'}
-            </button>
-          </div>
-
-          {testStatus['pakasir']?.message && (
-            <div className={`p-3 rounded-xl text-[10px] font-semibold flex items-center gap-2 ${
-              testStatus['pakasir']?.success ? 'bg-emerald-50 text-emerald-600 border border-emerald-100 animate-fadeIn' : 'bg-red-50 text-red-600 border border-red-100 animate-fadeIn'
-            }`}>
-              <span className="material-symbols-outlined text-[14px]">
-                {testStatus['pakasir']?.success ? 'check_circle' : 'error'}
-              </span>
-              <span>{testStatus['pakasir']?.message}</span>
+        {/* Row 2 Grid: 2 Columns (Fonnte, Evolution) */}
+        <div className="grid gap-6 md:grid-cols-2 items-start animate-fadeIn">
+          {/* Messaging Gateway: Fonnte */}
+          <div className="island-shell border border-[var(--line)] rounded-3xl p-6 space-y-4 bg-white shadow-xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-[var(--line)]">
+              <h2 className="text-sm font-extrabold text-[var(--sea-ink)]">
+                Fonnte WhatsApp API
+              </h2>
+              <button
+                type="button"
+                disabled={testStatus['fonnte']?.loading}
+                onClick={() => handleTestConnection('fonnte')}
+                className="rounded-full bg-slate-100 hover:bg-slate-200 border border-slate-300 px-4 py-1.5 text-[10px] font-bold text-slate-800 transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+              >
+                <span className="material-symbols-outlined text-[12px] font-bold">sync_alt</span>
+                {testStatus['fonnte']?.loading ? 'Menguji...' : 'Tes Koneksi'}
+              </button>
             </div>
-          )}
 
-          <div>
-            <label className="block text-[10px] font-bold text-[var(--sea-ink-soft)] uppercase tracking-wider mb-1">
-              Environment Mode
-            </label>
-            <select
-              value={pakasirEnv}
-              onChange={(e) => setPakasirEnv(e.target.value)}
-              className="w-full rounded-xl border border-[var(--line)] bg-[var(--chip-bg)] px-4 py-2.5 text-xs text-[var(--sea-ink)] outline-none focus:border-slate-900 transition"
-            >
-              <option value="sandbox">Sandbox (Development / Testing)</option>
-              <option value="production">Production (Live)</option>
-            </select>
+            {testStatus['fonnte']?.message && (
+              <div className={`p-3 rounded-xl text-[10px] font-semibold flex items-center gap-2 ${
+                testStatus['fonnte']?.success ? 'bg-emerald-50 text-emerald-600 border border-emerald-100 animate-fadeIn' : 'bg-red-50 text-red-600 border border-red-100 animate-fadeIn'
+              }`}>
+                <span className="material-symbols-outlined text-[14px]">
+                  {testStatus['fonnte']?.success ? 'check_circle' : 'error'}
+                </span>
+                <span>{testStatus['fonnte']?.message}</span>
+              </div>
+            )}
+
+            <p className="text-[10px] text-[var(--sea-ink-soft)] leading-relaxed italic m-0">
+              Menggunakan token dari `.env`: <code className="bg-slate-100 px-1 py-0.5 rounded text-slate-700">FONNTE_TOKEN</code>.
+              Pastikan device Anda di Fonnte dalam status terhubung (connected) agar pengiriman pesan WhatsApp lancar.
+            </p>
           </div>
 
-          <p className="text-[10px] text-[var(--sea-ink-soft)] leading-relaxed italic m-0">
-            Menggunakan kredensial dari `.env`: <code className="bg-slate-100 px-1 py-0.5 rounded text-slate-700">PAKASIR_SLUG</code> & <code className="bg-slate-100 px-1 py-0.5 rounded text-slate-700">{pakasirEnv === 'production' ? 'PAKASIR_PRODUCTION_API_KEY' : 'PAKASIR_API_KEY'}</code>.
-          </p>
-        </div>
-
-        {/* Messaging Gateway: Fonnte */}
-        <div className="island-shell border border-[var(--line)] rounded-3xl p-6 space-y-4 bg-white shadow-xs">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-[var(--line)]">
-            <h2 className="text-sm font-extrabold text-[var(--sea-ink)]">
-              Fonnte WhatsApp API
-            </h2>
-            <button
-              type="button"
-              disabled={testStatus['fonnte']?.loading}
-              onClick={() => handleTestConnection('fonnte')}
-              className="rounded-full bg-slate-100 hover:bg-slate-200 border border-slate-300 px-4 py-1.5 text-[10px] font-bold text-slate-800 transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
-            >
-              <span className="material-symbols-outlined text-[12px] font-bold">sync_alt</span>
-              {testStatus['fonnte']?.loading ? 'Menguji...' : 'Tes Koneksi'}
-            </button>
-          </div>
-
-          {testStatus['fonnte']?.message && (
-            <div className={`p-3 rounded-xl text-[10px] font-semibold flex items-center gap-2 ${
-              testStatus['fonnte']?.success ? 'bg-emerald-50 text-emerald-600 border border-emerald-100 animate-fadeIn' : 'bg-red-50 text-red-600 border border-red-100 animate-fadeIn'
-            }`}>
-              <span className="material-symbols-outlined text-[14px]">
-                {testStatus['fonnte']?.success ? 'check_circle' : 'error'}
-              </span>
-              <span>{testStatus['fonnte']?.message}</span>
+          {/* Messaging Gateway: Evolution API */}
+          <div className="island-shell border border-[var(--line)] rounded-3xl p-6 space-y-4 bg-white shadow-xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-[var(--line)]">
+              <h2 className="text-sm font-extrabold text-[var(--sea-ink)]">
+                Evolution API WhatsApp
+              </h2>
+              <button
+                type="button"
+                disabled={testStatus['evolution']?.loading}
+                onClick={() => handleTestConnection('evolution')}
+                className="rounded-full bg-slate-100 hover:bg-slate-200 border border-slate-300 px-4 py-1.5 text-[10px] font-bold text-slate-800 transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+              >
+                <span className="material-symbols-outlined text-[12px] font-bold">sync_alt</span>
+                {testStatus['evolution']?.loading ? 'Menguji...' : 'Tes Koneksi'}
+              </button>
             </div>
-          )}
 
-          <p className="text-[10px] text-[var(--sea-ink-soft)] leading-relaxed italic m-0">
-            Menggunakan token dari `.env`: <code className="bg-slate-100 px-1 py-0.5 rounded text-slate-700">FONNTE_TOKEN</code>.
-            Pastikan device Anda di Fonnte dalam status terhubung (connected) agar pengiriman pesan WhatsApp lancar.
-          </p>
-        </div>
+            {testStatus['evolution']?.message && (
+              <div className={`p-3 rounded-xl text-[10px] font-semibold flex items-center gap-2 ${
+                testStatus['evolution']?.success ? 'bg-emerald-50 text-emerald-600 border border-emerald-100 animate-fadeIn' : 'bg-red-50 text-red-600 border border-red-100 animate-fadeIn'
+              }`}>
+                <span className="material-symbols-outlined text-[14px]">
+                  {testStatus['evolution']?.success ? 'check_circle' : 'error'}
+                </span>
+                <span>{testStatus['evolution']?.message}</span>
+              </div>
+            )}
 
-        {/* Messaging Gateway: Evolution API */}
-        <div className="island-shell border border-[var(--line)] rounded-3xl p-6 space-y-4 bg-white shadow-xs">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-[var(--line)]">
-            <h2 className="text-sm font-extrabold text-[var(--sea-ink)]">
-              Evolution API WhatsApp
-            </h2>
-            <button
-              type="button"
-              disabled={testStatus['evolution']?.loading}
-              onClick={() => handleTestConnection('evolution')}
-              className="rounded-full bg-slate-100 hover:bg-slate-200 border border-slate-300 px-4 py-1.5 text-[10px] font-bold text-slate-800 transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
-            >
-              <span className="material-symbols-outlined text-[12px] font-bold">sync_alt</span>
-              {testStatus['evolution']?.loading ? 'Menguji...' : 'Tes Koneksi'}
-            </button>
+            <p className="text-[10px] text-[var(--sea-ink-soft)] leading-relaxed italic m-0">
+              Menggunakan kredensial dari `.env`: <code className="bg-slate-100 px-1 py-0.5 rounded text-slate-700">EVO_API_URL</code>, <code className="bg-slate-100 px-1 py-0.5 rounded text-slate-700">EVO_API_KEY</code>, & <code className="bg-slate-100 px-1 py-0.5 rounded text-slate-700">EVO_INSTANCE</code>.
+            </p>
           </div>
-
-          {testStatus['evolution']?.message && (
-            <div className={`p-3 rounded-xl text-[10px] font-semibold flex items-center gap-2 ${
-              testStatus['evolution']?.success ? 'bg-emerald-50 text-emerald-600 border border-emerald-100 animate-fadeIn' : 'bg-red-50 text-red-600 border border-red-100 animate-fadeIn'
-            }`}>
-              <span className="material-symbols-outlined text-[14px]">
-                {testStatus['evolution']?.success ? 'check_circle' : 'error'}
-              </span>
-              <span>{testStatus['evolution']?.message}</span>
-            </div>
-          )}
-
-          <p className="text-[10px] text-[var(--sea-ink-soft)] leading-relaxed italic m-0">
-            Menggunakan kredensial dari `.env`: <code className="bg-slate-100 px-1 py-0.5 rounded text-slate-700">EVO_API_URL</code>, <code className="bg-slate-100 px-1 py-0.5 rounded text-slate-700">EVO_API_KEY</code>, & <code className="bg-slate-100 px-1 py-0.5 rounded text-slate-700">EVO_INSTANCE</code>.
-          </p>
-        </div>
-
-        {/* Storage Gateway: RustFS */}
-        <div className="island-shell border border-[var(--line)] rounded-3xl p-6 space-y-4 bg-white shadow-xs">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-[var(--line)]">
-            <h2 className="text-sm font-extrabold text-[var(--sea-ink)]">
-              RustFS Storage Gateway
-            </h2>
-            <button
-              type="button"
-              disabled={testStatus['rustfs']?.loading}
-              onClick={() => handleTestConnection('rustfs')}
-              className="rounded-full bg-slate-100 hover:bg-slate-200 border border-slate-300 px-4 py-1.5 text-[10px] font-bold text-slate-800 transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
-            >
-              <span className="material-symbols-outlined text-[12px] font-bold">sync_alt</span>
-              {testStatus['rustfs']?.loading ? 'Menguji...' : 'Tes Koneksi'}
-            </button>
-          </div>
-
-          {testStatus['rustfs']?.message && (
-            <div className={`p-3 rounded-xl text-[10px] font-semibold flex items-center gap-2 ${
-              testStatus['rustfs']?.success ? 'bg-emerald-50 text-emerald-600 border border-emerald-100 animate-fadeIn' : 'bg-red-50 text-red-600 border border-red-100 animate-fadeIn'
-            }`}>
-              <span className="material-symbols-outlined text-[14px]">
-                {testStatus['rustfs']?.success ? 'check_circle' : 'error'}
-              </span>
-              <span>{testStatus['rustfs']?.message}</span>
-            </div>
-          )}
-
-          <p className="text-[10px] text-[var(--sea-ink-soft)] leading-relaxed italic m-0">
-            Menggunakan kredensial dari `.env`: <code className="bg-slate-100 px-1 py-0.5 rounded text-slate-700">RUSTFS_ENDPOINT</code>, <code className="bg-slate-100 px-1 py-0.5 rounded text-slate-700">RUSTFS_ACCESS_KEY</code>, <code className="bg-slate-100 px-1 py-0.5 rounded text-slate-700">RUSTFS_SECRET_KEY</code>, & <code className="bg-slate-100 px-1 py-0.5 rounded text-slate-700">RUSTFS_BUCKET</code>.
-          </p>
         </div>
 
         {/* Save button panel */}
-        <div className="md:col-span-2 flex justify-end">
+        <div className="flex justify-end pt-4">
           <button
             type="submit"
             disabled={isSaving}
