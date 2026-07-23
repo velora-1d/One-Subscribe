@@ -384,17 +384,19 @@ function CheckoutPage() {
               </div>
 
               {/* Promo / Voucher Form */}
-              <div className="pt-2 border-t border-slate-100 text-xs">
-                <span className="block text-[10px] text-slate-500 font-bold uppercase mb-1">
-                  Kode Voucer
+              <div className="pt-2 border-t border-slate-100 text-xs space-y-2">
+                <span className="block text-[10px] text-slate-500 font-bold uppercase">
+                  Kode Voucer / Promo
                 </span>
                 
+                {/* Active Voucher or Auto Catalog Promo Banner */}
                 {appliedVoucher && appliedVoucher.code ? (
                   <div className="flex items-center justify-between bg-indigo-50 border border-indigo-200 p-2">
                     <div className="flex items-center gap-1.5">
                       <span className="material-symbols-outlined text-indigo-600 text-sm">local_offer</span>
                       <div>
-                        <code className="font-black text-indigo-700 uppercase">{appliedVoucher.code}</code>
+                        <span className="text-[9px] text-indigo-500 font-bold block">Voucer Terpasang:</span>
+                        <code className="font-black text-indigo-700 text-xs uppercase">{appliedVoucher.code}</code>
                       </div>
                     </div>
                     <button
@@ -405,14 +407,27 @@ function CheckoutPage() {
                       Hapus
                     </button>
                   </div>
-                ) : (
+                ) : appliedVoucher ? (
+                  <div className="flex items-center justify-between bg-blue-50 border border-blue-200 p-2">
+                    <div className="flex items-center gap-1.5">
+                      <span className="material-symbols-outlined text-blue-600 text-sm">bolt</span>
+                      <div>
+                        <span className="font-bold text-xs text-blue-900 block">Diskon Otomatis Katalog</span>
+                        <span className="text-[9px] text-blue-600 font-medium block">Hemat {formatIDR(discountAmount)}</span>
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
+
+                {/* Voucher Input Field */}
+                {(!appliedVoucher || !appliedVoucher.code) && (
                   <div>
                     <div className="flex gap-1.5">
                       <input
                         type="text"
                         value={voucherCode}
                         onChange={(e) => setVoucherCode(e.target.value.toUpperCase())}
-                        placeholder="KODE VOUCER"
+                        placeholder={appliedVoucher ? "PUNYA KODE VOUCER LAIN?" : "MASUKKAN KODE VOUCER"}
                         className="flex-1 border border-slate-300 bg-white p-2 text-xs font-bold uppercase outline-none focus:border-slate-900"
                       />
                       <button

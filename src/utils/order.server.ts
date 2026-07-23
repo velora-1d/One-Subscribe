@@ -36,7 +36,7 @@ export async function deductProductStock(orderId: string) {
 }
 
 export async function createOrderServer(data: any, user: any, origin: string) {
-  const { productId, parentOrderId, durationMonths, appliedPromoId } = data;
+  const { productId, parentOrderId, durationMonths, appliedPromoId, customerInput } = data;
 
   const settingsList = await db.select().from(systemSettings);
   const settingsRecord: Record<string, string> = {};
@@ -293,6 +293,33 @@ export async function simulatePaymentSuccessServer(orderId: string) {
   await triggerPaymentSuccessNotification(orderId);
 
   return { success: true, error: null };
+}
+
+export async function cancelOrderServer(orderId: string, userId: string, userRole: string) {
+  const [existingOrder] = await db
+    .select()
+    .from(orders)
+    .where(eq(orders.id, orderId))
+    .limit(1);
+
+  if (!existingOrder) {
+    throw new Error('Pesanan tidak ditemukan.');
+  }
+
+  if (existingOrder.userId !== userId && userRole !== 'admin') {
+    throw new Error('Anda tidak memiliki akses untuk membatalkan pesanan ini.');
+  }
+
+  if (existingOrder.status !== 'menunggu_pembayaran' && existingOrder.status !== 'menunggu_aktivasi') {
+    throw new Error(`Pesanan dengan status "${existingOrder.status}" tidak dapat dibatalkan.`);
+  }
+
+  await db
+    .update(orders)
+    .set({ status: 'dibatalkan', updatedAt: new Date() })
+    .where(eq(orders.id, orderId));
+
+  return { success: true, message: 'Pesanan berhasil dibatalkan.' };
 }
 
 export async function getActiveSubscriptionsServer(userId: string) {

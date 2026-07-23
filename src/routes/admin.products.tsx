@@ -700,7 +700,7 @@ function AdminProductsPage() {
             {/* Interactive Fulfillment Type Selector */}
             <div className="pt-2">
               <Label className="block text-xs font-bold text-slate-800 uppercase tracking-wider mb-2.5">
-                Tipe Pengiriman Produk (Fulfillment Type)
+                Metode Pengiriman / Aktivasi Layanan
               </Label>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {[

@@ -1,6 +1,8 @@
 import { createFileRoute, Link, redirect, useNavigate } from '@tanstack/react-router'
 import { useState, useEffect } from 'react'
-import { getOrderById, simulatePaymentSuccess } from '../utils/order.functions'
+import { createPortal } from 'react-dom'
+import { toast } from 'sonner'
+import { getOrderById, simulatePaymentSuccess, cancelOrder } from '../utils/order.functions'
 
 export const Route = createFileRoute('/checkout/pay')({
   beforeLoad: ({ context }) => {
@@ -41,6 +43,8 @@ function PaymentIframePage() {
   const { order, error } = Route.useLoaderData()
   const navigate = useNavigate()
   const [isProcessing, setIsProcessing] = useState(false)
+  const [isCanceling, setIsCanceling] = useState(false)
+  const [showCancelModal, setShowCancelModal] = useState(false)
   const [statusMsg, setStatusMsg] = useState<string | null>(null)
   const [statusType, setStatusType] = useState<'success' | 'error' | null>(null)
   const [showDevPanel, setShowDevPanel] = useState(false)
@@ -64,6 +68,25 @@ function PaymentIframePage() {
 
     return () => clearInterval(interval)
   }, [order])
+
+  const confirmCancelOrder = async () => {
+    if (!order) return
+    setIsCanceling(true)
+    try {
+      const res = await cancelOrder({ data: order.id })
+      if (res.success) {
+        toast.success('Pesanan berhasil dibatalkan.')
+        setShowCancelModal(false)
+        navigate({ to: '/dashboard/orders' })
+      } else {
+        toast.error(res.error || 'Gagal membatalkan pesanan.')
+      }
+    } catch (err: any) {
+      toast.error(err?.message || 'Terjadi kesalahan saat membatalkan pesanan.')
+    } finally {
+      setIsCanceling(false)
+    }
+  }
 
   if (error || !order) {
     return (
@@ -105,70 +128,79 @@ function PaymentIframePage() {
   }
 
   return (
-    <main className="page-wrap px-4 py-8 max-w-6xl mx-auto space-y-6 animate-fadeIn">
-      {/* Top Header Card */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[var(--header-bg)] border border-[var(--line)] rounded-3xl p-6 shadow-[0_10px_30px_rgba(0,0,0,0.01)]">
-        <div className="flex items-center gap-3">
+    <main className="page-wrap px-2 sm:px-4 py-2 max-w-4xl mx-auto space-y-2 font-sans text-left">
+      {/* Top Header Bar - Ultra Compact */}
+      <div className="flex items-center justify-between gap-2 bg-white border border-slate-200 px-3 py-2 shadow-xs">
+        <div className="flex items-center gap-2">
           <Link
-            to="/"
-            className="h-9 w-9 rounded-full bg-white border border-[var(--line)] flex items-center justify-center text-slate-800 hover:bg-slate-50 transition shadow-xs no-underline"
+            to="/checkout"
+            className="h-7 w-7 bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-700 hover:bg-slate-200 transition no-underline shrink-0"
           >
-            <span className="material-symbols-outlined text-[18px]">arrow_back</span>
+            <span className="material-symbols-outlined text-[15px]">arrow_back</span>
           </Link>
-          <div>
-            <h1 className="text-base font-extrabold text-[var(--sea-ink)] flex items-center gap-2">
-              Pembayaran Pesanan
-              <span className="text-xs bg-slate-100 border border-slate-200 text-slate-800 px-2 py-0.5 rounded-md font-mono">
-                {order.id}
-              </span>
-            </h1>
-            <p className="text-[10px] text-[var(--sea-ink-soft)] font-medium mt-0.5">
-              Selesaikan transaksi Anda melalui gerbang pembayaran aman di bawah ini.
-            </p>
-          </div>
+          <h1 className="text-xs font-bold text-slate-900 flex items-center gap-1.5 m-0">
+            Pembayaran Pesanan
+            <span className="text-[10px] bg-slate-100 border border-slate-200 text-slate-700 px-1 py-0.2 font-mono">
+              #{order.id.slice(-8)}
+            </span>
+          </h1>
         </div>
 
-        <div className="flex items-center gap-4 text-xs font-bold text-[var(--sea-ink)]">
-          <div className="text-right">
-            <span className="text-[10px] text-[var(--sea-ink-soft)] block uppercase tracking-wider">Total Tagihan</span>
-            <span className="text-sm font-black text-slate-900">{formatIDR(order.price)}</span>
-          </div>
+        <div className="flex items-center gap-2 text-xs font-bold text-slate-900 shrink-0">
+          <span className="text-[10px] text-slate-400 font-bold uppercase">Total:</span>
+          <span className="text-xs font-extrabold text-emerald-600 mr-2">{formatIDR(order.price)}</span>
+          
+          <button
+            onClick={() => setShowCancelModal(true)}
+            disabled={isCanceling || order.status === 'dibatalkan'}
+            className="bg-red-50 hover:bg-red-100 border border-red-200 text-red-700 px-2.5 py-1 text-[11px] font-bold transition disabled:opacity-50 cursor-pointer flex items-center gap-1"
+            title="Batalkan Pesanan Ini"
+          >
+            <span className="material-symbols-outlined text-[13px]">cancel</span>
+            {isCanceling ? 'Batal...' : 'Batalkan'}
+          </button>
         </div>
       </div>
 
-      {/* Main Payment Iframe Section */}
-      <div className="bg-white border border-[var(--line)] rounded-[2rem] shadow-xs overflow-hidden flex flex-col min-h-[680px]">
+      {/* Main Payment Iframe Section - Compact Height & Scaled Pakasir Viewport */}
+      <div className="bg-white border border-slate-200 shadow-xs flex flex-col h-[550px] sm:h-[600px] overflow-hidden">
         {/* Frame Title Bar */}
-        <div className="px-6 py-3.5 bg-slate-50 border-b border-[var(--line)] flex items-center justify-between text-xs text-[var(--sea-ink-soft)] font-semibold">
-          <div className="flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="capitalize">Gerbang Pembayaran Resmi (OneSubscribe)</span>
+        <div className="px-3 py-1.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between text-[11px] text-slate-600 font-semibold shrink-0">
+          <div className="flex items-center gap-1.5">
+            <span className="h-1.5 w-1.5 bg-emerald-500 animate-pulse" />
+            <span className="text-[11px] font-bold text-slate-700">Gerbang Pembayaran Resmi</span>
           </div>
           <a
             href={order.paymentRedirectUrl || undefined}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-[var(--lagoon-deep)] hover:underline flex items-center gap-1 text-[11px] no-underline font-bold"
+            className="text-blue-600 hover:underline flex items-center gap-1 text-[10px] no-underline font-bold"
           >
-            Buka di Tab Baru
-            <span className="material-symbols-outlined text-[12px] font-bold">open_in_new</span>
+            Buka Tab Baru
+            <span className="material-symbols-outlined text-[11px] font-bold">open_in_new</span>
           </a>
         </div>
 
-        {/* Embedded Iframe */}
-        <div className="flex-grow bg-slate-100 relative min-h-[600px]">
+        {/* Embedded Iframe scaled for compact inner Pakasir layout */}
+        <div className="flex-grow bg-slate-50 relative w-full h-full overflow-hidden">
           {order.paymentRedirectUrl ? (
             <iframe
               src={order.paymentRedirectUrl}
-              className="absolute inset-0 w-full h-full border-0 bg-white"
+              className="absolute top-0 left-0 border-0 bg-white"
+              style={{
+                width: '117.65%',
+                height: '117.65%',
+                transform: 'scale(0.85)',
+                transformOrigin: 'top left',
+              }}
               title="Secure Payment Gateway Frame"
               allow="payment"
             />
           ) : (
-            <div className="absolute inset-0 flex items-center justify-center p-6 text-center">
+            <div className="absolute inset-0 flex items-center justify-center p-4 text-center">
               <div>
-                <span className="material-symbols-outlined text-[48px] text-red-500 mb-2">error</span>
-                <p className="text-xs font-bold text-slate-800">URL Pembayaran tidak valid.</p>
+                <span className="material-symbols-outlined text-[32px] text-red-500 mb-1">error</span>
+                <p className="text-xs font-bold text-slate-800 m-0">URL Pembayaran tidak valid.</p>
               </div>
             </div>
           )}
@@ -176,37 +208,37 @@ function PaymentIframePage() {
       </div>
 
       {/* Helper notice */}
-      <div className="text-center text-[10px] text-[var(--sea-ink-soft)] font-medium max-w-lg mx-auto leading-relaxed">
-        Jendela pembayaran ini terhubung langsung secara aman. Jangan menutup halaman ini setelah membayar; Anda akan dialihkan secara otomatis setelah pembayaran terdeteksi.
+      <div className="text-center text-[10px] text-slate-400 font-medium max-w-lg mx-auto leading-relaxed">
+        Jendela pembayaran terhubung secara aman. Halaman ini akan otomatis dialihkan setelah pembayaran terkonfirmasi.
       </div>
 
-      {/* collapsible developer simulation panel */}
-      <div className="border border-amber-200 bg-amber-50/40 rounded-3xl p-5 space-y-3">
+      {/* Collapsible developer simulation panel - Sharp */}
+      <div className="border border-amber-200 bg-amber-50/50 p-3 space-y-2 text-xs">
         <button
           type="button"
           onClick={() => setShowDevPanel(!showDevPanel)}
           className="flex items-center justify-between w-full text-xs font-bold text-amber-800 bg-transparent border-0 cursor-pointer outline-none"
         >
           <span className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-[16px]">bug_report</span>
+            <span className="material-symbols-outlined text-[14px]">bug_report</span>
             Simulasi Pembayaran (Developer Mode)
           </span>
-          <span className="material-symbols-outlined text-[16px]">
+          <span className="material-symbols-outlined text-[14px]">
             {showDevPanel ? 'expand_less' : 'expand_more'}
           </span>
         </button>
 
         {showDevPanel && (
-          <div className="space-y-3 pt-2 border-t border-amber-200/50">
+          <div className="space-y-2 pt-2 border-t border-amber-200/60">
             <p className="text-[10px] text-amber-700 leading-relaxed m-0">
-              Gunakan opsi ini untuk mensimulasikan status sukses pembayaran tanpa menyelesaikan tagihan riil pada gerbang pembayaran.
+              Gunakan simulasi ini jika ingin menandai pesanan lunas secara langsung (untuk testing dev).
             </p>
 
             {statusMsg && (
-              <div className={`p-3 rounded-xl border text-xs font-semibold flex items-center gap-2 ${
-                statusType === 'success' ? 'bg-emerald-50 border-emerald-200 text-emerald-600' : 'bg-red-50 border-red-200 text-red-600'
+              <div className={`p-2.5 border text-xs font-semibold flex items-center gap-2 ${
+                statusType === 'success' ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-red-50 border-red-200 text-red-700'
               }`}>
-                <span className="material-symbols-outlined text-[16px]">
+                <span className="material-symbols-outlined text-[14px]">
                   {statusType === 'success' ? 'check_circle' : 'error'}
                 </span>
                 {statusMsg}
@@ -216,13 +248,57 @@ function PaymentIframePage() {
             <button
               onClick={handleSimulatePayment}
               disabled={isProcessing || order.status !== 'menunggu_pembayaran'}
-              className="rounded-xl bg-amber-600 hover:bg-amber-700 px-5 py-2.5 text-xs font-bold text-white shadow-xs transition disabled:opacity-50 cursor-pointer border-0"
+              className="bg-amber-600 hover:bg-amber-700 px-4 py-2 text-xs font-bold text-white shadow-xs transition disabled:opacity-50 cursor-pointer border-0"
             >
               {isProcessing ? 'Memproses...' : 'Simulasikan Sukses Instan'}
             </button>
           </div>
         )}
       </div>
+
+      {/* Custom Aesthetic Confirmation Modal */}
+      {showCancelModal && typeof document !== 'undefined' && createPortal(
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white border border-slate-200 shadow-2xl p-6 max-w-sm w-full space-y-4 text-left font-sans animate-in zoom-in-95 duration-150">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-red-50 border border-red-200 flex items-center justify-center text-red-600 shrink-0">
+                <span className="material-symbols-outlined text-[22px]">warning</span>
+              </div>
+              <div>
+                <h3 className="text-sm font-extrabold text-slate-900 m-0">Batalkan Pesanan?</h3>
+                <p className="text-[11px] text-slate-500 font-medium m-0 mt-0.5">
+                  ID: <span className="font-mono text-slate-800 font-bold">{order.id}</span>
+                </p>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-600 leading-relaxed m-0">
+              Apakah Anda yakin ingin membatalkan checkout transaksi ini? Pesanan yang telah dibatalkan tidak dapat diaktifkan kembali.
+            </p>
+
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={() => setShowCancelModal(false)}
+                disabled={isCanceling}
+                className="px-4 py-2 border border-slate-200 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition cursor-pointer disabled:opacity-50"
+              >
+                Kembali
+              </button>
+              <button
+                type="button"
+                onClick={confirmCancelOrder}
+                disabled={isCanceling}
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition cursor-pointer disabled:opacity-50 flex items-center gap-1.5 border-0"
+              >
+                <span className="material-symbols-outlined text-[14px]">cancel</span>
+                {isCanceling ? 'Memproses...' : 'Ya, Batalkan'}
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
     </main>
   )
 }

@@ -52,7 +52,7 @@ function formatIDR(amount: number): string {
 function AdminOrdersPage() {
   const { orders: initialOrders, error } = Route.useLoaderData()
   const [orders, setOrders] = useState(initialOrders)
-  const [activeTab, setActiveTab] = useState<'semua' | 'menunggu_pembayaran' | 'menunggu_aktivasi' | 'aktif' | 'expired'>('semua')
+  const [activeTab, setActiveTab] = useState<'semua' | 'menunggu_pembayaran' | 'menunggu_aktivasi' | 'aktif' | 'expired' | 'dibatalkan'>('semua')
   const [currentPage, setCurrentPage] = useState(1)
   const [selectedOrder, setSelectedOrder] = useState<any>(null)
   const [itemsPerPage, setItemsPerPage] = useState(10)
@@ -344,7 +344,13 @@ function AdminOrdersPage() {
       case 'expired':
         return (
           <span className="text-[10px] font-black text-slate-500 bg-slate-50 border border-slate-200 px-2.5 py-1 rounded-full whitespace-nowrap">
-            Batal / Expired
+            Expired
+          </span>
+        )
+      case 'dibatalkan':
+        return (
+          <span className="text-[10px] font-black text-red-600 bg-red-50 border border-red-200 px-2.5 py-1 rounded-full whitespace-nowrap">
+            Dibatalkan
           </span>
         )
       default:
@@ -379,7 +385,7 @@ function AdminOrdersPage() {
       {/* Tabs Selector */}
       <div className="flex">
         <div className="flex flex-wrap bg-slate-100/80 p-1 rounded-2xl border border-slate-200/60 shadow-inner gap-1">
-          {(['semua', 'menunggu_pembayaran', 'menunggu_aktivasi', 'aktif', 'expired'] as const).map((tab) => (
+          {(['semua', 'menunggu_pembayaran', 'menunggu_aktivasi', 'aktif', 'expired', 'dibatalkan'] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -389,7 +395,17 @@ function AdminOrdersPage() {
                   : 'text-slate-600 hover:text-slate-900 hover:bg-white/40'
               }`}
             >
-              {tab === 'semua' ? 'Semua Pesanan' : tab === 'menunggu_pembayaran' ? 'Unpaid' : tab === 'menunggu_aktivasi' ? 'Butuh Aktivasi' : tab === 'aktif' ? 'Aktif' : 'Expired'}
+              {tab === 'semua'
+                ? 'Semua Pesanan'
+                : tab === 'menunggu_pembayaran'
+                ? 'Unpaid'
+                : tab === 'menunggu_aktivasi'
+                ? 'Butuh Aktivasi'
+                : tab === 'aktif'
+                ? 'Aktif'
+                : tab === 'expired'
+                ? 'Expired'
+                : 'Dibatalkan'}
             </button>
           ))}
         </div>
@@ -408,7 +424,8 @@ function AdminOrdersPage() {
                   <th className="px-6 py-4">Layanan</th>
                   <th className="px-6 py-4">Status</th>
                   <th className="px-6 py-4 text-right">Total Bayar</th>
-                  <th className="px-6 py-4 text-center">Fulfill / Aksi</th>
+                  <th className="px-6 py-4 text-center">Aktivasi Akun</th>
+                  <th className="px-6 py-4 text-center">Aksi</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[var(--line)] text-[var(--sea-ink-soft)]">
@@ -434,25 +451,31 @@ function AdminOrdersPage() {
                     <td className="px-6 py-4 text-right whitespace-nowrap font-bold text-[var(--sea-ink)]">
                       {formatIDR(order.price)}
                     </td>
+                    {/* Aktivasi Akun Column */}
                     <td className="px-6 py-4 text-center whitespace-nowrap">
-                      <div className="flex items-center justify-center gap-2">
-                        {order.status === 'menunggu_aktivasi' && (
-                          <button
-                            onClick={() => handleOpenFulfill(order)}
-                            className="rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-sm px-3.5 py-1.5 text-[10px] font-extrabold cursor-pointer transition whitespace-nowrap"
-                          >
-                            Proses Fulfillment
-                          </button>
-                        )}
-                        {order.status === 'aktif' && (
-                          <button
-                            onClick={() => handleOpenFulfill(order)}
-                            className="rounded-full bg-[var(--chip-bg)] border border-[var(--chip-line)] hover:bg-slate-200 text-[var(--sea-ink)] px-3.5 py-1.5 text-[10px] font-bold cursor-pointer transition whitespace-nowrap"
-                          >
-                            Update Fulfillment
-                          </button>
-                        )}
-                        
+                      {order.status === 'menunggu_aktivasi' && (
+                        <button
+                          onClick={() => handleOpenFulfill(order)}
+                          className="rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-sm px-3.5 py-1.5 text-[10px] font-extrabold cursor-pointer transition whitespace-nowrap border-0"
+                        >
+                          Proses Aktivasi
+                        </button>
+                      )}
+                      {order.status === 'aktif' && (
+                        <button
+                          onClick={() => handleOpenFulfill(order)}
+                          className="rounded-full bg-[var(--chip-bg)] border border-[var(--chip-line)] hover:bg-slate-200 text-[var(--sea-ink)] px-3.5 py-1.5 text-[10px] font-bold cursor-pointer transition whitespace-nowrap"
+                        >
+                          Update Kredensial
+                        </button>
+                      )}
+                      {order.status !== 'menunggu_aktivasi' && order.status !== 'aktif' && (
+                        <span className="text-[11px] text-slate-400 font-medium italic">-</span>
+                      )}
+                    </td>
+                    {/* Quick Actions Column */}
+                    <td className="px-6 py-4 text-center whitespace-nowrap">
+                      <div className="flex items-center justify-center gap-1.5">
                         {/* WhatsApp Button */}
                         <button
                           onClick={() => handleOpenWhatsappModal(order.customerWhatsapp || '', order.customerName, { id: order.id, productName: order.productName, price: order.price })}
@@ -512,58 +535,41 @@ function AdminOrdersPage() {
                         setItemsPerPage(Number(e.target.value))
                         setCurrentPage(1)
                       }}
-                      className="rounded-lg border border-slate-250 bg-white px-2 py-1 text-[11px] font-bold text-slate-700 focus:border-slate-900 outline-none transition cursor-pointer font-sans"
+                      className="bg-white border border-slate-200 rounded-lg px-2 py-1 text-slate-700 font-bold text-[11px] outline-none cursor-pointer"
                     >
                       <option value={10}>10</option>
                       <option value={20}>20</option>
-                      <option value={30}>30</option>
-                      <option value={40}>40</option>
                       <option value={50}>50</option>
                     </select>
                   </div>
                 </div>
-                {totalPages > 1 && (
-                  <div className="flex items-center gap-1.5">
-                    <button
-                      type="button"
-                      disabled={activePage === 1}
-                      onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                      className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-650 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center justify-center"
-                    >
-                      <span className="material-symbols-outlined text-[16px]">chevron_left</span>
-                    </button>
-                    {Array.from({ length: totalPages }).map((_, i) => {
-                      const pageNum = i + 1
-                      return (
-                        <button
-                          key={pageNum}
-                          type="button"
-                          onClick={() => setCurrentPage(pageNum)}
-                          className={`w-7.5 h-7.5 rounded-lg text-center cursor-pointer transition ${
-                            activePage === pageNum
-                              ? 'bg-slate-900 border border-slate-900 text-white font-extrabold shadow-sm'
-                              : 'border border-slate-200 bg-white hover:bg-slate-50 text-slate-650 font-bold'
-                          }`}
-                        >
-                          {pageNum}
-                        </button>
-                      )
-                    })}
-                    <button
-                      type="button"
-                      disabled={activePage === totalPages}
-                      onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                      className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-650 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center justify-center"
-                    >
-                      <span className="material-symbols-outlined text-[16px]">chevron_right</span>
-                    </button>
-                  </div>
-                )}
+
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+                    disabled={activePage === 1}
+                    className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 text-slate-700 text-xs font-bold disabled:opacity-40 transition cursor-pointer"
+                  >
+                    Sebelumnya
+                  </button>
+
+                  <span className="px-2 text-slate-700 font-bold text-xs">
+                    {activePage} / {totalPages}
+                  </span>
+
+                  <button
+                    onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+                    disabled={activePage === totalPages}
+                    className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 text-slate-700 text-xs font-bold disabled:opacity-40 transition cursor-pointer"
+                  >
+                    Selanjutnya
+                  </button>
+                </div>
               </div>
             )}
           </div>
         ) : (
-          <div className="text-center py-16 italic text-xs">
+          <div className="p-8 text-center text-slate-400 text-xs font-semibold">
             Belum ada pesanan dengan status terpilih.
           </div>
         )}
@@ -574,11 +580,11 @@ function AdminOrdersPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
           <div className="w-full max-w-md bg-[var(--header-bg)] border border-[var(--line)] rounded-[2rem] p-8 shadow-xl animate-fadeIn bg-white">
             <h2 className="text-lg font-extrabold text-[var(--sea-ink)] mb-1">
-              {fulfillmentType === 'download_link' ? 'Fulfillment Link Download' :
-               fulfillmentType === 'license_key' ? 'Fulfillment Kode Lisensi' :
-               fulfillmentType === 'email_invite' ? 'Fulfillment Undangan Email' :
-               fulfillmentType === 'topup_service' ? 'Fulfillment Top-Up / Jasa' :
-               'Fulfillment Akun Premium'}
+              {fulfillmentType === 'download_link' ? 'Pengiriman Link Download' :
+               fulfillmentType === 'license_key' ? 'Pengiriman Kode Lisensi' :
+               fulfillmentType === 'email_invite' ? 'Aktivasi Undangan Email' :
+               fulfillmentType === 'topup_service' ? 'Aktivasi Top-Up / Jasa' :
+               'Aktivasi Akun Premium'}
             </h2>
             <p className="text-[10px] text-[var(--sea-ink-soft)] mb-6">
               {fulfillmentType === 'download_link' ? 'Masukkan link download/akses file yang akan dikirimkan ke pelanggan.' :

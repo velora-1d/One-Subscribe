@@ -6,6 +6,7 @@ const createOrderSchema = z.object({
   parentOrderId: z.string().optional(),
   durationMonths: z.number().optional(),
   appliedPromoId: z.string().optional(),
+  customerInput: z.string().optional(),
 });
 
 /**
@@ -119,3 +120,23 @@ export async function deductProductStock(orderId: string) {
   const { deductProductStock: deduct } = await import('./order.server');
   return deduct(orderId);
 }
+
+/**
+ * Server function to cancel a pending order.
+ */
+export const cancelOrder = createServerFn({ method: 'POST' })
+  .validator((data: unknown) => z.string().parse(data))
+  .handler(async ({ data: orderId }) => {
+    const { getSessionUser } = await import('./auth.server');
+    const user = getSessionUser();
+    if (!user) {
+      throw new Error('Akses ditolak. Silakan login kembali.');
+    }
+
+    try {
+      const { cancelOrderServer } = await import('./order.server');
+      return await cancelOrderServer(orderId, user.userId, user.role);
+    } catch (error: any) {
+      return { success: false, error: error?.message || 'Gagal membatalkan pesanan.' };
+    }
+  });

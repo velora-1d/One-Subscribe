@@ -1,7 +1,8 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute, Link, useRouter } from '@tanstack/react-router'
 import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
-import { getMyOrders } from '../utils/order.functions'
+import { toast } from 'sonner'
+import { getMyOrders, cancelOrder } from '../utils/order.functions'
 import { PageTableSkeleton } from '../components/ui/skeletons'
 
 export const Route = createFileRoute('/dashboard/orders')({
@@ -33,15 +34,37 @@ function formatIDR(amount: number): string {
 function DashboardOrdersPage() {
   const { orders, error } = Route.useLoaderData()
   const { user } = Route.useRouteContext()
+  const router = useRouter()
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState(10)
   const [selectedOrder, setSelectedOrder] = useState<any>(null)
+  const [orderToCancel, setOrderToCancel] = useState<any>(null)
+  const [isCanceling, setIsCanceling] = useState(false)
 
   const [mounted, setMounted] = useState(false)
   useEffect(() => {
     setMounted(true)
     return () => setMounted(false)
   }, [])
+
+  const confirmCancelOrder = async () => {
+    if (!orderToCancel) return
+    setIsCanceling(true)
+    try {
+      const res = await cancelOrder({ data: orderToCancel.id })
+      if (res.success) {
+        toast.success('Pesanan berhasil dibatalkan.')
+        setOrderToCancel(null)
+        router.invalidate()
+      } else {
+        toast.error(res.error || 'Gagal membatalkan pesanan.')
+      }
+    } catch (err: any) {
+      toast.error(err?.message || 'Terjadi kesalahan.')
+    } finally {
+      setIsCanceling(false)
+    }
+  }
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -67,6 +90,12 @@ function DashboardOrdersPage() {
         return (
           <span className="text-[10px] font-black text-slate-500 bg-slate-50 border border-slate-200 px-2.5 py-1 rounded-full whitespace-nowrap">
             Expired
+          </span>
+        )
+      case 'dibatalkan':
+        return (
+          <span className="text-[10px] font-black text-red-600 bg-red-50 border border-red-200 px-2.5 py-1 rounded-full whitespace-nowrap">
+            Dibatalkan
           </span>
         )
       default:
@@ -156,13 +185,25 @@ function DashboardOrdersPage() {
                     </td>
                     <td className="px-6 py-4 text-center whitespace-nowrap">
                       <div className="flex items-center justify-center gap-2">
-                        {order.status === 'menunggu_pembayaran' && order.paymentRedirectUrl && (
-                          <a
-                            href={order.paymentRedirectUrl}
-                            className="inline-block rounded-full bg-amber-500 hover:bg-amber-600 px-4 py-1.5 text-xs font-extrabold text-white shadow-sm no-underline transition"
-                          >
-                            Bayar
-                          </a>
+                        {order.status === 'menunggu_pembayaran' && (
+                          <div className="flex items-center gap-1.5">
+                            {order.paymentRedirectUrl && (
+                              <a
+                                href={order.paymentRedirectUrl}
+                                className="inline-block rounded-full bg-amber-500 hover:bg-amber-600 px-3.5 py-1.5 text-xs font-extrabold text-white shadow-sm no-underline transition"
+                              >
+                                Bayar
+                              </a>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => setOrderToCancel(order)}
+                              className="rounded-full bg-red-50 hover:bg-red-100 border border-red-200 px-3 py-1.5 text-xs font-bold text-red-600 transition cursor-pointer"
+                              title="Batalkan Pesanan Ini"
+                            >
+                              Batalkan
+                            </button>
+                          </div>
                         )}
                         {order.status === 'menunggu_aktivasi' && (
                           <span className="text-xs text-[var(--sea-ink-soft)] font-bold italic">
@@ -438,7 +479,6 @@ function DashboardOrdersPage() {
               </button>
             </div>
 
-            {/* Print Only CSS Hack styling to cleanly force print area */}
             <style dangerouslySetInnerHTML={{ __html: `
               @media print {
                 body * {
@@ -466,6 +506,50 @@ function DashboardOrdersPage() {
                 }
               }
             `}} />
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* Custom Aesthetic Cancel Order Modal */}
+      {orderToCancel && typeof document !== 'undefined' && createPortal(
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white border border-slate-200 shadow-2xl p-6 max-w-sm w-full space-y-4 text-left font-sans animate-in zoom-in-95 duration-150 rounded-2xl">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-red-50 border border-red-200 rounded-xl flex items-center justify-center text-red-600 shrink-0">
+                <span className="material-symbols-outlined text-[22px]">warning</span>
+              </div>
+              <div>
+                <h3 className="text-sm font-black text-slate-900 m-0">Batalkan Pesanan?</h3>
+                <p className="text-[11px] text-slate-500 font-medium m-0 mt-0.5">
+                  ID: <span className="font-mono text-slate-800 font-bold">{orderToCancel.id}</span>
+                </p>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-600 leading-relaxed m-0 font-medium">
+              Apakah Anda yakin ingin membatalkan pesanan untuk layanan <span className="font-bold text-slate-900">{orderToCancel.productName}</span>? Pesanan yang dibatalkan tidak dapat diproses kembali.
+            </p>
+
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={() => setOrderToCancel(null)}
+                disabled={isCanceling}
+                className="px-4 py-2 border border-slate-200 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition cursor-pointer disabled:opacity-50"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={confirmCancelOrder}
+                disabled={isCanceling}
+                className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition cursor-pointer disabled:opacity-50 flex items-center gap-1.5 border-0 shadow-sm"
+              >
+                <span className="material-symbols-outlined text-[14px]">cancel</span>
+                {isCanceling ? 'Memproses...' : 'Ya, Batalkan'}
+              </button>
+            </div>
           </div>
         </div>,
         document.body
