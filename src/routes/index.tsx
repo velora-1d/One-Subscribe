@@ -173,6 +173,24 @@ function CatalogPage() {
                 <h3 className="text-xs font-bold text-[var(--sea-ink)] mb-1 line-clamp-1 group-hover:text-[var(--lagoon)] transition" title={product.name}>
                   {product.name}
                 </h3>
+                <div className="flex items-center gap-1.5 mb-2">
+                  {product.stock <= 0 ? (
+                    <span className="inline-flex items-center gap-1 bg-red-50 text-red-600 border border-red-200 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider">
+                      <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
+                      Stok Habis
+                    </span>
+                  ) : product.stock < 5 ? (
+                    <span className="inline-flex items-center gap-1 bg-amber-50 text-amber-600 border border-amber-250 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider animate-pulse">
+                      <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-ping" />
+                      Tinggal {product.stock} Slot
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-600 border border-emerald-250 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider">
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                      Ready {product.stock} Slot
+                    </span>
+                  )}
+                </div>
                 <p className="text-[11px] text-[var(--sea-ink-soft)] leading-relaxed mb-4 line-clamp-2 min-h-[2rem]">
                   {product.description}
                 </p>

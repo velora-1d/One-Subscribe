@@ -3,6 +3,7 @@ import { db } from '../../db'
 import { orders } from '../../db/schema'
 import { eq } from 'drizzle-orm'
 import { triggerPaymentSuccessNotification } from '../utils/notifications.server'
+import { deductProductStock } from '../utils/order.functions'
 
 export const Route = createFileRoute('/api/webhooks/midtrans')({
   server: {
@@ -39,6 +40,7 @@ export const Route = createFileRoute('/api/webhooks/midtrans')({
             console.log(`[Webhook Midtrans] Updated order ${orderId} status to ${status}`)
 
             if (status === 'menunggu_aktivasi') {
+              await deductProductStock(orderId)
               await triggerPaymentSuccessNotification(orderId)
             }
           }

@@ -164,10 +164,22 @@ function ProductDetailPage() {
               <span className="text-[10px] font-bold text-slate-700 bg-slate-50 border border-slate-200 px-3.5 py-1.5 rounded-none">
                 Masa Aktif {product.durationMonths} Bulan
               </span>
-              <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-100 px-3.5 py-1.5 rounded-none flex items-center gap-1">
-                <div className="h-1.5 w-1.5 rounded-none bg-emerald-500 animate-ping" />
-                Stok Tersedia
-              </span>
+              {product.stock <= 0 ? (
+                <span className="text-[10px] font-black text-rose-600 bg-rose-50 border border-rose-100 px-3.5 py-1.5 rounded-none flex items-center gap-1">
+                  <div className="h-1.5 w-1.5 rounded-none bg-rose-500" />
+                  Stok Habis
+                </span>
+              ) : product.stock < 5 ? (
+                <span className="text-[10px] font-black text-amber-600 bg-amber-50 border border-amber-250 px-3.5 py-1.5 rounded-none flex items-center gap-1 animate-pulse">
+                  <div className="h-1.5 w-1.5 rounded-none bg-amber-500 animate-ping" />
+                  Hampir Habis (Sisa {product.stock} Slot)
+                </span>
+              ) : (
+                <span className="text-[10px] font-black text-emerald-600 bg-emerald-50 border border-emerald-100 px-3.5 py-1.5 rounded-none flex items-center gap-1">
+                  <div className="h-1.5 w-1.5 rounded-none bg-emerald-500" />
+                  Stok Tersedia ({product.stock} Slot)
+                </span>
+              )}
             </div>
 
             {/* Product Title */}
@@ -275,11 +287,16 @@ function ProductDetailPage() {
                 </div>
               ) : (
                 <button
+                  disabled={product.stock <= 0}
                   onClick={handleOrder}
-                  className="group inline-flex items-center justify-center gap-2 rounded-none bg-slate-950 hover:bg-slate-900 text-white px-8 py-4 text-xs font-black shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 cursor-pointer w-full sm:w-auto border border-slate-950"
+                  className={`group inline-flex items-center justify-center gap-2 rounded-none px-8 py-4 text-xs font-black transition-all duration-300 w-full sm:w-auto border ${
+                    product.stock <= 0
+                      ? 'bg-slate-200 text-slate-400 border-slate-200 cursor-not-allowed pointer-events-none'
+                      : 'bg-slate-950 hover:bg-slate-900 text-white shadow-md hover:shadow-lg hover:-translate-y-0.5 cursor-pointer border-slate-950'
+                  }`}
                 >
-                  Order Sekarang
-                  <ArrowLeft className="h-4 w-4 rotate-180 transition-transform group-hover:translate-x-1" />
+                  {product.stock <= 0 ? 'Stok Habis' : 'Order Sekarang'}
+                  {product.stock > 0 && <ArrowLeft className="h-4 w-4 rotate-180 transition-transform group-hover:translate-x-1" />}
                 </button>
               )}
             </div>

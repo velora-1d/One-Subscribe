@@ -47,6 +47,10 @@ export const createOrder = createServerFn({ method: 'POST' })
       throw new Error('Produk tidak ditemukan atau sudah tidak aktif.');
     }
 
+    if (!parentOrderId && product.stock <= 0) {
+      throw new Error('Stok produk ini sedang habis. Silakan hubungi admin atau pilih produk lain.');
+    }
+
     // Determine final duration and price
     const finalDuration = durationMonths || product.durationMonths;
     const baseMonthlyPrice = Math.round(product.price / product.durationMonths);
@@ -337,7 +341,8 @@ export const simulatePaymentSuccess = createServerFn({ method: 'POST' })
         .set({ status: 'menunggu_aktivasi', updatedAt: new Date() })
         .where(eq(orders.id, orderId));
 
-      // Send WhatsApp notification
+      // Send WhatsApp notification and deduct stock
+      await deductProductStock(orderId);
       await triggerPaymentSuccessNotification(orderId);
 
       return { success: true };
@@ -419,3 +424,37 @@ export const getActiveSubscriptions = createServerFn({ method: 'GET' })
       return { success: false, error: error?.message || 'Gagal mengambil data langganan aktif.' };
     }
   });
+
+/**
+ * Helper function to deduct 1 stock for the ordered product if it is a new purchase (not renewal).
+ */
+export async function deductProductStock(orderId: string) {
+  try {
+    const [orderRecord] = await db
+      .select()
+      .from(orders)
+      .where(eq(orders.id, orderId))
+      .limit(1);
+
+    if (orderRecord && !orderRecord.parentOrderId) {
+      const [productRecord] = await db
+        .select()
+        .from(products)
+        .where(eq(products.id, orderRecord.productId))
+        .limit(1);
+
+      if (productRecord) {
+        await db
+          .update(products)
+          .set({ 
+            stock: Math.max(0, productRecord.stock - 1),
+            updatedAt: new Date(),
+          })
+          .where(eq(products.id, orderRecord.productId));
+        console.log(`[Stock Deduction] Deducted 1 stock for product ${productRecord.name}. New stock: ${Math.max(0, productRecord.stock - 1)}`);
+      }
+    }
+  } catch (err) {
+    console.error('Failed to deduct product stock for order:', orderId, err);
+  }
+}

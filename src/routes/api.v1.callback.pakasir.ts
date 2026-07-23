@@ -3,6 +3,7 @@ import { db } from '../../db'
 import { orders } from '../../db/schema'
 import { eq } from 'drizzle-orm'
 import { triggerPaymentSuccessNotification } from '../utils/notifications.server'
+import { deductProductStock } from '../utils/order.functions'
 
 export const Route = createFileRoute('/api/v1/callback/pakasir')({
   server: {
@@ -34,6 +35,7 @@ export const Route = createFileRoute('/api/v1/callback/pakasir')({
             console.log(`[Webhook Pakasir] Updated order ${reference} status to ${orderStatus}`)
 
             if (orderStatus === 'menunggu_aktivasi') {
+              await deductProductStock(reference)
               await triggerPaymentSuccessNotification(reference)
             }
           }

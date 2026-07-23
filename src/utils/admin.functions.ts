@@ -121,7 +121,6 @@ export const getAdminStats = createServerFn({ method: 'GET' }).handler(async () 
   }
 });
 
-// Product Schemas
 const productInputSchema = z.object({
   name: z.string().min(2, 'Nama minimal 2 karakter'),
   description: z.string().min(10, 'Deskripsi minimal 10 karakter'),
@@ -129,6 +128,7 @@ const productInputSchema = z.object({
   durationMonths: z.number().int().positive('Durasi harus bernilai positif'),
   category: z.string().min(1, 'Kategori harus diisi'),
   imageUrl: z.string().optional().nullable(),
+  stock: z.number().int().nonnegative('Stok harus bernilai non-negatif').default(0),
 });
 
 /**

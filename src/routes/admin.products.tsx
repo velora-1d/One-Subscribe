@@ -60,6 +60,7 @@ interface ProductFormState {
   durationMonths: number
   category: string
   imageUrl: string
+  stock: number
 }
 
 const emptyForm: ProductFormState = {
@@ -69,6 +70,7 @@ const emptyForm: ProductFormState = {
   durationMonths: 1,
   category: '',
   imageUrl: '',
+  stock: 10,
 }
 
 function AdminProductsPage() {
@@ -112,18 +114,19 @@ function AdminProductsPage() {
   }
 
   const handleOpenEdit = (p: any) => {
-    setEditingId(p.id)
-    setForm({
-      name: p.name,
-      description: p.description,
-      price: p.price,
-      durationMonths: p.durationMonths,
-      category: p.category,
-      imageUrl: p.imageUrl || '',
-    })
-    setFormError(null)
-    setIsModalOpen(true)
-  }
+     setEditingId(p.id)
+     setForm({
+       name: p.name,
+       description: p.description,
+       price: p.price,
+       durationMonths: p.durationMonths,
+       category: p.category,
+       imageUrl: p.imageUrl || '',
+       stock: p.stock ?? 0,
+     })
+     setFormError(null)
+     setIsModalOpen(true)
+   }
 
   const handleToggleStatus = async (id: string, currentStatus: boolean) => {
     try {
@@ -315,6 +318,24 @@ function AdminProductsPage() {
                 </p>
               </div>
 
+              {/* Stock indicator badge */}
+              <div className="flex items-center justify-between border-t border-slate-100/80 pt-2.5">
+                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Stok Tersedia</span>
+                {p.stock <= 0 ? (
+                  <span className="bg-rose-50 text-rose-700 border border-rose-200/60 text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider shadow-xs">
+                    Habis
+                  </span>
+                ) : p.stock < 5 ? (
+                  <span className="bg-amber-50 text-amber-700 border border-amber-200/60 text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider shadow-xs animate-pulse">
+                    Tinggal {p.stock} Slot
+                  </span>
+                ) : (
+                  <span className="bg-emerald-50 text-emerald-700 border border-emerald-200/60 text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider shadow-xs">
+                    {p.stock} Slot
+                  </span>
+                )}
+              </div>
+
               {/* Price & Duration row */}
               <div className="flex justify-between items-baseline border-t border-slate-100 pt-2.5">
                 <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">{p.durationMonths} Bulan</span>
@@ -411,7 +432,7 @@ function AdminProductsPage() {
               />
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-4 sm:grid-cols-3">
               <div>
                 <Label className="block text-xs font-semibold text-slate-700 mb-1">
                   Harga (IDR)
@@ -436,6 +457,19 @@ function AdminProductsPage() {
                   required
                   value={form.durationMonths}
                   onChange={(e) => setForm({ ...form, durationMonths: parseInt(e.target.value) || 1 })}
+                  className="w-full rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100/50 focus:bg-white focus:border-slate-900 px-3 h-10 text-xs text-slate-800 outline-none transition"
+                />
+              </div>
+              <div>
+                <Label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Stok Produk
+                </Label>
+                <Input
+                  type="number"
+                  required
+                  min={0}
+                  value={form.stock}
+                  onChange={(e) => setForm({ ...form, stock: Math.max(0, parseInt(e.target.value) || 0) })}
                   className="w-full rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100/50 focus:bg-white focus:border-slate-900 px-3 h-10 text-xs text-slate-800 outline-none transition"
                 />
               </div>

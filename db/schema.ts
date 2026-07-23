@@ -24,6 +24,7 @@ export const products = pgTable('products', {
   durationMonths: integer('duration_months').default(1).notNull(), // Default to 1 month subscription
   category: text('category').notNull(), // e.g. 'AI', 'Cloud', 'Server'
   imageUrl: text('image_url'),
+  stock: integer('stock').default(0).notNull(), // Available stock/slots
   isActive: boolean('is_active').default(true).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
