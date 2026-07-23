@@ -458,3 +458,16 @@ export const bulkUpdateProductStock = createServerFn({ method: 'POST' })
     }
   });
 
+export const updateProductsOrder = createServerFn({ method: 'POST' })
+  .validator((data: any) => data)
+  .handler(async ({ data }) => {
+    const admin = await verifyAdminSession();
+    try {
+      const { updateProductsOrderServer } = await import('./admin.server');
+      return await updateProductsOrderServer(data.updates, admin.userId);
+    } catch (error: any) {
+      console.error("updateProductsOrder error:", error);
+      return { success: false, error: error?.message || 'Gagal memperbarui urutan produk.' };
+    }
+  });
+

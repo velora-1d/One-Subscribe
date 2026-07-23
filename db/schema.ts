@@ -28,6 +28,7 @@ export const products = pgTable('products', {
   category: text('category').notNull(), // e.g. 'AI', 'Cloud', 'Server'
   imageUrl: text('image_url'),
   stock: integer('stock').default(0).notNull(), // Available stock/slots
+  sortOrder: integer('sort_order').default(0).notNull(), // Display ordering index
   isActive: boolean('is_active').default(true).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),

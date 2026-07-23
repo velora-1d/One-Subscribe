@@ -1,4 +1,4 @@
-import { eq, and } from 'drizzle-orm';
+import { eq, and, asc, desc } from 'drizzle-orm';
 import { db } from '../../db';
 import { products, promos } from '../../db/schema';
 
@@ -65,7 +65,8 @@ export async function getActiveProductsServer() {
   const activeProducts = await db
     .select()
     .from(products)
-    .where(eq(products.isActive, true));
+    .where(eq(products.isActive, true))
+    .orderBy(asc(products.sortOrder), desc(products.createdAt));
 
   const productsWithPromos = await attachPromosToProducts(activeProducts);
   return { success: true, error: null, products: productsWithPromos };

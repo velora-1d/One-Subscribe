@@ -1,4 +1,4 @@
-import { eq, desc, sql, and } from 'drizzle-orm';
+import { eq, desc, sql, and, asc } from 'drizzle-orm';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import bcrypt from 'bcryptjs';
 import { db } from '../../db';
@@ -140,7 +140,7 @@ export async function getAdminStatsServer() {
 }
 
 export async function getAdminProductsServer() {
-  const list = await db.select().from(products).orderBy(desc(products.createdAt));
+  const list = await db.select().from(products).orderBy(asc(products.sortOrder), desc(products.createdAt));
   return { success: true, error: null, products: list };
 }
 
@@ -741,6 +741,27 @@ export async function bulkUpdateProductStockServer(
         });
       }
     }
+  });
+  return { success: true, error: null };
+}
+
+export async function updateProductsOrderServer(
+  updates: { productId: string; sortOrder: number }[],
+  adminUserId: string
+) {
+  await db.transaction(async (tx) => {
+    for (const update of updates) {
+      await tx
+        .update(products)
+        .set({ sortOrder: update.sortOrder, updatedAt: new Date() })
+        .where(eq(products.id, update.productId));
+    }
+
+    await tx.insert(auditLogs).values({
+      userId: adminUserId,
+      action: 'UPDATE_PRODUCTS_ORDER',
+      details: 'Mengubah urutan tampil katalog produk.',
+    });
   });
   return { success: true, error: null };
 }

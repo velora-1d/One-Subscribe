@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { getAdminProducts, getAdminCategories, createAdminProduct, updateAdminProduct, toggleProductStatus, deleteAdminProduct, bulkUpdateProductStock } from '../utils/admin.functions'
+import { getAdminProducts, getAdminCategories, createAdminProduct, updateAdminProduct, toggleProductStatus, deleteAdminProduct, bulkUpdateProductStock, updateProductsOrder } from '../utils/admin.functions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -101,6 +101,11 @@ function AdminProductsPage() {
   const [bulkQuickVal, setBulkQuickVal] = useState('')
   const [isSubmittingBulk, setIsSubmittingBulk] = useState(false)
 
+  // Order States
+  const [isOrderModalOpen, setIsOrderModalOpen] = useState(false)
+  const [orderedProducts, setOrderedProducts] = useState<any[]>([])
+  const [isSubmittingOrder, setIsSubmittingOrder] = useState(false)
+
   // Filter States
   const [search, setSearch] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string>('semua')
@@ -183,6 +188,69 @@ function AdminProductsPage() {
       toast.error(err?.message || 'Terjadi kesalahan.')
     } finally {
       setIsSubmittingBulk(false)
+    }
+  }
+
+  const handleOpenOrderModal = () => {
+    const sorted = [...products].sort((a, b) => {
+      if ((a.sortOrder ?? 0) !== (b.sortOrder ?? 0)) {
+        return (a.sortOrder ?? 0) - (b.sortOrder ?? 0);
+      }
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
+    setOrderedProducts(sorted);
+    setIsOrderModalOpen(true);
+  }
+
+  const handleMoveUp = (idx: number) => {
+    if (idx === 0) return;
+    const list = [...orderedProducts];
+    const temp = list[idx];
+    list[idx] = list[idx - 1];
+    list[idx - 1] = temp;
+    setOrderedProducts(list);
+  }
+
+  const handleMoveDown = (idx: number) => {
+    if (idx === orderedProducts.length - 1) return;
+    const list = [...orderedProducts];
+    const temp = list[idx];
+    list[idx] = list[idx + 1];
+    list[idx + 1] = temp;
+    setOrderedProducts(list);
+  }
+
+  const handleSaveOrder = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmittingOrder(true);
+    try {
+      const updates = orderedProducts.map((p, idx) => ({
+        productId: p.id,
+        sortOrder: idx + 1,
+      }));
+
+      const res = await updateProductsOrder({ data: { updates } });
+      if (res.success) {
+        const updatedProducts = products.map((p) => {
+          const match = updates.find((u) => u.productId === p.id);
+          return match ? { ...p, sortOrder: match.sortOrder } : p;
+        }).sort((a, b) => {
+          if ((a.sortOrder ?? 0) !== (b.sortOrder ?? 0)) {
+            return (a.sortOrder ?? 0) - (b.sortOrder ?? 0);
+          }
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        });
+
+        setProducts(updatedProducts);
+        toast.success('Urutan produk berhasil disimpan!');
+        setIsOrderModalOpen(false);
+      } else {
+        toast.error(res.error || 'Gagal menyimpan urutan produk.');
+      }
+    } catch (err: any) {
+      toast.error(err?.message || 'Terjadi kesalahan.');
+    } finally {
+      setIsSubmittingOrder(false);
     }
   }
 
@@ -288,6 +356,13 @@ function AdminProductsPage() {
           </div>
         </div>
         <div className="flex flex-wrap gap-2.5 shrink-0">
+          <button
+            onClick={handleOpenOrderModal}
+            className="rounded-lg bg-white border border-slate-200 hover:bg-slate-50 px-5 py-2.5 text-xs font-bold text-slate-700 hover:text-slate-900 transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer font-sans"
+          >
+            <span className="material-symbols-outlined text-[18px]">reorder</span>
+            Atur Urutan Tampil
+          </button>
           <button
             onClick={handleOpenBulkStock}
             className="rounded-lg bg-white border border-slate-200 hover:bg-slate-50 px-5 py-2.5 text-xs font-bold text-slate-700 hover:text-slate-900 transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer font-sans"
@@ -785,6 +860,93 @@ function AdminProductsPage() {
                   <>
                     <span className="material-symbols-outlined text-[16px]">save</span>
                     Simpan Perubahan Stok
+                  </>
+                )}
+              </button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog Atur Urutan Tampil */}
+      <Dialog open={isOrderModalOpen} onOpenChange={setIsOrderModalOpen}>
+        <DialogContent className="w-11/12 sm:max-w-2xl bg-white border border-slate-200 rounded-xl p-6 shadow-xl max-h-[90vh] overflow-y-auto font-sans text-left flex flex-col gap-4">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-bold text-slate-900 font-display flex items-center gap-2">
+              <span className="material-symbols-outlined">reorder</span>
+              Atur Urutan Tampil Katalog
+            </DialogTitle>
+          </DialogHeader>
+
+          <p className="text-xs text-slate-500 font-semibold leading-relaxed">
+            Gunakan tombol <strong>Naik ⬆️</strong> atau <strong>Turun ⬇️</strong> untuk menyesuaikan posisi tampil produk di katalog pembeli. Produk di bagian atas akan muncul lebih dulu.
+          </p>
+
+          <form onSubmit={handleSaveOrder} className="flex flex-col gap-4 flex-grow overflow-hidden">
+            {/* List for sorting */}
+            <div className="border border-slate-200 rounded-xl overflow-y-auto max-h-[50vh] divide-y divide-slate-100 bg-white">
+              {orderedProducts.length > 0 ? (
+                orderedProducts.map((item, idx) => (
+                  <div key={item.id} className="p-3 px-4 flex items-center justify-between gap-4 hover:bg-slate-50/50 transition">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <span className="bg-slate-100 text-slate-500 text-[10px] font-black h-5 w-5 rounded-full flex items-center justify-center shrink-0">
+                        {idx + 1}
+                      </span>
+                      <div className="min-w-0">
+                        <p className="text-xs font-bold text-slate-800 truncate" title={item.name}>{item.name}</p>
+                        <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">{item.category}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <button
+                        type="button"
+                        disabled={idx === 0}
+                        onClick={() => handleMoveUp(idx)}
+                        className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-slate-100 disabled:opacity-30 disabled:hover:bg-transparent rounded-lg transition cursor-pointer"
+                        title="Naik"
+                      >
+                        <span className="material-symbols-outlined text-[18px]">keyboard_arrow_up</span>
+                      </button>
+                      <button
+                        type="button"
+                        disabled={idx === orderedProducts.length - 1}
+                        onClick={() => handleMoveDown(idx)}
+                        className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-slate-100 disabled:opacity-30 disabled:hover:bg-transparent rounded-lg transition cursor-pointer"
+                        title="Turun"
+                      >
+                        <span className="material-symbols-outlined text-[18px]">keyboard_arrow_down</span>
+                      </button>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="p-8 text-center text-xs text-slate-400 italic">
+                  Belum ada produk untuk diurutkan.
+                </div>
+              )}
+            </div>
+
+            {/* Modal Actions */}
+            <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={() => setIsOrderModalOpen(false)}
+                className="rounded-lg bg-white border border-slate-200 hover:bg-slate-50 px-5 h-10 text-xs font-bold text-slate-600 transition cursor-pointer"
+              >
+                Batal
+              </button>
+              <button
+                type="submit"
+                disabled={isSubmittingOrder}
+                className="rounded-lg bg-slate-900 text-white px-6 h-10 text-xs font-bold shadow-sm hover:scale-95 transition disabled:opacity-50 cursor-pointer border border-slate-950 flex items-center justify-center gap-1.5"
+              >
+                {isSubmittingOrder ? (
+                  'Menyimpan...'
+                ) : (
+                  <>
+                    <span className="material-symbols-outlined text-[16px]">save</span>
+                    Simpan Urutan Baru
                   </>
                 )}
               </button>
