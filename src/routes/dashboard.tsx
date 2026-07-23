@@ -139,9 +139,7 @@ function DashboardLayout() {
       {/* SideNavBar (Desktop) */}
       <nav className="hidden md:flex h-screen w-64 bg-white border-r border-slate-200 flex-col p-4 gap-4 shrink-0">
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-full overflow-hidden bg-slate-100 flex items-center justify-center shrink-0 border border-slate-200 font-extrabold text-slate-800 text-sm">
-            {user?.name ? user.name.slice(0, 2).toUpperCase() : 'US'}
-          </div>
+          <img src="/logo-onesubs.webp" alt="OneSubscribe Logo" className="w-10 h-10 rounded-full object-cover shrink-0 border border-slate-200 shadow-sm" />
           <div>
             <h2 className="text-sm font-bold text-slate-900 leading-tight">Dashboard User</h2>
             <p className="text-[11px] font-semibold text-slate-500 mt-0.5 truncate max-w-[140px]" title={user?.name}>
@@ -247,9 +245,7 @@ function DashboardLayout() {
           <nav className="relative flex w-64 max-w-xs flex-1 flex-col bg-white px-6 py-6 border-r border-slate-200">
             <div className="flex items-center justify-between mb-8">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full overflow-hidden bg-slate-100 flex items-center justify-center shrink-0 border border-slate-200 font-extrabold text-slate-800 text-xs">
-                  {user?.name ? user.name.slice(0, 2).toUpperCase() : 'US'}
-                </div>
+                <img src="/logo-onesubs.webp" alt="OneSubscribe Logo" className="w-8 h-8 rounded-full object-cover border border-slate-200 shadow-sm shrink-0" />
                 <div>
                   <h2 className="text-xs font-bold text-slate-900 leading-tight">Dashboard User</h2>
                   <p className="text-[10px] font-semibold text-slate-500 truncate max-w-[120px]">{user?.name}</p>

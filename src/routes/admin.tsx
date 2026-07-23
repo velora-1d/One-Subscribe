@@ -37,9 +37,7 @@ function AdminLayout() {
       <div className="hidden md:block p-4 shrink-0 h-full">
         <nav className="h-full w-64 bg-white/80 backdrop-blur-md border border-slate-200/80 rounded-2xl flex flex-col p-5 gap-4 shadow-xl shadow-slate-100/40">
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-tr from-slate-900 to-slate-700 text-white flex items-center justify-center shrink-0 border border-slate-200/50 shadow-sm font-extrabold text-xs">
-              {user?.name ? user.name.slice(0, 2).toUpperCase() : 'AD'}
-            </div>
+            <img src="/logo-onesubs.webp" alt="OneSubscribe Logo" className="w-10 h-10 rounded-full object-cover shrink-0 border border-slate-200/50 shadow-sm" />
             <div>
               <h2 className="text-sm font-bold text-slate-900 leading-tight">Admin Panel</h2>
               <p className="text-[10px] font-bold text-slate-400 mt-0.5 tracking-wide uppercase">System Overview</p>
@@ -275,9 +273,7 @@ function AdminLayout() {
           <nav className="relative flex h-screen w-64 bg-white border-r border-slate-200 flex-col p-4 gap-4 z-50 shadow-xl">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-tr from-slate-900 to-slate-700 text-white flex items-center justify-center border border-slate-200 font-extrabold text-slate-800 text-sm shrink-0">
-                  {user?.name ? user.name.slice(0, 2).toUpperCase() : 'AD'}
-                </div>
+                <img src="/logo-onesubs.webp" alt="OneSubscribe Logo" className="w-10 h-10 rounded-full object-cover border border-slate-200 shadow-sm shrink-0" />
                 <div>
                   <h2 className="text-sm font-bold text-slate-900 leading-tight">Admin Panel</h2>
                   <p className="text-[11px] font-semibold text-slate-500 mt-0.5">System Overview</p>

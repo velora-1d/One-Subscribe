@@ -30,6 +30,11 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
     ],
     links: [
       {
+        rel: 'icon',
+        type: 'image/webp',
+        href: '/logo-onesubs.webp',
+      },
+      {
         rel: 'stylesheet',
         href: appCss,
       },

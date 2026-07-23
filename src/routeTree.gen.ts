@@ -32,6 +32,9 @@ import { Route as DashboardIndexRouteImport } from './routes/dashboard.index'
 import { Route as DashboardOrdersRouteImport } from './routes/dashboard.orders'
 import { Route as DashboardProfileRouteImport } from './routes/dashboard.profile'
 import { Route as ProductsProductIdRouteImport } from './routes/products.$productId'
+import { Route as ApiCronAutoDeductRouteImport } from './routes/api.cron.auto-deduct'
+import { Route as ApiWebhooksMidtransRouteImport } from './routes/api.webhooks.midtrans'
+import { Route as ApiV1CallbackPakasirRouteImport } from './routes/api.v1.callback.pakasir'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -148,6 +151,21 @@ const ProductsProductIdRoute = ProductsProductIdRouteImport.update({
   path: '/products/$productId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiCronAutoDeductRoute = ApiCronAutoDeductRouteImport.update({
+  id: '/api/cron/auto-deduct',
+  path: '/api/cron/auto-deduct',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiWebhooksMidtransRoute = ApiWebhooksMidtransRouteImport.update({
+  id: '/api/webhooks/midtrans',
+  path: '/api/webhooks/midtrans',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiV1CallbackPakasirRoute = ApiV1CallbackPakasirRouteImport.update({
+  id: '/api/v1/callback/pakasir',
+  path: '/api/v1/callback/pakasir',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -173,6 +191,9 @@ export interface FileRoutesByFullPath {
   '/products/$productId': typeof ProductsProductIdRoute
   '/checkout/': typeof CheckoutIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
+  '/api/cron/auto-deduct': typeof ApiCronAutoDeductRoute
+  '/api/webhooks/midtrans': typeof ApiWebhooksMidtransRoute
+  '/api/v1/callback/pakasir': typeof ApiV1CallbackPakasirRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -197,6 +218,9 @@ export interface FileRoutesByTo {
   '/products/$productId': typeof ProductsProductIdRoute
   '/checkout': typeof CheckoutIndexRoute
   '/dashboard': typeof DashboardIndexRoute
+  '/api/cron/auto-deduct': typeof ApiCronAutoDeductRoute
+  '/api/webhooks/midtrans': typeof ApiWebhooksMidtransRoute
+  '/api/v1/callback/pakasir': typeof ApiV1CallbackPakasirRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -223,6 +247,9 @@ export interface FileRoutesById {
   '/products/$productId': typeof ProductsProductIdRoute
   '/checkout/': typeof CheckoutIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
+  '/api/cron/auto-deduct': typeof ApiCronAutoDeductRoute
+  '/api/webhooks/midtrans': typeof ApiWebhooksMidtransRoute
+  '/api/v1/callback/pakasir': typeof ApiV1CallbackPakasirRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -250,6 +277,9 @@ export interface FileRouteTypes {
     | '/products/$productId'
     | '/checkout/'
     | '/dashboard/'
+    | '/api/cron/auto-deduct'
+    | '/api/webhooks/midtrans'
+    | '/api/v1/callback/pakasir'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -274,6 +304,9 @@ export interface FileRouteTypes {
     | '/products/$productId'
     | '/checkout'
     | '/dashboard'
+    | '/api/cron/auto-deduct'
+    | '/api/webhooks/midtrans'
+    | '/api/v1/callback/pakasir'
   id:
     | '__root__'
     | '/'
@@ -299,6 +332,9 @@ export interface FileRouteTypes {
     | '/products/$productId'
     | '/checkout/'
     | '/dashboard/'
+    | '/api/cron/auto-deduct'
+    | '/api/webhooks/midtrans'
+    | '/api/v1/callback/pakasir'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -312,6 +348,9 @@ export interface RootRouteChildren {
   CheckoutSuccessRoute: typeof CheckoutSuccessRoute
   ProductsProductIdRoute: typeof ProductsProductIdRoute
   CheckoutIndexRoute: typeof CheckoutIndexRoute
+  ApiCronAutoDeductRoute: typeof ApiCronAutoDeductRoute
+  ApiWebhooksMidtransRoute: typeof ApiWebhooksMidtransRoute
+  ApiV1CallbackPakasirRoute: typeof ApiV1CallbackPakasirRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -477,6 +516,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProductsProductIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/cron/auto-deduct': {
+      id: '/api/cron/auto-deduct'
+      path: '/api/cron/auto-deduct'
+      fullPath: '/api/cron/auto-deduct'
+      preLoaderRoute: typeof ApiCronAutoDeductRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/webhooks/midtrans': {
+      id: '/api/webhooks/midtrans'
+      path: '/api/webhooks/midtrans'
+      fullPath: '/api/webhooks/midtrans'
+      preLoaderRoute: typeof ApiWebhooksMidtransRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/v1/callback/pakasir': {
+      id: '/api/v1/callback/pakasir'
+      path: '/api/v1/callback/pakasir'
+      fullPath: '/api/v1/callback/pakasir'
+      preLoaderRoute: typeof ApiV1CallbackPakasirRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -535,6 +595,9 @@ const rootRouteChildren: RootRouteChildren = {
   CheckoutSuccessRoute: CheckoutSuccessRoute,
   ProductsProductIdRoute: ProductsProductIdRoute,
   CheckoutIndexRoute: CheckoutIndexRoute,
+  ApiCronAutoDeductRoute: ApiCronAutoDeductRoute,
+  ApiWebhooksMidtransRoute: ApiWebhooksMidtransRoute,
+  ApiV1CallbackPakasirRoute: ApiV1CallbackPakasirRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

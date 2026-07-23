@@ -32,7 +32,7 @@ export default function Header() {
             to="/"
             className="inline-flex items-center gap-2 rounded-full border border-[var(--chip-line)] bg-[var(--chip-bg)] px-3 py-1.5 text-sm font-bold text-[var(--sea-ink)] no-underline shadow-[0_8px_24px_rgba(15,23,42,0.06)] sm:px-4 sm:py-2"
           >
-            <span className="h-2.5 w-2.5 rounded-full bg-[linear-gradient(90deg,#f97316,#ef4444,#3b82f6)] animate-pulse" />
+            <img src="/logo-onesubs.webp" alt="Logo OneSubscribe" className="h-5 w-5 rounded-full object-cover" />
             OneSubscribe
           </Link>
 
