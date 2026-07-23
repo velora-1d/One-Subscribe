@@ -139,8 +139,12 @@ function CheckoutPage() {
 
   const handleRemoveVoucher = () => {
     setVoucherCode('')
-    setAppliedVoucher(null)
     setVoucherError(null)
+    if (product.promo && chosenDuration >= (product.promo.minDurationMonths || 1)) {
+      setAppliedVoucher(product.promo)
+    } else {
+      setAppliedVoucher(null)
+    }
   }
 
   const handleCheckout = async (e: React.FormEvent) => {
@@ -364,7 +368,7 @@ function CheckoutPage() {
                   Punya Kode Voucer?
                 </span>
                 
-                {appliedVoucher ? (
+                {appliedVoucher && appliedVoucher.code ? (
                   <div className="flex items-center justify-between bg-indigo-50 border border-indigo-100 rounded-xl p-3">
                     <div className="flex items-center gap-2">
                       <span className="material-symbols-outlined text-indigo-600 text-sm">local_offer</span>
