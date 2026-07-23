@@ -415,17 +415,23 @@ export const fulfillOrder = createServerFn({ method: 'POST' })
         });
       });
 
-      // 6. Dispatch real/simulated notifications
-      await sendFulfillmentNotification({
-        toEmail: order.customerEmail,
-        toWhatsapp: order.customerWhatsapp,
-        customerName: order.customerName,
-        productName: order.productName,
-        accountEmail: email,
-        accountPassword: password,
-        remarks,
-        orderId: order.id,
-      });
+      // 6. Dispatch real/simulated notifications - isolated to prevent external provider issues from rollback
+      try {
+        await sendFulfillmentNotification({
+          toEmail: order.customerEmail,
+          toWhatsapp: order.customerWhatsapp,
+          customerName: order.customerName,
+          productName: order.productName,
+          accountEmail: email,
+          accountPassword: password,
+          remarks,
+          orderId: order.id,
+        });
+      } catch (notifError: any) {
+        console.error('[Notification Dispatch Failure]', notifError);
+        // Returns success as database commits completed, with warning about notification failure
+        return { success: true, notificationWarning: 'Aktivasi berhasil, namun gagal mengirimkan notifikasi WA/Email.' };
+      }
 
       return { success: true };
     } catch (error: any) {

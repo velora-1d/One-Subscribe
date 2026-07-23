@@ -14,6 +14,16 @@ export const Route = createFileRoute('/api/cron/auto-deduct')({
       },
       POST: async ({ request }) => {
         try {
+          // Verify authorization token
+          const authHeader = request.headers.get('Authorization')
+          const cronSecret = process.env.CRON_SECRET || 'local-cron-secret'
+          if (authHeader !== `Bearer ${cronSecret}`) {
+            return new Response(JSON.stringify({ error: 'Akses ditolak. Token otorisasi tidak valid.' }), {
+              status: 401,
+              headers: { 'Content-Type': 'application/json' },
+            })
+          }
+
           // Fetch all currently active orders
           const activeOrders = await db
             .select({
