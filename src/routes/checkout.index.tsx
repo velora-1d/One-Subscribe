@@ -66,13 +66,13 @@ function CheckoutPage() {
   }
 
   // Duration & Voucher states
-  const [chosenDuration, setChosenDuration] = useState(
-    product.promo && product.promo.minDurationMonths
-      ? Math.max(product.durationMonths, product.promo.minDurationMonths)
-      : product.durationMonths
-  )
+  const [chosenDuration, setChosenDuration] = useState(product.durationMonths)
   const [voucherCode, setVoucherCode] = useState('')
-  const [appliedVoucher, setAppliedVoucher] = useState<any | null>(product.promo || null)
+  const [appliedVoucher, setAppliedVoucher] = useState<any | null>(
+    product.promo && product.durationMonths >= (product.promo.minDurationMonths || 1)
+      ? product.promo
+      : null
+  )
   const [voucherError, setVoucherError] = useState<string | null>(null)
   const [isValidatingVoucher, setIsValidatingVoucher] = useState(false)
 
@@ -98,9 +98,14 @@ function CheckoutPage() {
     const value = Math.max(product.durationMonths, newVal)
     setChosenDuration(value)
 
-    if (appliedVoucher && appliedVoucher.minDurationMonths && value < appliedVoucher.minDurationMonths) {
-      setAppliedVoucher(null)
-      setVoucherError(`Kupon "${appliedVoucher.code || 'Promo Katalog'}" tidak berlaku karena durasi di bawah minimal (${appliedVoucher.minDurationMonths} Bulan).`)
+    if (appliedVoucher) {
+      if (appliedVoucher.minDurationMonths && value < appliedVoucher.minDurationMonths) {
+        setAppliedVoucher(null)
+        setVoucherError(`Promo/Kupon tidak berlaku karena durasi di bawah minimal (${appliedVoucher.minDurationMonths} Bulan).`)
+      }
+    } else if (product.promo && value >= (product.promo.minDurationMonths || 1)) {
+      setAppliedVoucher(product.promo)
+      setVoucherError(null)
     }
   }
 

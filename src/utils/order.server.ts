@@ -84,29 +84,36 @@ export async function createOrderServer(data: any, user: any, origin: string) {
       .where(eq(promos.id, appliedPromoId))
       .limit(1);
 
-    if (promo && promo.isActive) {
-      if (finalDuration >= promo.minDurationMonths) {
-        if (!promo.maxUses || promo.usedCount < promo.maxUses) {
-          const now = new Date();
-          const startOk = !promo.validFrom || now >= new Date(promo.validFrom);
-          const endOk = !promo.validUntil || now <= new Date(promo.validUntil);
-          const prodOk = !promo.productId || promo.productId === productId;
-
-          if (startOk && endOk && prodOk) {
-            if (promo.discountType === 'percentage') {
-              discountAmount = Math.round(finalPrice * (promo.discountValue / 100));
-              if (promo.maxDiscountAmount) {
-                discountAmount = Math.min(discountAmount, promo.maxDiscountAmount);
-              }
-            } else if (promo.discountType === 'fixed') {
-              discountAmount = promo.discountValue;
-            }
-            finalPrice = Math.max(0, finalPrice - discountAmount);
-            promoToUpdate = promo;
-          }
-        }
-      }
+    if (!promo || !promo.isActive) {
+      throw new Error('Kupon tidak aktif atau tidak ditemukan.');
     }
+    if (finalDuration < promo.minDurationMonths) {
+      throw new Error(`Minimal durasi berlangganan untuk kupon ini adalah ${promo.minDurationMonths} bulan.`);
+    }
+    if (promo.maxUses && promo.usedCount >= promo.maxUses) {
+      throw new Error('Kuota penggunaan kupon ini sudah habis.');
+    }
+    const now = new Date();
+    if (promo.validFrom && now < new Date(promo.validFrom)) {
+      throw new Error('Kupon ini belum bisa digunakan.');
+    }
+    if (promo.validUntil && now > new Date(promo.validUntil)) {
+      throw new Error('Kupon ini sudah kadaluarsa.');
+    }
+    if (promo.productId && promo.productId !== productId) {
+      throw new Error('Kupon ini tidak berlaku untuk produk yang Anda pilih.');
+    }
+
+    if (promo.discountType === 'percentage') {
+      discountAmount = Math.round(finalPrice * (promo.discountValue / 100));
+      if (promo.maxDiscountAmount) {
+        discountAmount = Math.min(discountAmount, promo.maxDiscountAmount);
+      }
+    } else if (promo.discountType === 'fixed') {
+      discountAmount = promo.discountValue;
+    }
+    finalPrice = Math.max(0, finalPrice - discountAmount);
+    promoToUpdate = promo;
   }
 
   const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
