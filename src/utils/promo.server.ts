@@ -205,6 +205,7 @@ export async function validateVoucherServer(data: any) {
       discountType: promo.discountType,
       discountValue: promo.discountValue,
       maxDiscountAmount: promo.maxDiscountAmount,
+      minDurationMonths: promo.minDurationMonths,
     }
   };
 }

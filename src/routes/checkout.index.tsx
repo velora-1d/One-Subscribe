@@ -65,13 +65,20 @@ function CheckoutPage() {
     )
   }
 
-  // Voucher states
+  // Duration & Voucher states
+  const [chosenDuration, setChosenDuration] = useState(
+    product.promo && product.promo.minDurationMonths
+      ? Math.max(product.durationMonths, product.promo.minDurationMonths)
+      : product.durationMonths
+  )
   const [voucherCode, setVoucherCode] = useState('')
-  const [appliedVoucher, setAppliedVoucher] = useState<any | null>(null)
+  const [appliedVoucher, setAppliedVoucher] = useState<any | null>(product.promo || null)
   const [voucherError, setVoucherError] = useState<string | null>(null)
   const [isValidatingVoucher, setIsValidatingVoucher] = useState(false)
 
-  const basePrice = product.promo ? product.promo.priceAfterPromo : product.price
+  // Monthly base price calculated from the product
+  const baseMonthlyPrice = Math.round(product.price / product.durationMonths)
+  const basePrice = baseMonthlyPrice * chosenDuration
 
   let discountAmount = 0
   if (appliedVoucher) {
@@ -87,6 +94,16 @@ function CheckoutPage() {
 
   const finalPrice = Math.max(0, basePrice - discountAmount)
 
+  const handleDurationChange = (newVal: number) => {
+    const value = Math.max(product.durationMonths, newVal)
+    setChosenDuration(value)
+
+    if (appliedVoucher && appliedVoucher.minDurationMonths && value < appliedVoucher.minDurationMonths) {
+      setAppliedVoucher(null)
+      setVoucherError(`Kupon "${appliedVoucher.code || 'Promo Katalog'}" tidak berlaku karena durasi di bawah minimal (${appliedVoucher.minDurationMonths} Bulan).`)
+    }
+  }
+
   const handleApplyVoucher = async () => {
     if (!voucherCode.trim()) return
     setIsValidatingVoucher(true)
@@ -96,7 +113,7 @@ function CheckoutPage() {
         data: {
           code: voucherCode.trim().toUpperCase(),
           productId: product.id,
-          durationMonths: product.durationMonths,
+          durationMonths: chosenDuration,
         }
       })
 
@@ -130,6 +147,7 @@ function CheckoutPage() {
       const result = await createOrder({
         data: {
           productId: product.id,
+          durationMonths: chosenDuration,
           appliedPromoId: appliedVoucher?.id || undefined,
         },
       })
@@ -293,8 +311,45 @@ function CheckoutPage() {
                     Kategori: {product.category}
                   </span>
                   <span className="text-[9px] text-[var(--sea-ink-soft)] font-bold block">
-                    Durasi: {product.durationMonths} Bulan
+                    Durasi: {chosenDuration} Bulan
                   </span>
+                </div>
+              </div>
+
+              {/* Duration Selector */}
+              <div className="pt-3 border-t border-slate-100 flex flex-col gap-2">
+                <span className="block text-[10px] text-[var(--sea-ink-soft)] font-bold uppercase tracking-wider">
+                  Pilih Durasi Langganan
+                </span>
+                <div className="flex items-center gap-3 bg-slate-50 border border-slate-100 rounded-xl p-3 justify-between">
+                  <div className="text-left">
+                    <span className="text-xs font-black text-slate-900 block">
+                      {chosenDuration} Bulan
+                    </span>
+                    <span className="text-[9px] text-[var(--sea-ink-soft)] font-bold">
+                      Minimal: {product.durationMonths} Bulan
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1 bg-white border border-slate-200 rounded-lg p-0.5 shadow-sm">
+                    <button
+                      type="button"
+                      disabled={chosenDuration <= product.durationMonths}
+                      onClick={() => handleDurationChange(chosenDuration - 1)}
+                      className="h-6 w-6 rounded bg-slate-50 hover:bg-slate-100 disabled:opacity-30 flex items-center justify-center text-xs font-black text-slate-700 cursor-pointer border-0 select-none"
+                    >
+                      -
+                    </button>
+                    <span className="text-xs font-black text-slate-900 w-6 text-center select-none">
+                      {chosenDuration}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => handleDurationChange(chosenDuration + 1)}
+                      className="h-6 w-6 rounded bg-slate-50 hover:bg-slate-100 flex items-center justify-center text-xs font-black text-slate-700 cursor-pointer border-0 select-none"
+                    >
+                      +
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -353,27 +408,17 @@ function CheckoutPage() {
 
               {/* Billing breakdown */}
               <div className="space-y-3 pt-3 text-xs text-slate-500 border-t border-[var(--line)]">
-                {product.promo ? (
-                  <>
-                    <div className="flex justify-between">
-                      <span>Harga Normal</span>
-                      <span className="font-semibold text-slate-400 line-through">{formatIDR(product.price)}</span>
-                    </div>
-                    <div className="flex justify-between text-rose-600 font-semibold">
-                      <span>Promo Katalog ({product.promo.discountType === 'percentage' ? `${product.promo.discountValue}%` : 'Hemat'})</span>
-                      <span>-{formatIDR(product.price - product.promo.priceAfterPromo)}</span>
-                    </div>
-                  </>
-                ) : (
-                  <div className="flex justify-between">
-                    <span>Harga Berlangganan</span>
-                    <span className="font-semibold text-slate-800">{formatIDR(product.price)}</span>
-                  </div>
-                )}
+                <div className="flex justify-between">
+                  <span>Harga Langganan ({chosenDuration} Bulan)</span>
+                  <span className="font-semibold text-slate-800">{formatIDR(basePrice)}</span>
+                </div>
 
                 {appliedVoucher && (
-                  <div className="flex justify-between text-indigo-600 font-semibold">
-                    <span>Kupon ({appliedVoucher.code})</span>
+                  <div className="flex justify-between text-indigo-600 font-semibold bg-indigo-50/50 p-2 rounded-xl border border-indigo-100/50">
+                    <span className="flex items-center gap-1">
+                      <span className="material-symbols-outlined text-xs">local_offer</span>
+                      {appliedVoucher.code ? `Kupon (${appliedVoucher.code})` : 'Promo Katalog'}
+                    </span>
                     <span>-{formatIDR(discountAmount)}</span>
                   </div>
                 )}
