@@ -553,36 +553,85 @@ function AdminProductsPage() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <Label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Nama Layanan
+            {/* Top Section: Product Image + Name & Category */}
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start pb-4 border-b border-slate-100">
+              {/* Image Upload Box */}
+              <div className="md:col-span-4 space-y-1.5">
+                <Label className="block text-xs font-bold text-slate-800 uppercase tracking-wider">
+                  Gambar Ilustrasi Produk
                 </Label>
-                <Input
-                  type="text"
-                  required
-                  value={form.name}
-                  onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  placeholder="Contoh: Netflix Premium 1 Bulan"
-                  className="w-full rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100/50 focus:bg-white focus:border-slate-900 px-3 h-10 text-xs text-slate-800 outline-none transition"
-                />
+                {form.imageUrl ? (
+                  <div className="relative aspect-square w-full max-w-[160px] bg-slate-50 border border-slate-200 overflow-hidden flex items-center justify-center rounded-xl shadow-xs group">
+                    <img src={form.imageUrl} alt="Preview" className="w-full h-full object-cover" />
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-2">
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        onClick={() => setForm({ ...form, imageUrl: '' })}
+                        className="bg-red-600 hover:bg-red-700 text-white font-bold p-1.5 px-3 h-8 text-xs transition cursor-pointer rounded-lg shadow-sm"
+                      >
+                        Hapus Gambar
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <label className="flex flex-col items-center justify-center aspect-square w-full max-w-[160px] border-2 border-dashed border-slate-200 bg-slate-50 hover:bg-slate-100/80 hover:border-slate-400 transition cursor-pointer rounded-xl">
+                    <div className="flex flex-col items-center justify-center text-center p-3">
+                      <span className="material-symbols-outlined text-2xl text-slate-400 mb-1">add_photo_alternate</span>
+                      <p className="text-xs font-bold text-slate-700">Unggah Gambar</p>
+                      <p className="text-[10px] text-slate-400 mt-0.5">Rasio 1:1 (Persegi)</p>
+                    </div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0]
+                        if (file) {
+                          const reader = new FileReader()
+                          reader.onloadend = () => {
+                            setForm({ ...form, imageUrl: reader.result as string })
+                          }
+                          reader.readAsDataURL(file)
+                        }
+                      }}
+                    />
+                  </label>
+                )}
               </div>
 
-              <div>
-                <Label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Kategori
-                </Label>
-                <select
-                  value={form.category}
-                  onChange={(e) => setForm({ ...form, category: e.target.value })}
-                  className="w-full rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100/50 focus:bg-white focus:border-slate-900 px-3 h-10 text-xs text-slate-800 outline-none transition cursor-pointer font-medium"
-                >
-                  {categories.map((cat: any) => (
-                    <option key={cat.id} value={cat.name}>
-                      {cat.name}
-                    </option>
-                  ))}
-                </select>
+              {/* Name & Category Inputs */}
+              <div className="md:col-span-8 space-y-4">
+                <div>
+                  <Label className="block text-xs font-semibold text-slate-700 mb-1">
+                    Nama Layanan
+                  </Label>
+                  <Input
+                    type="text"
+                    required
+                    value={form.name}
+                    onChange={(e) => setForm({ ...form, name: e.target.value })}
+                    placeholder="Contoh: Netflix Premium 1 Bulan"
+                    className="w-full rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100/50 focus:bg-white focus:border-slate-900 px-3 h-10 text-xs text-slate-800 outline-none transition font-medium"
+                  />
+                </div>
+
+                <div>
+                  <Label className="block text-xs font-semibold text-slate-700 mb-1">
+                    Kategori
+                  </Label>
+                  <select
+                    value={form.category}
+                    onChange={(e) => setForm({ ...form, category: e.target.value })}
+                    className="w-full rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100/50 focus:bg-white focus:border-slate-900 px-3 h-10 text-xs text-slate-800 outline-none transition cursor-pointer font-medium"
+                  >
+                    {categories.map((cat: any) => (
+                      <option key={cat.id} value={cat.name}>
+                        {cat.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
             </div>
 
@@ -733,52 +782,6 @@ function AdminProductsPage() {
                 />
               </div>
             )}
-
-            <div>
-              <Label className="block text-xs font-semibold text-slate-700 mb-1">
-                Gambar Ilustrasi Produk
-              </Label>
-              <div className="space-y-3">
-                {form.imageUrl ? (
-                  <div className="relative aspect-square w-36 mx-auto bg-slate-50 border border-slate-200 overflow-hidden flex items-center justify-center rounded-lg">
-                    <img src={form.imageUrl} alt="Preview" className="w-full h-full object-cover" />
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      onClick={() => setForm({ ...form, imageUrl: '' })}
-                      className="absolute top-2 right-2 bg-red-600 hover:bg-red-700 text-white font-bold p-1.5 px-3 h-7 text-[10px] transition cursor-pointer rounded-lg"
-                    >
-                      Hapus Gambar
-                    </Button>
-                  </div>
-                ) : (
-                  <label className="flex flex-col items-center justify-center aspect-square w-36 mx-auto border border-dashed border-slate-200 bg-slate-50 hover:bg-slate-100/50 transition cursor-pointer rounded-lg">
-                    <div className="flex flex-col items-center justify-center text-center p-2">
-                      <svg className="w-6 h-6 text-slate-400 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                      </svg>
-                      <p className="text-[10px] font-bold text-slate-700">Unggah Gambar</p>
-                      <p className="text-[8px] text-slate-400 mt-0.5">1:1 Ratio (Square)</p>
-                    </div>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0]
-                        if (file) {
-                          const reader = new FileReader()
-                          reader.onloadend = () => {
-                            setForm({ ...form, imageUrl: reader.result as string })
-                          }
-                          reader.readAsDataURL(file)
-                        }
-                      }}
-                    />
-                  </label>
-                )}
-              </div>
-            </div>
 
             <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
               <button
