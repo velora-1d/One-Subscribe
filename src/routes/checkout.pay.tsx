@@ -142,7 +142,7 @@ function PaymentIframePage() {
         <div className="px-6 py-3.5 bg-slate-50 border-b border-[var(--line)] flex items-center justify-between text-xs text-[var(--sea-ink-soft)] font-semibold">
           <div className="flex items-center gap-2">
             <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="capitalize">Gerbang Pembayaran Resmi ({order.paymentMethod})</span>
+            <span className="capitalize">Gerbang Pembayaran Resmi (OneSubscribe)</span>
           </div>
           <a
             href={order.paymentRedirectUrl || undefined}

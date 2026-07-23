@@ -391,6 +391,22 @@ function DashboardOrdersPage() {
                 </div>
               </div>
 
+              {/* Payment Details */}
+              <div className="bg-slate-100/60 rounded-xl p-3 flex flex-col gap-1.5 z-10 mt-1">
+                <div className="flex justify-between text-[9px]">
+                  <span className="text-slate-400 font-bold uppercase tracking-wider">Gateway Pembayaran:</span>
+                  <span className="font-bold text-slate-700 font-sans">
+                    {selectedOrder.paymentMethod?.toLowerCase() === 'pakasir' || selectedOrder.paymentMethod?.toLowerCase() === 'midtrans'
+                      ? 'OneSubscribe'
+                      : (selectedOrder.paymentMethod || 'OneSubscribe')}
+                  </span>
+                </div>
+                <div className="flex justify-between text-[9px]">
+                  <span className="text-slate-400 font-bold uppercase tracking-wider">Metode Bayar:</span>
+                  <span className="font-bold text-slate-700">QRIS / VA Transfer (Otomatis)</span>
+                </div>
+              </div>
+
               {/* Invoice Footer Notes */}
               <div className="text-center text-[9px] text-slate-400 font-semibold pt-3 border-t border-slate-100 flex flex-col gap-0.5 mt-2">
                 <p>Terima kasih atas pembelian Anda!</p>

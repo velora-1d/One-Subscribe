@@ -90,8 +90,12 @@ function CheckoutSuccessPage() {
           </div>
 
           <div className="flex justify-between items-center text-xs">
-            <span className="text-slate-500">Metode Pembayaran</span>
-            <span className="font-bold text-slate-800 uppercase">{order.paymentMethod}</span>
+            <span className="text-slate-500">Gateway Pembayaran</span>
+            <span className="font-bold text-slate-800 font-sans">
+              {order.paymentMethod?.toLowerCase() === 'pakasir' || order.paymentMethod?.toLowerCase() === 'midtrans'
+                ? 'OneSubscribe'
+                : (order.paymentMethod || 'OneSubscribe')}
+            </span>
           </div>
 
           <div className="flex justify-between items-center pt-3 border-t border-slate-200 text-sm font-black text-slate-900">

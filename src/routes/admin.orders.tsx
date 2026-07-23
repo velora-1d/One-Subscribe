@@ -905,7 +905,11 @@ function AdminOrdersPage() {
               <div className="bg-slate-100/60 rounded-xl p-3 flex flex-col gap-1.5 z-10">
                 <div className="flex justify-between text-[9px]">
                   <span className="text-slate-400 font-bold uppercase tracking-wider">Gateway Pembayaran:</span>
-                  <span className="font-bold text-slate-700 uppercase">{selectedOrder.paymentMethod}</span>
+                  <span className="font-bold text-slate-700 font-sans">
+                    {selectedOrder.paymentMethod?.toLowerCase() === 'pakasir' || selectedOrder.paymentMethod?.toLowerCase() === 'midtrans'
+                      ? 'OneSubscribe'
+                      : (selectedOrder.paymentMethod || 'OneSubscribe')}
+                  </span>
                 </div>
                 <div className="flex justify-between text-[9px]">
                   <span className="text-slate-400 font-bold uppercase tracking-wider">Metode Bayar:</span>
