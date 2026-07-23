@@ -3,7 +3,6 @@ import { useState, useEffect } from 'react'
 import { getOrderById, simulatePaymentSuccess } from '../utils/order.functions'
 
 export const Route = createFileRoute('/checkout/pay')({
-  ssr: false,
   beforeLoad: ({ context }) => {
     if (!context.user) {
       throw redirect({ to: '/login' })

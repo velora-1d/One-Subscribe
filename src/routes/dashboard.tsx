@@ -5,7 +5,6 @@ import { verifyAdminPin, logoutUser } from '../utils/auth.functions'
 
 
 export const Route = createFileRoute('/dashboard')({
-  ssr: false,
   beforeLoad: ({ context }) => {
     // Auth Check Middleware
     if (!context.user) {

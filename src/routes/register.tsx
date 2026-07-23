@@ -3,7 +3,6 @@ import { useState } from 'react'
 import { registerUser } from '../utils/auth.functions'
 
 export const Route = createFileRoute('/register')({
-  ssr: false,
   beforeLoad: ({ context }) => {
     // If user is already logged in, redirect to dashboard or home
     if (context.user) {

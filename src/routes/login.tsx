@@ -3,7 +3,6 @@ import { useState } from 'react'
 import { loginUser } from '../utils/auth.functions'
 
 export const Route = createFileRoute('/login')({
-  ssr: false,
   beforeLoad: ({ context }) => {
     // If user is already logged in, redirect to home
     if (context.user) {

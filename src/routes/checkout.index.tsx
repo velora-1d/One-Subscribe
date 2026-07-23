@@ -6,7 +6,6 @@ import { validateVoucher } from '../utils/promo.functions'
 import { Route as RootRoute } from './__root'
 
 export const Route = createFileRoute('/checkout/')({
-  ssr: false,
   beforeLoad: ({ context }) => {
     if (!context.user) {
       throw redirect({ to: '/login' })
