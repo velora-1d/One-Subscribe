@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/
 import { PageTableSkeleton } from '../components/ui/skeletons'
 
 export const Route = createFileRoute('/admin/promos')({
+  ssr: false,
   loader: async () => {
     try {
       const [promoRes, productRes] = await Promise.all([

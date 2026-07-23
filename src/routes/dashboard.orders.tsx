@@ -4,6 +4,7 @@ import { getMyOrders } from '../utils/order.functions'
 import { PageTableSkeleton } from '../components/ui/skeletons'
 
 export const Route = createFileRoute('/dashboard/orders')({
+  ssr: false,
   loader: async () => {
     try {
       const res = await getMyOrders()

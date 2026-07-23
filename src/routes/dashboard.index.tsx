@@ -5,6 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/
 import { DashboardSkeleton } from '../components/ui/skeletons'
 
 export const Route = createFileRoute('/dashboard/')({
+  ssr: false,
   loader: async () => {
     try {
       const res = await getActiveSubscriptions()

@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/dialog'
 
 export const Route = createFileRoute('/admin/products')({
+  ssr: false,
   loader: async () => {
     try {
       const [prodRes, catRes] = await Promise.all([

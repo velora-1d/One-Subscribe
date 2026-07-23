@@ -23,6 +23,7 @@ const WhatsappIcon = ({ className = "h-4 w-4" }: { className?: string }) => (
 import { PageTableSkeleton } from '../components/ui/skeletons'
 
 export const Route = createFileRoute('/admin/orders')({
+  ssr: false,
   loader: async () => {
     try {
       const res = await getAdminOrders()

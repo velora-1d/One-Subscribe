@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/dialog'
 
 export const Route = createFileRoute('/admin/categories')({
+  ssr: false,
   loader: async () => {
     try {
       const res = await getAdminCategories()

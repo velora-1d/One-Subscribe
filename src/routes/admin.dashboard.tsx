@@ -4,6 +4,7 @@ import { getAdminStats } from '../utils/admin.functions'
 import { DashboardSkeleton } from '../components/ui/skeletons'
 
 export const Route = createFileRoute('/admin/dashboard')({
+  ssr: false,
   loader: async () => {
     try {
       const res = await getAdminStats()

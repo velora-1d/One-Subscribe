@@ -5,6 +5,7 @@ import { getAllSystemSettings, updateSystemSettings, testConnection } from '../u
 import { PageTableSkeleton } from '../components/ui/skeletons'
 
 export const Route = createFileRoute('/admin/settings')({
+  ssr: false,
   loader: async () => {
     try {
       const res = await getAllSystemSettings()

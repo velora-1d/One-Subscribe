@@ -4,6 +4,7 @@ import { getAdminReports, getAdminCategories } from '../utils/admin.functions'
 import { PageTableSkeleton } from '../components/ui/skeletons'
 
 export const Route = createFileRoute('/admin/reports')({
+  ssr: false,
   loader: async () => {
     try {
       const [reportsRes, categoriesRes] = await Promise.all([
