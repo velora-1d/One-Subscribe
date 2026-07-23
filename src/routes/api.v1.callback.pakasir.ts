@@ -16,14 +16,15 @@ export const Route = createFileRoute('/api/v1/callback/pakasir')({
           const payload: any = await request.json()
           
           const reference = payload.reference || payload.order_id || payload.orderId
-          const status = payload.status // PAID, EXPIRED
+          const status = payload.status // PAID, completed, EXPIRED
 
           if (reference) {
             let orderStatus: 'menunggu_pembayaran' | 'menunggu_aktivasi' | 'aktif' | 'expired' = 'menunggu_pembayaran'
 
-            if (status === 'PAID') {
+            const normalizedStatus = String(status || '').toUpperCase()
+            if (normalizedStatus === 'PAID' || normalizedStatus === 'COMPLETED' || normalizedStatus === 'SUCCESS') {
               orderStatus = 'menunggu_aktivasi' // Paid, waiting for admin activation
-            } else if (status === 'EXPIRED') {
+            } else if (normalizedStatus === 'EXPIRED' || normalizedStatus === 'FAILED') {
               orderStatus = 'expired'
             }
 
