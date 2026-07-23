@@ -40,4 +40,4 @@ COPY --from=builder /app/drizzle.config.ts ./drizzle.config.ts
 EXPOSE 3000
 
 # Startup script: Run database migrations, then start the server
-CMD pnpm db:migrate && node dist/server/server.js
+CMD pnpm db:migrate && pnpm start
