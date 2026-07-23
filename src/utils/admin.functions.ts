@@ -378,38 +378,41 @@ export const fulfillOrder = createServerFn({ method: 'POST' })
       const encryptedEmail = encrypt(email);
       const encryptedPassword = encrypt(password);
 
-      // 3. Insert or update credentials
-      await db
-        .insert(credentials)
-        .values({
-          orderId,
-          encryptedAccountEmail: encryptedEmail,
-          encryptedAccountPassword: encryptedPassword,
-          remarks,
-          sentAt: new Date(),
-        })
-        .onConflictDoUpdate({
-          target: credentials.orderId,
-          set: {
+      // 3. Perform database operations atomically in a transaction
+      await db.transaction(async (tx) => {
+        // Insert or update credentials
+        await tx
+          .insert(credentials)
+          .values({
+            orderId,
             encryptedAccountEmail: encryptedEmail,
             encryptedAccountPassword: encryptedPassword,
             remarks,
             sentAt: new Date(),
-            updatedAt: new Date(),
-          },
+          })
+          .onConflictDoUpdate({
+            target: credentials.orderId,
+            set: {
+              encryptedAccountEmail: encryptedEmail,
+              encryptedAccountPassword: encryptedPassword,
+              remarks,
+              sentAt: new Date(),
+              updatedAt: new Date(),
+            },
+          });
+
+        // Update order status to 'aktif'
+        await tx
+          .update(orders)
+          .set({ status: 'aktif', updatedAt: new Date() })
+          .where(eq(orders.id, orderId));
+
+        // Log audit action
+        await tx.insert(auditLogs).values({
+          userId: admin.userId,
+          action: 'FULFILL_ORDER',
+          details: `Mengaktifkan layanan untuk pesanan ${orderId}`,
         });
-
-      // 4. Update order status to 'aktif'
-      await db
-        .update(orders)
-        .set({ status: 'aktif', updatedAt: new Date() })
-        .where(eq(orders.id, orderId));
-
-      // 5. Log audit action
-      await db.insert(auditLogs).values({
-        userId: admin.userId,
-        action: 'FULFILL_ORDER',
-        details: `Mengaktifkan layanan untuk pesanan ${orderId}`,
       });
 
       // 6. Dispatch real/simulated notifications
@@ -932,31 +935,35 @@ export const confirmRenewal = createServerFn({ method: 'POST' })
         throw new Error('Pesanan utama tidak ditemukan.');
       }
 
-      // 3. Update parent order: add duration and set status to active
-      const newDuration = parentOrder.remainingDuration + renewalOrder.remainingDuration;
-      await db
-        .update(orders)
-        .set({
-          remainingDuration: newDuration,
-          status: 'aktif',
-          updatedAt: new Date(),
-        })
-        .where(eq(orders.id, parentOrder.id));
+      // 3. Update both orders and audit logs atomically in a transaction
+      await db.transaction(async (tx) => {
+        const newDuration = parentOrder.remainingDuration + renewalOrder.remainingDuration;
 
-      // 4. Update renewal order: status to active
-      await db
-        .update(orders)
-        .set({
-          status: 'aktif',
-          updatedAt: new Date(),
-        })
-        .where(eq(orders.id, renewalOrder.id));
+        // Update parent order: add duration and set status to active
+        await tx
+          .update(orders)
+          .set({
+            remainingDuration: newDuration,
+            status: 'aktif',
+            updatedAt: new Date(),
+          })
+          .where(eq(orders.id, parentOrder.id));
 
-      // 5. Add audit log
-      await db.insert(auditLogs).values({
-        userId: admin.userId,
-        action: 'CONFIRM_RENEWAL',
-        details: `Mengonfirmasi perpanjangan masa aktif +${renewalOrder.remainingDuration} bulan untuk pesanan utama ${parentOrder.id}`,
+        // Update renewal order: status to active
+        await tx
+          .update(orders)
+          .set({
+            status: 'aktif',
+            updatedAt: new Date(),
+          })
+          .where(eq(orders.id, renewalOrder.id));
+
+        // Add audit log
+        await tx.insert(auditLogs).values({
+          userId: admin.userId,
+          action: 'CONFIRM_RENEWAL',
+          details: `Mengonfirmasi perpanjangan masa aktif +${renewalOrder.remainingDuration} bulan untuk pesanan utama ${parentOrder.id}`,
+        });
       });
 
       return { success: true };

@@ -194,35 +194,39 @@ export const createOrder = createServerFn({ method: 'POST' })
       }
     }
 
-    // Insert order into DB
-    const [newOrder] = await db
-      .insert(orders)
-      .values({
-        id: orderId,
-        userId: user.userId,
-        productId: product.id,
-        status: 'menunggu_pembayaran',
-        price: finalPrice,
-        paymentMethod,
-        paymentRedirectUrl,
-        paymentTransactionId,
-        remainingDuration: finalDuration, // Start with selected duration
-        parentOrderId: parentOrderId || null,
-        appliedPromoId: appliedPromoId || null,
-        discountAmount,
-      })
-      .returning();
+    // 3. Insert order and update promo count atomically in a transaction
+    const newOrder = await db.transaction(async (tx) => {
+      const [insertedOrder] = await tx
+        .insert(orders)
+        .values({
+          id: orderId,
+          userId: user.userId,
+          productId: product.id,
+          status: 'menunggu_pembayaran',
+          price: finalPrice,
+          paymentMethod,
+          paymentRedirectUrl,
+          paymentTransactionId,
+          remainingDuration: finalDuration, // Start with selected duration
+          parentOrderId: parentOrderId || null,
+          appliedPromoId: appliedPromoId || null,
+          discountAmount,
+        })
+        .returning();
 
-    if (!newOrder) {
-      throw new Error('Gagal membuat pesanan baru.');
-    }
+      if (!insertedOrder) {
+        throw new Error('Gagal membuat pesanan baru.');
+      }
 
-    if (promoToUpdate) {
-      await db
-        .update(promos)
-        .set({ usedCount: promoToUpdate.usedCount + 1 })
-        .where(eq(promos.id, promoToUpdate.id));
-    }
+      if (promoToUpdate) {
+        await tx
+          .update(promos)
+          .set({ usedCount: promoToUpdate.usedCount + 1 })
+          .where(eq(promos.id, promoToUpdate.id));
+      }
+
+      return insertedOrder;
+    });
 
     return {
       success: true,

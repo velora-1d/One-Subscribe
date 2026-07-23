@@ -52,14 +52,16 @@ export const Route = createFileRoute('/api/cron/auto-deduct')({
                 daysRemaining: newDuration * 30, // rough simulation
               })
             } else {
-              // Expiration reached (duration becomes 0)
-              await db
-                .update(orders)
-                .set({ status: 'expired', remainingDuration: 0, updatedAt: new Date() })
-                .where(eq(orders.id, order.id))
+              // Expiration reached (duration becomes 0) - run atomically
+              await db.transaction(async (tx) => {
+                await tx
+                  .update(orders)
+                  .set({ status: 'expired', remainingDuration: 0, updatedAt: new Date() })
+                  .where(eq(orders.id, order.id))
 
-              // Delete credentials from DB as safety precaution
-              await db.delete(credentials).where(eq(credentials.orderId, order.id))
+                // Delete credentials from DB as safety precaution
+                await tx.delete(credentials).where(eq(credentials.orderId, order.id))
+              })
 
               expiredCount++
 
