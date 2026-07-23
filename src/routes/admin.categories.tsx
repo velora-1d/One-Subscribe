@@ -54,6 +54,16 @@ function AdminCategoriesPage() {
   const [form, setForm] = useState<CategoryFormState>(emptyForm)
   const [formError, setFormError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [deleteConfirm, setDeleteConfirm] = useState<{
+    isOpen: boolean;
+    id: string;
+    name: string;
+  }>({
+    isOpen: false,
+    id: '',
+    name: '',
+  })
+  const [itemsPerPage, setItemsPerPage] = useState(10)
   const [currentPage, setCurrentPage] = useState(1)
 
   const handleOpenAdd = () => {
@@ -74,7 +84,6 @@ function AdminCategoriesPage() {
   }
 
   const handleDelete = async (id: string, name: string) => {
-    if (!confirm(`Apakah Anda yakin ingin menghapus kategori "${name}"?`)) return
     try {
       const res = await deleteAdminCategory({ data: id })
       if (res.success) {
@@ -127,7 +136,7 @@ function AdminCategoriesPage() {
     }
   }
 
-  const itemsPerPage = 10
+
   const totalPages = Math.ceil(categoriesList.length / itemsPerPage)
   const activePage = Math.min(currentPage, totalPages || 1)
   const paginatedCategories = categoriesList.slice((activePage - 1) * itemsPerPage, activePage * itemsPerPage)
@@ -207,7 +216,7 @@ function AdminCategoriesPage() {
                           </button>
                           <button
                             type="button"
-                            onClick={() => handleDelete(cat.id, cat.name)}
+                            onClick={() => setDeleteConfirm({ isOpen: true, id: cat.id, name: cat.name })}
                             className="bg-red-50/50 hover:bg-red-100/70 text-red-600 border border-red-200 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1 font-sans"
                           >
                             <span className="material-symbols-outlined text-[16px]">delete</span>
@@ -221,46 +230,67 @@ function AdminCategoriesPage() {
               </tbody>
             </table>
 
-            {totalPages > 1 && (
-              <div className="flex items-center justify-between px-6 py-4 bg-slate-50 border-t border-slate-100 text-slate-500 text-[11px] font-semibold text-left">
-                <div>
-                  Menampilkan {((activePage - 1) * itemsPerPage) + 1} - {Math.min(activePage * itemsPerPage, categoriesList.length)} dari {categoriesList.length} entri
+            {categoriesList.length > 10 && (
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-6 py-4 bg-slate-50 border-t border-slate-100 text-slate-500 text-[11px] font-semibold text-left">
+                <div className="flex flex-wrap items-center gap-3">
+                  <span>
+                    Menampilkan {((activePage - 1) * itemsPerPage) + 1} - {Math.min(activePage * itemsPerPage, categoriesList.length)} dari {categoriesList.length} entri
+                  </span>
+                  <div className="flex items-center gap-1.5 ml-0 sm:ml-2 border-l border-slate-200 pl-3">
+                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Tampilkan:</span>
+                    <select
+                      value={itemsPerPage}
+                      onChange={(e) => {
+                        setItemsPerPage(Number(e.target.value))
+                        setCurrentPage(1)
+                      }}
+                      className="rounded-lg border border-slate-250 bg-white px-2 py-1 text-[11px] font-bold text-slate-700 focus:border-slate-900 outline-none transition cursor-pointer font-sans"
+                    >
+                      <option value={10}>10</option>
+                      <option value={20}>20</option>
+                      <option value={30}>30</option>
+                      <option value={40}>40</option>
+                      <option value={50}>50</option>
+                    </select>
+                  </div>
                 </div>
-                <div className="flex items-center gap-1.5">
-                  <button
-                    type="button"
-                    disabled={activePage === 1}
-                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                    className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-650 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center justify-center"
-                  >
-                    <span className="material-symbols-outlined text-[16px]">chevron_left</span>
-                  </button>
-                  {Array.from({ length: totalPages }).map((_, i) => {
-                    const pageNum = i + 1
-                    return (
-                      <button
-                        key={pageNum}
-                        type="button"
-                        onClick={() => setCurrentPage(pageNum)}
-                        className={`w-7.5 h-7.5 rounded-lg text-center cursor-pointer transition ${
-                          activePage === pageNum
-                            ? 'bg-slate-900 border border-slate-900 text-white font-extrabold shadow-sm'
-                            : 'border border-slate-200 bg-white hover:bg-slate-50 text-slate-650 font-bold'
-                        }`}
-                      >
-                        {pageNum}
-                      </button>
-                    )
-                  })}
-                  <button
-                    type="button"
-                    disabled={activePage === totalPages}
-                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                    className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-650 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center justify-center"
-                  >
-                    <span className="material-symbols-outlined text-[16px]">chevron_right</span>
-                  </button>
-                </div>
+                {totalPages > 1 && (
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      disabled={activePage === 1}
+                      onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                      className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-650 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center justify-center"
+                    >
+                      <span className="material-symbols-outlined text-[16px]">chevron_left</span>
+                    </button>
+                    {Array.from({ length: totalPages }).map((_, i) => {
+                      const pageNum = i + 1
+                      return (
+                        <button
+                          key={pageNum}
+                          type="button"
+                          onClick={() => setCurrentPage(pageNum)}
+                          className={`w-7.5 h-7.5 rounded-lg text-center cursor-pointer transition ${
+                            activePage === pageNum
+                              ? 'bg-slate-900 border border-slate-900 text-white font-extrabold shadow-sm'
+                              : 'border border-slate-200 bg-white hover:bg-slate-50 text-slate-650 font-bold'
+                          }`}
+                        >
+                          {pageNum}
+                        </button>
+                      )
+                    })}
+                    <button
+                      type="button"
+                      disabled={activePage === totalPages}
+                      onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                      className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-650 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center justify-center"
+                    >
+                      <span className="material-symbols-outlined text-[16px]">chevron_right</span>
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -337,6 +367,41 @@ function AdminCategoriesPage() {
               </button>
             </div>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Custom Confirmation Dialog Modal for Deletion */}
+      <Dialog open={deleteConfirm.isOpen} onOpenChange={(open) => setDeleteConfirm(prev => ({ ...prev, isOpen: open }))}>
+        <DialogContent className="max-w-md rounded-2xl p-6 bg-white border border-slate-200 shadow-2xl flex flex-col gap-4">
+          <DialogHeader>
+            <DialogTitle className="text-base font-black text-slate-900 flex items-center gap-2">
+              <span className="material-symbols-outlined text-red-500">warning</span>
+              Konfirmasi Hapus
+            </DialogTitle>
+          </DialogHeader>
+          <div className="text-xs text-slate-500 font-semibold leading-relaxed">
+            Apakah Anda yakin ingin menghapus kategori <strong className="text-slate-800">"{deleteConfirm.name}"</strong>? Tindakan ini tidak dapat dibatalkan.
+          </div>
+          <div className="flex gap-3 justify-end mt-2">
+            <button
+              type="button"
+              onClick={() => setDeleteConfirm({ isOpen: false, id: '', name: '' })}
+              className="px-4 py-2 text-xs font-bold text-slate-500 bg-slate-50 border border-slate-200 rounded-xl hover:bg-slate-100 hover:text-slate-700 transition cursor-pointer"
+            >
+              Batal
+            </button>
+            <button
+              type="button"
+              onClick={async () => {
+                const { id, name } = deleteConfirm
+                setDeleteConfirm({ isOpen: false, id: '', name: '' })
+                await handleDelete(id, name)
+              }}
+              className="px-4 py-2 text-xs font-bold text-white bg-red-600 rounded-xl hover:bg-red-700 transition shadow-sm cursor-pointer border-0"
+            >
+              Ya, Hapus
+            </button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

@@ -72,7 +72,7 @@ function AdminTemplatesPage() {
   const [currentPage, setCurrentPage] = useState(1)
   const [deleteTarget, setDeleteTarget] = useState<{ id: string, name: string } | null>(null)
 
-  const itemsPerPage = 8
+  const [itemsPerPage, setItemsPerPage] = useState(10)
 
   const handleOpenAdd = () => {
     setEditingId(null)
@@ -299,27 +299,51 @@ function AdminTemplatesPage() {
         </div>
 
         {/* Pagination Section */}
-        {totalPages > 1 && (
-          <div className="flex items-center justify-between pt-4">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-              Menampilkan {paginatedTemplates.length} dari {filteredTemplates.length} Template
-            </span>
-            <div className="flex gap-1.5">
-              <button
-                onClick={() => setCurrentPage(currentPage - 1)}
-                disabled={currentPage === 1}
-                className="rounded-xl border border-slate-200 bg-white hover:bg-slate-50 p-2 text-slate-700 transition cursor-pointer hover:scale-95 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <span className="material-symbols-outlined text-[18px]">chevron_left</span>
-              </button>
-              <button
-                onClick={() => setCurrentPage(currentPage + 1)}
-                disabled={currentPage === totalPages}
-                className="rounded-xl border border-slate-200 bg-white hover:bg-slate-50 p-2 text-slate-700 transition cursor-pointer hover:scale-95 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <span className="material-symbols-outlined text-[18px]">chevron_right</span>
-              </button>
+        {/* Pagination Section */}
+        {filteredTemplates.length > 10 && (
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 text-slate-500 font-semibold text-left">
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                Menampilkan {((currentPage - 1) * itemsPerPage) + 1} - {Math.min(currentPage * itemsPerPage, filteredTemplates.length)} dari {filteredTemplates.length} Template
+              </span>
+              <div className="flex items-center gap-1.5 ml-0 sm:ml-2 border-l border-slate-200 pl-3">
+                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Tampilkan:</span>
+                <select
+                  value={itemsPerPage}
+                  onChange={(e) => {
+                    setItemsPerPage(Number(e.target.value))
+                    setCurrentPage(1)
+                  }}
+                  className="rounded-lg border border-slate-250 bg-white px-2 py-1 text-[11px] font-bold text-slate-700 focus:border-slate-900 outline-none transition cursor-pointer font-sans"
+                >
+                  <option value={10}>10</option>
+                  <option value={20}>20</option>
+                  <option value={30}>30</option>
+                  <option value={40}>40</option>
+                  <option value={50}>50</option>
+                </select>
+              </div>
             </div>
+            {totalPages > 1 && (
+              <div className="flex gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => setCurrentPage(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className="rounded-xl border border-slate-200 bg-white hover:bg-slate-50 p-2 text-slate-700 transition cursor-pointer hover:scale-95 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <span className="material-symbols-outlined text-[18px]">chevron_left</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCurrentPage(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className="rounded-xl border border-slate-200 bg-white hover:bg-slate-50 p-2 text-slate-700 transition cursor-pointer hover:scale-95 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <span className="material-symbols-outlined text-[18px]">chevron_right</span>
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>

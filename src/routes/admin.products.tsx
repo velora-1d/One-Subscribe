@@ -79,6 +79,15 @@ function AdminProductsPage() {
   const [form, setForm] = useState<ProductFormState>(emptyForm)
   const [formError, setFormError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [deleteConfirm, setDeleteConfirm] = useState<{
+    isOpen: boolean;
+    id: string;
+    name: string;
+  }>({
+    isOpen: false,
+    id: '',
+    name: '',
+  })
 
   // Filter States
   const [search, setSearch] = useState('')
@@ -131,7 +140,6 @@ function AdminProductsPage() {
   }
 
   const handleDelete = async (id: string, name: string) => {
-    if (!confirm(`Apakah Anda yakin ingin menghapus produk "${name}"?`)) return
     try {
       const res = await deleteAdminProduct({ data: id })
       if (res.success) {
@@ -325,7 +333,7 @@ function AdminProductsPage() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => handleDelete(p.id, p.name)}
+                  onClick={() => setDeleteConfirm({ isOpen: true, id: p.id, name: p.name })}
                   className="flex-1 bg-red-50/50 hover:bg-red-100/70 text-red-600 border border-red-200 py-1.5 rounded-lg text-[11px] font-bold transition-all cursor-pointer text-center flex items-center justify-center gap-1 font-sans"
                 >
                   <span className="material-symbols-outlined text-[14px]">delete</span>
@@ -496,6 +504,41 @@ function AdminProductsPage() {
               </button>
             </div>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Custom Confirmation Dialog Modal for Deletion */}
+      <Dialog open={deleteConfirm.isOpen} onOpenChange={(open) => setDeleteConfirm(prev => ({ ...prev, isOpen: open }))}>
+        <DialogContent className="max-w-md rounded-2xl p-6 bg-white border border-slate-200 shadow-2xl flex flex-col gap-4">
+          <DialogHeader>
+            <DialogTitle className="text-base font-black text-slate-900 flex items-center gap-2">
+              <span className="material-symbols-outlined text-red-500">warning</span>
+              Konfirmasi Hapus
+            </DialogTitle>
+          </DialogHeader>
+          <div className="text-xs text-slate-500 font-semibold leading-relaxed">
+            Apakah Anda yakin ingin menghapus produk <strong className="text-slate-800">"{deleteConfirm.name}"</strong>? Tindakan ini tidak dapat dibatalkan.
+          </div>
+          <div className="flex gap-3 justify-end mt-2">
+            <button
+              type="button"
+              onClick={() => setDeleteConfirm({ isOpen: false, id: '', name: '' })}
+              className="px-4 py-2 text-xs font-bold text-slate-500 bg-slate-50 border border-slate-200 rounded-xl hover:bg-slate-100 hover:text-slate-700 transition cursor-pointer"
+            >
+              Batal
+            </button>
+            <button
+              type="button"
+              onClick={async () => {
+                const { id, name } = deleteConfirm
+                setDeleteConfirm({ isOpen: false, id: '', name: '' })
+                await handleDelete(id, name)
+              }}
+              className="px-4 py-2 text-xs font-bold text-white bg-red-600 rounded-xl hover:bg-red-700 transition shadow-sm cursor-pointer border-0"
+            >
+              Ya, Hapus
+            </button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

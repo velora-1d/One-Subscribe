@@ -55,6 +55,18 @@ function AdminUsersPage() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [modalMode, setModalMode] = useState<'add' | 'edit'>('add')
   const [editingUserId, setEditingUserId] = useState<string | null>(null)
+  const [itemsPerPage, setItemsPerPage] = useState(10)
+  const [confirmAction, setConfirmAction] = useState<{
+    isOpen: boolean;
+    type: 'delete' | 'block' | 'unblock';
+    id: string;
+    name: string;
+  }>({
+    isOpen: false,
+    type: 'delete',
+    id: '',
+    name: '',
+  })
 
   // WhatsApp Modal States
   const [isWaModalOpen, setIsWaModalOpen] = useState(false)
@@ -193,9 +205,6 @@ function AdminUsersPage() {
   }
 
   const handleToggleBlock = async (id: string, currentStatus: boolean) => {
-    const actionText = currentStatus ? 'memblokir' : 'mengaktifkan kembali'
-    if (!confirm(`Apakah Anda yakin ingin ${actionText} user ini?`)) return
-
     try {
       const res = await toggleUserStatus({
         data: {
@@ -208,6 +217,9 @@ function AdminUsersPage() {
         setUsers(
           users.map((u) => (u.id === id ? { ...u, isActive: !currentStatus } : u))
         )
+        toast.success(currentStatus ? 'User berhasil diblokir.' : 'User berhasil diaktifkan kembali.')
+      } else {
+        toast.error(res.error || 'Gagal mengubah status.')
       }
     } catch (err: any) {
       toast.error(`Error: ${err?.message || 'Gagal mengubah status'}`)
@@ -215,8 +227,6 @@ function AdminUsersPage() {
   }
 
   const handleDeleteUser = async (id: string, name: string) => {
-    if (!confirm(`Apakah Anda yakin ingin menghapus user "${name}" secara permanen? Tindakan ini tidak dapat dibatalkan.`)) return
-
     try {
       const res = await deleteAdminUser({ data: id })
       if (res.success) {
@@ -294,7 +304,7 @@ function AdminUsersPage() {
     return u.name.toLowerCase().includes(query) || u.email.toLowerCase().includes(query)
   })
 
-  const itemsPerPage = 10
+
   const totalPages = Math.ceil(filteredUsers.length / itemsPerPage)
   const activePage = Math.min(currentPage, totalPages || 1)
   const paginatedUsers = filteredUsers.slice((activePage - 1) * itemsPerPage, activePage * itemsPerPage)
@@ -408,7 +418,7 @@ function AdminUsersPage() {
                           <span className="material-symbols-outlined text-[16px]">edit</span>
                         </button>
                         <button
-                          onClick={() => handleToggleBlock(u.id, u.isActive)}
+                          onClick={() => setConfirmAction({ isOpen: true, type: u.isActive ? 'block' : 'unblock', id: u.id, name: u.name })}
                           className={`h-8 w-8 rounded-lg border transition cursor-pointer hover:scale-95 flex items-center justify-center shadow-2xs ${
                             u.isActive
                               ? 'text-amber-600 bg-amber-50 border-amber-200 hover:bg-amber-100'
@@ -421,7 +431,7 @@ function AdminUsersPage() {
                           </span>
                         </button>
                         <button
-                          onClick={() => handleDeleteUser(u.id, u.name)}
+                          onClick={() => setConfirmAction({ isOpen: true, type: 'delete', id: u.id, name: u.name })}
                           className="h-8 w-8 rounded-lg border border-red-200 bg-red-50 text-red-600 hover:bg-red-100 transition cursor-pointer hover:scale-95 flex items-center justify-center shadow-2xs"
                           title="Hapus User"
                         >
@@ -434,46 +444,67 @@ function AdminUsersPage() {
               </tbody>
             </table>
 
-            {totalPages > 1 && (
-              <div className="flex items-center justify-between px-6 py-4 bg-slate-50 border-t border-slate-100 text-slate-500 text-[11px] font-semibold text-left">
-                <div>
-                  Menampilkan {((activePage - 1) * itemsPerPage) + 1} - {Math.min(activePage * itemsPerPage, filteredUsers.length)} dari {filteredUsers.length} entri
+            {filteredUsers.length > 10 && (
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-6 py-4 bg-slate-50 border-t border-slate-100 text-slate-500 text-[11px] font-semibold text-left font-sans">
+                <div className="flex flex-wrap items-center gap-3">
+                  <span>
+                    Menampilkan {((activePage - 1) * itemsPerPage) + 1} - {Math.min(activePage * itemsPerPage, filteredUsers.length)} dari {filteredUsers.length} entri
+                  </span>
+                  <div className="flex items-center gap-1.5 ml-0 sm:ml-2 border-l border-slate-200 pl-3">
+                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Tampilkan:</span>
+                    <select
+                      value={itemsPerPage}
+                      onChange={(e) => {
+                        setItemsPerPage(Number(e.target.value))
+                        setCurrentPage(1)
+                      }}
+                      className="rounded-lg border border-slate-250 bg-white px-2 py-1 text-[11px] font-bold text-slate-700 focus:border-slate-900 outline-none transition cursor-pointer font-sans"
+                    >
+                      <option value={10}>10</option>
+                      <option value={20}>20</option>
+                      <option value={30}>30</option>
+                      <option value={40}>40</option>
+                      <option value={50}>50</option>
+                    </select>
+                  </div>
                 </div>
-                <div className="flex items-center gap-1.5">
-                  <button
-                    type="button"
-                    disabled={activePage === 1}
-                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                    className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-650 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center justify-center"
-                  >
-                    <span className="material-symbols-outlined text-[16px]">chevron_left</span>
-                  </button>
-                  {Array.from({ length: totalPages }).map((_, i) => {
-                    const pageNum = i + 1
-                    return (
-                      <button
-                        key={pageNum}
-                        type="button"
-                        onClick={() => setCurrentPage(pageNum)}
-                        className={`w-7.5 h-7.5 rounded-lg text-center cursor-pointer transition ${
-                          activePage === pageNum
-                            ? 'bg-slate-900 border border-slate-900 text-white font-extrabold shadow-sm'
-                            : 'border border-slate-200 bg-white hover:bg-slate-50 text-slate-650 font-bold'
-                        }`}
-                      >
-                        {pageNum}
-                      </button>
-                    )
-                  })}
-                  <button
-                    type="button"
-                    disabled={activePage === totalPages}
-                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                    className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-650 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center justify-center"
-                  >
-                    <span className="material-symbols-outlined text-[16px]">chevron_right</span>
-                  </button>
-                </div>
+                {totalPages > 1 && (
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      disabled={activePage === 1}
+                      onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                      className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-650 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center justify-center"
+                    >
+                      <span className="material-symbols-outlined text-[16px]">chevron_left</span>
+                    </button>
+                    {Array.from({ length: totalPages }).map((_, i) => {
+                      const pageNum = i + 1
+                      return (
+                        <button
+                          key={pageNum}
+                          type="button"
+                          onClick={() => setCurrentPage(pageNum)}
+                          className={`w-7.5 h-7.5 rounded-lg text-center cursor-pointer transition ${
+                            activePage === pageNum
+                              ? 'bg-slate-900 border border-slate-900 text-white font-extrabold shadow-sm'
+                              : 'border border-slate-200 bg-white hover:bg-slate-50 text-slate-650 font-bold'
+                          }`}
+                        >
+                          {pageNum}
+                        </button>
+                      )
+                    })}
+                    <button
+                      type="button"
+                      disabled={activePage === totalPages}
+                      onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                      className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-650 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center justify-center"
+                    >
+                      <span className="material-symbols-outlined text-[16px]">chevron_right</span>
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -677,6 +708,67 @@ function AdminUsersPage() {
             >
               <span className="material-symbols-outlined text-[16px]">send</span>
               {isSendingWa ? 'Mengirim...' : 'Kirim WA Gateway'}
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Custom Confirmation Dialog Modal */}
+      <Dialog open={confirmAction.isOpen} onOpenChange={(open) => setConfirmAction(prev => ({ ...prev, isOpen: open }))}>
+        <DialogContent className="max-w-md rounded-2xl p-6 bg-white border border-slate-200 shadow-2xl flex flex-col gap-4">
+          <DialogHeader>
+            <DialogTitle className="text-base font-black text-slate-900 flex items-center gap-2">
+              <span className="material-symbols-outlined text-amber-500">
+                {confirmAction.type === 'delete' ? 'warning' : 'info'}
+              </span>
+              {confirmAction.type === 'delete' && 'Konfirmasi Hapus User'}
+              {confirmAction.type === 'block' && 'Konfirmasi Blokir User'}
+              {confirmAction.type === 'unblock' && 'Konfirmasi Aktifkan User'}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="text-xs text-slate-500 font-semibold leading-relaxed">
+            {confirmAction.type === 'delete' && (
+              <>
+                Apakah Anda yakin ingin menghapus user <strong className="text-slate-800">"{confirmAction.name}"</strong> secara permanen? Tindakan ini tidak dapat dibatalkan.
+              </>
+            )}
+            {confirmAction.type === 'block' && (
+              <>
+                Apakah Anda yakin ingin memblokir user <strong className="text-slate-800">"{confirmAction.name}"</strong>? User yang diblokir tidak akan dapat login ke dashboard.
+              </>
+            )}
+            {confirmAction.type === 'unblock' && (
+              <>
+                Apakah Anda yakin ingin mengaktifkan kembali akses login untuk user <strong className="text-slate-800">"{confirmAction.name}"</strong>?
+              </>
+            )}
+          </div>
+          <div className="flex gap-3 justify-end mt-2">
+            <button
+              type="button"
+              onClick={() => setConfirmAction({ isOpen: false, type: 'delete', id: '', name: '' })}
+              className="px-4 py-2 text-xs font-bold text-slate-500 bg-slate-50 border border-slate-200 rounded-xl hover:bg-slate-100 hover:text-slate-700 transition cursor-pointer"
+            >
+              Batal
+            </button>
+            <button
+              type="button"
+              onClick={async () => {
+                const { type, id, name } = confirmAction
+                setConfirmAction({ isOpen: false, type: 'delete', id: '', name: '' })
+                if (type === 'delete') {
+                  await handleDeleteUser(id, name)
+                } else {
+                  await handleToggleBlock(id, type === 'block')
+                }
+              }}
+              className={`px-4 py-2 text-xs font-bold text-white rounded-xl transition shadow-sm cursor-pointer border-0 ${
+                confirmAction.type === 'delete' ? 'bg-red-600 hover:bg-red-700' : 'bg-slate-900 hover:bg-slate-800'
+              }`}
+            >
+              {confirmAction.type === 'delete' && 'Ya, Hapus'}
+              {confirmAction.type === 'block' && 'Ya, Blokir'}
+              {confirmAction.type === 'unblock' && 'Ya, Aktifkan'}
             </button>
           </div>
         </DialogContent>
