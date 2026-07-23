@@ -17,8 +17,18 @@ export const Route = createFileRoute('/admin/settings')({
   component: AdminSettingsPage,
 })
 
+function formatIDR(amount: number): string {
+  return new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(amount)
+}
+
 function AdminSettingsPage() {
   const { initialSettings } = Route.useLoaderData()
+  const [isReceiptPreviewOpen, setIsReceiptPreviewOpen] = useState(false)
   
   const [activeGateway, setActiveGateway] = useState(initialSettings.active_payment_gateway || 'midtrans')
   const [midtransEnv, setMidtransEnv] = useState(initialSettings.midtrans_env || 'sandbox')
@@ -86,6 +96,16 @@ function AdminSettingsPage() {
               Kendalikan gerbang pembayaran aktif, toggle lingkungan (sandbox/production), dan verifikasi status integrasi langsung dari variabel environment (`.env`).
             </p>
           </div>
+        </div>
+        <div>
+          <button
+            type="button"
+            onClick={() => setIsReceiptPreviewOpen(true)}
+            className="rounded-full bg-slate-100 hover:bg-slate-200 border border-slate-350 px-5 py-2.5 text-xs font-bold text-slate-700 transition flex items-center gap-2 cursor-pointer shadow-2xs"
+          >
+            <span className="material-symbols-outlined text-[18px]">receipt</span>
+            Pratinjau Struk PDF
+          </button>
         </div>
       </header>
 
@@ -542,6 +562,161 @@ function AdminSettingsPage() {
           </button>
         </div>
       </form>
+
+      {/* Mock Receipt Preview Modal for Admins */}
+      {isReceiptPreviewOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fadeIn">
+          <div className="relative w-full max-w-md bg-white border border-slate-200 rounded-3xl shadow-2xl overflow-hidden p-6 flex flex-col gap-5 max-h-[90vh]">
+            
+            {/* Modal Header */}
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h3 className="text-sm font-black text-slate-800 uppercase tracking-wider flex items-center gap-2">
+                <span className="material-symbols-outlined text-[20px] text-slate-700">receipt</span>
+                Template Struk (Pratinjau)
+              </h3>
+              <button
+                type="button"
+                onClick={() => setIsReceiptPreviewOpen(false)}
+                className="text-slate-400 hover:text-slate-600 bg-transparent border-0 cursor-pointer flex items-center p-1.5 hover:bg-slate-100 rounded-full transition"
+              >
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            </div>
+
+            {/* Printable Area */}
+            <div 
+              id="print-receipt-area" 
+              className="bg-slate-50/50 border border-slate-100 rounded-2xl p-5 flex flex-col gap-4 overflow-y-auto text-left"
+            >
+              {/* Logo & Inv Header */}
+              <div className="flex items-center justify-between border-b border-dashed border-slate-200 pb-4">
+                <div className="flex items-center gap-2">
+                  <img src="/logo-onesubs.webp" className="w-8 h-8 rounded-full object-cover" alt="Logo" />
+                  <div>
+                    <h4 className="font-extrabold text-sm text-slate-800 leading-tight">OneSubscribe</h4>
+                    <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Digital Shop</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <span className="font-black text-xs text-slate-800 tracking-wider">STRUK RESMI</span>
+                  <p className="text-[9px] text-slate-400 font-mono">ID: SUB-MOCK-9999</p>
+                </div>
+              </div>
+
+              {/* Meta Info Grid */}
+              <div className="grid grid-cols-2 gap-4 text-xs border-b border-dashed border-slate-200 pb-4">
+                <div>
+                  <span className="text-slate-400 block font-bold text-[9px] uppercase tracking-wider">Tanggal</span>
+                  <span className="font-bold text-slate-700">
+                    {new Date().toLocaleDateString('id-ID', { dateStyle: 'medium' })}
+                  </span>
+                </div>
+                <div className="text-right">
+                  <span className="text-slate-400 block font-bold text-[9px] uppercase tracking-wider">Status</span>
+                  <span className="inline-block font-extrabold text-[9px] px-2 py-0.5 rounded-full border text-emerald-700 bg-emerald-50 border-emerald-250">
+                    Layanan Aktif
+                  </span>
+                </div>
+              </div>
+
+              {/* Customer billing details */}
+              <div className="text-xs border-b border-dashed border-slate-200 pb-4">
+                <span className="text-slate-400 block font-bold text-[9px] uppercase tracking-wider mb-1.5">Pelanggan</span>
+                <strong className="text-slate-800 block">Mahin Utsman (Contoh)</strong>
+                <span className="text-slate-500 block">nawawimahinutsman@gmail.com</span>
+                <span className="text-slate-400 text-[10px] mt-0.5 block">082120318007</span>
+              </div>
+
+              {/* Purchase Details */}
+              <div className="text-xs border-b border-dashed border-slate-200 pb-4">
+                <div className="flex justify-between font-bold text-[9px] text-slate-400 uppercase tracking-wider mb-2.5">
+                  <span>Deskripsi</span>
+                  <span>Total</span>
+                </div>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <strong className="text-slate-800 text-xs block">Netflix Premium (1 Bulan)</strong>
+                    <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mt-0.5 block">
+                      Streaming • 1 Bulan Langganan
+                    </span>
+                  </div>
+                  <span className="font-bold text-slate-800">{formatIDR(149000)}</span>
+                </div>
+              </div>
+
+              {/* Order Total summary */}
+              <div className="text-xs flex flex-col gap-1.5">
+                <div className="flex justify-between font-semibold">
+                  <span className="text-slate-400">Subtotal</span>
+                  <span className="text-slate-700">{formatIDR(149000)}</span>
+                </div>
+                <div className="flex justify-between font-semibold">
+                  <span className="text-slate-400">Biaya Admin</span>
+                  <span className="text-slate-700">{formatIDR(0)}</span>
+                </div>
+                <div className="flex justify-between font-black text-sm text-slate-800 border-t border-slate-200/60 pt-2.5 mt-1">
+                  <span>Total Bayar</span>
+                  <span>{formatIDR(149000)}</span>
+                </div>
+              </div>
+
+              {/* Invoice Footer Notes */}
+              <div className="text-center text-[9px] text-slate-400 font-semibold pt-3 border-t border-slate-100 flex flex-col gap-0.5 mt-2">
+                <p>Terima kasih atas kepercayaan Anda!</p>
+                <p className="text-[8px] text-slate-350">Struk elektronik ini valid dan diterbitkan otomatis oleh sistem OneSubscribe.</p>
+              </div>
+            </div>
+
+            {/* Modal Actions Footer */}
+            <div className="flex gap-3 mt-1 no-print">
+              <button
+                type="button"
+                onClick={() => setIsReceiptPreviewOpen(false)}
+                className="flex-1 rounded-xl bg-slate-55 border border-slate-200 py-3 text-xs font-bold text-slate-600 hover:text-slate-800 hover:bg-slate-50 transition cursor-pointer"
+              >
+                Tutup
+              </button>
+              <button
+                type="button"
+                onClick={() => window.print()}
+                className="flex-1 rounded-xl bg-slate-900 hover:bg-slate-800 py-3 text-xs font-bold text-white shadow-md hover:scale-98 transition cursor-pointer flex items-center justify-center gap-1.5 border-0"
+              >
+                <span className="material-symbols-outlined text-[16px]">print</span>
+                Cetak / Save PDF
+              </button>
+            </div>
+
+            {/* Print Only CSS Hack styling to cleanly force print area */}
+            <style dangerouslySetInnerHTML={{ __html: `
+              @media print {
+                body * {
+                  visibility: hidden !important;
+                }
+                #print-receipt-area, #print-receipt-area * {
+                  visibility: visible !important;
+                }
+                #print-receipt-area {
+                  position: fixed !important;
+                  left: 0 !important;
+                  top: 0 !important;
+                  width: 100% !important;
+                  height: auto !important;
+                  margin: 0 !important;
+                  padding: 24px !important;
+                  background: white !important;
+                  color: black !important;
+                  box-shadow: none !important;
+                  border: none !important;
+                  z-index: 9999999 !important;
+                }
+                .no-print {
+                  display: none !important;
+                }
+              }
+            `}} />
+          </div>
+        </div>
+      )}
     </div>
   )
 }
