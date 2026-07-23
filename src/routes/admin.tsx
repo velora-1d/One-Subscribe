@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { logoutUser } from '../utils/auth.functions'
 
 export const Route = createFileRoute('/admin')({
+  ssr: false,
   beforeLoad: ({ context }) => {
     // Auth Middleware: Enforce admin role check
     if (!context.user || context.user.role !== 'admin') {

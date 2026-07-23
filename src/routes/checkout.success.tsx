@@ -2,6 +2,7 @@ import { createFileRoute, Link, redirect } from '@tanstack/react-router'
 import { getOrderById } from '../utils/order.functions'
 
 export const Route = createFileRoute('/checkout/success')({
+  ssr: false,
   beforeLoad: ({ context }) => {
     if (!context.user) {
       throw redirect({ to: '/login' })
