@@ -1,5 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { toast } from 'sonner'
 import { getAdminOrders, fulfillOrder, cancelAdminOrder, deleteAdminOrder, sendCustomWhatsapp, getAdminMessageTemplates } from '../utils/admin.functions'
 import {
@@ -55,6 +56,13 @@ function AdminOrdersPage() {
   const [currentPage, setCurrentPage] = useState(1)
   const [selectedOrder, setSelectedOrder] = useState<any>(null)
   const [itemsPerPage, setItemsPerPage] = useState(10)
+
+  // Mounted state for portals
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => {
+    setMounted(true)
+    return () => setMounted(false)
+  }, [])
 
   // Fulfillment Dialog States
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null)
@@ -545,7 +553,7 @@ function AdminOrdersPage() {
       </div>
 
       {/* Fulfillment Dialog Modal */}
-      {selectedOrderId && (
+      {mounted && selectedOrderId && createPortal(
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
           <div className="w-full max-w-md bg-[var(--header-bg)] border border-[var(--line)] rounded-[2rem] p-8 shadow-xl animate-fadeIn bg-white">
             <h2 className="text-lg font-extrabold text-[var(--sea-ink)] mb-1">
@@ -621,11 +629,12 @@ function AdminOrdersPage() {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Custom Confirmation Modal */}
-      {confirmModal.isOpen && (
+      {mounted && confirmModal.isOpen && createPortal(
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4 animate-fadeIn">
           <div className="w-full max-w-sm bg-white border border-[var(--line)] rounded-[2rem] p-6 shadow-xl space-y-4">
             <div className="flex items-center gap-3">
@@ -669,7 +678,8 @@ function AdminOrdersPage() {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
       {/* WhatsApp Modal */}
       <Dialog open={isWaModalOpen} onOpenChange={setIsWaModalOpen}>
@@ -755,7 +765,7 @@ function AdminOrdersPage() {
       </Dialog>
 
       {/* Premium Printable Receipt Modal (Admin View) */}
-      {selectedOrder && (
+      {mounted && selectedOrder && createPortal(
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fadeIn">
           <div className="relative w-full max-w-md bg-white border border-slate-200 rounded-3xl shadow-2xl overflow-hidden p-6 flex flex-col gap-5 max-h-[90vh]">
             
@@ -860,12 +870,58 @@ function AdminOrdersPage() {
                   <span className="text-slate-700">{formatIDR(selectedOrder.price)}</span>
                 </div>
                 <div className="flex justify-between font-semibold">
-                  <span className="text-slate-400">Biaya Admin</span>
-                  <span className="text-slate-700">{formatIDR(0)}</span>
+                  <div className="text-right">
+                    <span className="text-xs font-black text-slate-800">{formatIDR(selectedOrder.price)}</span>
+                  </div>
                 </div>
-                <div className="flex justify-between font-black text-sm text-slate-800 border-t border-slate-200/60 pt-2.5 mt-1">
+              </div>
+
+              {/* Invoice Calculations */}
+              <div className="bg-white rounded-xl p-3 border border-slate-100 flex flex-col gap-2 mt-1 z-10">
+                <div className="flex justify-between text-[10px]">
+                  <span className="text-slate-400 font-semibold">Harga Langganan</span>
+                  <span className="font-bold text-slate-700">{formatIDR(selectedOrder.price + selectedOrder.discountAmount)}</span>
+                </div>
+                
+                {selectedOrder.discountAmount > 0 && (
+                  <div className="flex justify-between text-[10px] text-indigo-600 font-semibold">
+                    <span>Diskon Promo / Voucer</span>
+                    <span>-{formatIDR(selectedOrder.discountAmount)}</span>
+                  </div>
+                )}
+
+                <div className="flex justify-between text-[10px]">
+                  <span className="text-slate-400 font-semibold">Biaya Layanan & PPN</span>
+                  <span className="text-emerald-600 font-bold">Rp 0</span>
+                </div>
+
+                <div className="flex justify-between text-[10.5px] font-black text-slate-900 border-t border-dashed border-slate-100 pt-2 mt-1">
                   <span>Total Bayar</span>
-                  <span>{formatIDR(selectedOrder.price)}</span>
+                  <span className="text-xs font-black text-slate-950">{formatIDR(selectedOrder.price)}</span>
+                </div>
+              </div>
+
+              {/* Payment Details */}
+              <div className="bg-slate-100/60 rounded-xl p-3 flex flex-col gap-1.5 z-10">
+                <div className="flex justify-between text-[9px]">
+                  <span className="text-slate-400 font-bold uppercase tracking-wider">Gateway Pembayaran:</span>
+                  <span className="font-bold text-slate-700 uppercase">{selectedOrder.paymentMethod}</span>
+                </div>
+                <div className="flex justify-between text-[9px]">
+                  <span className="text-slate-400 font-bold uppercase tracking-wider">Metode Bayar:</span>
+                  <span className="font-bold text-slate-700">QRIS / VA Transfer (Otomatis)</span>
+                </div>
+                <div className="flex justify-between text-[9px]">
+                  <span className="text-slate-400 font-bold uppercase tracking-wider">Status Transaksi:</span>
+                  <span className={`px-2 py-0.5 rounded-full text-[8px] font-black w-max ${
+                    selectedOrder.status === 'aktif' ? 'bg-emerald-50 text-emerald-600' :
+                    selectedOrder.status === 'menunggu_aktivasi' ? 'bg-indigo-50 text-indigo-600' :
+                    selectedOrder.status === 'expired' ? 'bg-red-50 text-red-600' : 'bg-amber-50 text-amber-600'
+                  }`}>
+                    {selectedOrder.status === 'aktif' ? 'AKTIF' :
+                     selectedOrder.status === 'menunggu_aktivasi' ? 'DIBAYAR' :
+                     selectedOrder.status === 'expired' ? 'KADALUARSA' : 'BELUM BAYAR'}
+                  </span>
                 </div>
               </div>
 
@@ -924,7 +980,8 @@ function AdminOrdersPage() {
               }
             `}} />
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   )

@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { getMyOrders } from '../utils/order.functions'
 import { PageTableSkeleton } from '../components/ui/skeletons'
 
@@ -35,6 +36,12 @@ function DashboardOrdersPage() {
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState(10)
   const [selectedOrder, setSelectedOrder] = useState<any>(null)
+
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => {
+    setMounted(true)
+    return () => setMounted(false)
+  }, [])
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -270,7 +277,7 @@ function DashboardOrdersPage() {
       )}
 
       {/* Premium Printable Receipt Modal */}
-      {selectedOrder && (
+      {mounted && selectedOrder && createPortal(
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fadeIn">
           <div className="relative w-full max-w-md bg-white border border-slate-200 rounded-3xl shadow-2xl overflow-hidden p-6 flex flex-col gap-5 max-h-[90vh]">
             
@@ -439,7 +446,8 @@ function DashboardOrdersPage() {
               }
             `}} />
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   )
