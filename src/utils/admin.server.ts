@@ -712,3 +712,36 @@ export async function deleteAdminMessageTemplateServer(id: string) {
   await db.delete(messageTemplates).where(eq(messageTemplates.id, id));
   return { success: true, error: null };
 }
+
+export async function bulkUpdateProductStockServer(
+  updates: { productId: string; adjustment: number }[],
+  adminUserId: string
+) {
+  await db.transaction(async (tx) => {
+    for (const update of updates) {
+      if (update.adjustment === 0) continue;
+
+      const [product] = await tx
+        .select({ stock: products.stock, name: products.name })
+        .from(products)
+        .where(eq(products.id, update.productId))
+        .limit(1);
+
+      if (product) {
+        const newStock = Math.max(0, product.stock + update.adjustment);
+        await tx
+          .update(products)
+          .set({ stock: newStock, updatedAt: new Date() })
+          .where(eq(products.id, update.productId));
+
+        await tx.insert(auditLogs).values({
+          userId: adminUserId,
+          action: 'BULK_STOCK_UPDATE',
+          details: `Update stok masal produk ${product.name}: ${product.stock} -> ${newStock} (Penyesuaian: ${update.adjustment >= 0 ? '+' : ''}${update.adjustment})`,
+        });
+      }
+    }
+  });
+  return { success: true, error: null };
+}
+

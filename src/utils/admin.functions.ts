@@ -444,3 +444,17 @@ export const deleteAdminMessageTemplate = createServerFn({ method: 'POST' })
       return { success: false, error: error?.message || 'Gagal menghapus template.' };
     }
   });
+
+export const bulkUpdateProductStock = createServerFn({ method: 'POST' })
+  .validator((data: any) => data)
+  .handler(async ({ data }) => {
+    const admin = await verifyAdminSession();
+    try {
+      const { bulkUpdateProductStockServer } = await import('./admin.server');
+      return await bulkUpdateProductStockServer(data.updates, admin.userId);
+    } catch (error: any) {
+      console.error("bulkUpdateProductStock error:", error);
+      return { success: false, error: error?.message || 'Gagal melakukan pembaruan stok masal.' };
+    }
+  });
+

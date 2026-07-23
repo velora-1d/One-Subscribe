@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { getAdminProducts, getAdminCategories, createAdminProduct, updateAdminProduct, toggleProductStatus, deleteAdminProduct } from '../utils/admin.functions'
+import { getAdminProducts, getAdminCategories, createAdminProduct, updateAdminProduct, toggleProductStatus, deleteAdminProduct, bulkUpdateProductStock } from '../utils/admin.functions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -94,6 +94,13 @@ function AdminProductsPage() {
     name: '',
   })
 
+  // Bulk Stock States
+  const [isBulkStockModalOpen, setIsBulkStockModalOpen] = useState(false)
+  const [bulkEdits, setBulkEdits] = useState<{ id: string; name: string; category: string; currentStock: number; adjustment: number }[]>([])
+  const [bulkSearch, setBulkSearch] = useState('')
+  const [bulkQuickVal, setBulkQuickVal] = useState('')
+  const [isSubmittingBulk, setIsSubmittingBulk] = useState(false)
+
   // Filter States
   const [search, setSearch] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string>('semua')
@@ -114,6 +121,69 @@ function AdminProductsPage() {
     })
     setFormError(null)
     setIsModalOpen(true)
+  }
+
+  const handleOpenBulkStock = () => {
+    setBulkEdits(
+      products.map((p) => ({
+        id: p.id,
+        name: p.name,
+        category: p.category,
+        currentStock: p.stock ?? 0,
+        adjustment: 0,
+      }))
+    )
+    setBulkSearch('')
+    setBulkQuickVal('')
+    setIsBulkStockModalOpen(true)
+  }
+
+  const handleApplyQuickStock = () => {
+    const val = parseInt(bulkQuickVal) || 0
+    setBulkEdits(prev =>
+      prev.map(item => ({
+        ...item,
+        adjustment: val,
+      }))
+    )
+    toast.success(`Berhasil menerapkan penyesuaian ${val >= 0 ? '+' : ''}${val} ke semua produk.`)
+  }
+
+  const handleSaveBulkStock = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsSubmittingBulk(true)
+    try {
+      const updates = bulkEdits
+        .filter(x => x.adjustment !== 0)
+        .map(x => ({ productId: x.id, adjustment: x.adjustment }))
+
+      if (updates.length === 0) {
+        toast.info('Tidak ada perubahan stok yang dibuat.')
+        setIsBulkStockModalOpen(false)
+        return
+      }
+
+      const res = await bulkUpdateProductStock({ data: { updates } })
+      if (res.success) {
+        setProducts(prev =>
+          prev.map(p => {
+            const match = updates.find(u => u.productId === p.id)
+            if (match) {
+              return { ...p, stock: Math.max(0, (p.stock ?? 0) + match.adjustment) }
+            }
+            return p
+          })
+        )
+        toast.success('Pembaruan stok masal berhasil disimpan!')
+        setIsBulkStockModalOpen(false)
+      } else {
+        toast.error(res.error || 'Gagal menyimpan pembaruan stok masal.')
+      }
+    } catch (err: any) {
+      toast.error(err?.message || 'Terjadi kesalahan.')
+    } finally {
+      setIsSubmittingBulk(false)
+    }
   }
 
   const handleOpenEdit = (p: any) => {
@@ -217,13 +287,22 @@ function AdminProductsPage() {
             </p>
           </div>
         </div>
-        <button
-          onClick={handleOpenAdd}
-          className="rounded-lg bg-slate-900 px-5 py-2.5 text-xs font-bold text-white border border-slate-950 hover:scale-95 hover:bg-slate-800 transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer font-sans shrink-0"
-        >
-          <span className="material-symbols-outlined text-[18px]">add_circle</span>
-          Tambah Produk Baru
-        </button>
+        <div className="flex flex-wrap gap-2.5 shrink-0">
+          <button
+            onClick={handleOpenBulkStock}
+            className="rounded-lg bg-white border border-slate-200 hover:bg-slate-50 px-5 py-2.5 text-xs font-bold text-slate-700 hover:text-slate-900 transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer font-sans"
+          >
+            <span className="material-symbols-outlined text-[18px]">inventory</span>
+            Kelola Stok Masal
+          </button>
+          <button
+            onClick={handleOpenAdd}
+            className="rounded-lg bg-slate-900 px-5 py-2.5 text-xs font-bold text-white border border-slate-950 hover:scale-95 hover:bg-slate-800 transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer font-sans"
+          >
+            <span className="material-symbols-outlined text-[18px]">add_circle</span>
+            Tambah Produk Baru
+          </button>
+        </div>
       </header>
 
       {error && (
@@ -576,6 +655,141 @@ function AdminProductsPage() {
               Ya, Hapus
             </button>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog Pembaruan Stok Masal */}
+      <Dialog open={isBulkStockModalOpen} onOpenChange={setIsBulkStockModalOpen}>
+        <DialogContent className="w-11/12 sm:max-w-4xl md:max-w-5xl bg-white border border-slate-200 rounded-xl p-6 shadow-xl max-h-[90vh] overflow-y-auto font-sans text-left flex flex-col gap-4">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-bold text-slate-900 font-display flex items-center gap-2">
+              <span className="material-symbols-outlined">published_with_changes</span>
+              Kelola Stok Masal
+            </DialogTitle>
+          </DialogHeader>
+
+          {/* Quick-Apply Panel */}
+          <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="text-xs text-slate-600 font-semibold">
+              <strong className="text-slate-800">Alat Cepat:</strong> Masukkan angka positif atau negatif untuk menerapkan penyesuaian stok serentak ke semua produk.
+            </div>
+            <div className="flex gap-2 w-full sm:w-auto shrink-0">
+              <Input
+                type="number"
+                placeholder="Misal: 10 atau -5"
+                value={bulkQuickVal}
+                onChange={(e) => setBulkQuickVal(e.target.value)}
+                className="w-28 rounded-lg border border-slate-200 bg-white px-3 h-9 text-xs text-slate-800 outline-none"
+              />
+              <button
+                type="button"
+                onClick={handleApplyQuickStock}
+                className="rounded-lg bg-slate-900 hover:bg-slate-800 text-white px-4 h-9 text-xs font-bold transition cursor-pointer"
+              >
+                Terapkan Ke Semua
+              </button>
+            </div>
+          </div>
+
+          {/* Search bar inside bulk modal */}
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Cari produk di dalam daftar..."
+              value={bulkSearch}
+              onChange={(e) => setBulkSearch(e.target.value)}
+              className="w-full rounded-xl border border-slate-200/80 bg-slate-50/50 px-4 py-2.5 text-xs text-slate-800 outline-none focus:border-slate-900 focus:bg-white transition"
+            />
+          </div>
+
+          <form onSubmit={handleSaveBulkStock} className="flex flex-col gap-4 flex-grow overflow-hidden">
+            {/* Scrollable products list in 2-column grid */}
+            <div className="border border-slate-200 rounded-xl overflow-y-auto max-h-[45vh] bg-slate-50 p-4">
+              {bulkEdits.filter(item => item.name.toLowerCase().includes(bulkSearch.toLowerCase())).length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {bulkEdits
+                    .filter(item => item.name.toLowerCase().includes(bulkSearch.toLowerCase()))
+                    .map((item) => {
+                      const finalStock = Math.max(0, item.currentStock + item.adjustment);
+                      const isChanged = item.adjustment !== 0;
+                      return (
+                        <div key={item.id} className="p-4 bg-white border border-slate-200/80 rounded-xl flex items-center justify-between gap-4 hover:shadow-md hover:border-slate-300 transition duration-200">
+                          <div className="min-w-0 flex-1">
+                            <p className="text-xs font-bold text-slate-800 truncate" title={item.name}>{item.name}</p>
+                            <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mt-0.5">{item.category}</p>
+                          </div>
+                          
+                          <div className="flex items-center gap-4 shrink-0">
+                            {/* Real-time preview indicator */}
+                            <div className="text-right w-20">
+                              <span className="text-[9px] text-slate-400 font-bold block uppercase tracking-wider">Preview</span>
+                              <span className="text-xs font-semibold text-slate-500">
+                                {item.currentStock}
+                                <span className={`mx-1 font-bold ${isChanged ? 'text-indigo-600' : 'text-slate-400'}`}>&rarr;</span>
+                                <span className={`font-bold ${
+                                  isChanged 
+                                    ? item.adjustment > 0 
+                                      ? 'text-emerald-600' 
+                                      : 'text-rose-600' 
+                                    : 'text-slate-700'
+                                }`}>
+                                  {finalStock}
+                                </span>
+                              </span>
+                            </div>
+
+                            {/* Adjustment input */}
+                            <div className="w-18">
+                              <span className="text-[9px] text-slate-400 font-bold block uppercase tracking-wider mb-1 text-center">Ubah</span>
+                              <Input
+                                type="number"
+                                value={item.adjustment}
+                                onChange={(e) => {
+                                  const val = parseInt(e.target.value) || 0;
+                                  setBulkEdits(prev =>
+                                    prev.map(x => x.id === item.id ? { ...x, adjustment: val } : x)
+                                  );
+                                }}
+                                className="w-full text-center rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100/50 focus:bg-white focus:border-slate-900 h-8 text-xs font-bold text-slate-800 px-1"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                </div>
+              ) : (
+                <div className="p-8 text-center text-xs text-slate-400 italic bg-white rounded-xl border border-slate-200">
+                  Tidak ada produk yang cocok dengan pencarian.
+                </div>
+              )}
+            </div>
+
+            {/* Modal Actions */}
+            <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={() => setIsBulkStockModalOpen(false)}
+                className="rounded-lg bg-white border border-slate-200 hover:bg-slate-50 px-5 h-10 text-xs font-bold text-slate-600 transition cursor-pointer"
+              >
+                Batal
+              </button>
+              <button
+                type="submit"
+                disabled={isSubmittingBulk}
+                className="rounded-lg bg-slate-900 text-white px-6 h-10 text-xs font-bold shadow-sm hover:scale-95 transition disabled:opacity-50 cursor-pointer border border-slate-950 flex items-center justify-center gap-1.5"
+              >
+                {isSubmittingBulk ? (
+                  'Menyimpan...'
+                ) : (
+                  <>
+                    <span className="material-symbols-outlined text-[16px]">save</span>
+                    Simpan Perubahan Stok
+                  </>
+                )}
+              </button>
+            </div>
+          </form>
         </DialogContent>
       </Dialog>
     </div>
