@@ -75,6 +75,9 @@ function CheckoutPage() {
   )
   const [voucherError, setVoucherError] = useState<string | null>(null)
   const [isValidatingVoucher, setIsValidatingVoucher] = useState(false)
+  const [customerInput, setCustomerInput] = useState(
+    product.fulfillmentType === 'email_invite' ? (user?.email || '') : ''
+  )
 
   // Monthly base price calculated from the product
   const baseMonthlyPrice = Math.round(product.price / product.durationMonths)
@@ -152,12 +155,23 @@ function CheckoutPage() {
     setIsLoading(true)
     setSubmitError(null)
 
+    if ((product.fulfillmentType === 'email_invite' || product.fulfillmentType === 'topup_service') && !customerInput.trim()) {
+      setSubmitError(
+        product.fulfillmentType === 'email_invite'
+          ? 'Mohon masukkan Email Target Undangan yang ingin di-invite.'
+          : 'Mohon masukkan User ID / Target Top-Up Anda.'
+      )
+      setIsLoading(false)
+      return
+    }
+
     try {
       const result = await createOrder({
         data: {
           productId: product.id,
           durationMonths: chosenDuration,
           appliedPromoId: appliedVoucher?.id || undefined,
+          customerInput: customerInput.trim() || undefined,
         },
       })
 
@@ -190,6 +204,11 @@ function CheckoutPage() {
           <span className="material-symbols-outlined text-[10px] select-none text-slate-300">chevron_right</span>
           <span className="text-slate-900">Checkout</span>
         </div>
+
+        <Link to="/" className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-slate-900 transition-colors mb-4 group">
+          <span className="material-symbols-outlined text-base group-hover:-translate-x-0.5 transition-transform">arrow_back</span>
+          Kembali ke Katalog
+        </Link>
 
         <h1 className="text-3xl font-black text-slate-900 mb-8 tracking-tight">
           Checkout Pembayaran
@@ -235,7 +254,7 @@ function CheckoutPage() {
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
                     <span className="block text-[10px] text-[var(--sea-ink-soft)] font-bold uppercase tracking-wider mb-1.5">
-                      Email Akun
+                      Email Akun (Login)
                     </span>
                     <div className="relative">
                       <span className="material-symbols-outlined text-slate-400 absolute left-4 top-1/2 -translate-y-1/2 text-sm select-none">mail_outline</span>
@@ -256,6 +275,40 @@ function CheckoutPage() {
                     </div>
                   </div>
                 </div>
+
+                {/* Mandatory Target Email / User ID Field for email_invite or topup_service */}
+                {(product.fulfillmentType === 'email_invite' || product.fulfillmentType === 'topup_service') && (
+                  <div className="pt-3 border-t border-slate-100">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="block text-[10px] font-black text-blue-900 uppercase tracking-wider">
+                        {product.fulfillmentType === 'email_invite' ? 'Email Target Undangan (Family/Team Join)' : 'User ID / Data Target Topup'}
+                      </label>
+                      <span className="text-[9px] font-black text-red-600 bg-red-50 border border-red-200 px-2 py-0.5 rounded-full uppercase">Wajib Diisi</span>
+                    </div>
+                    <div className="relative">
+                      <span className="material-symbols-outlined text-blue-600 absolute left-4 top-1/2 -translate-y-1/2 text-sm select-none">
+                        {product.fulfillmentType === 'email_invite' ? 'alternate_email' : 'badge'}
+                      </span>
+                      <input
+                        type="text"
+                        required
+                        value={customerInput}
+                        onChange={(e) => setCustomerInput(e.target.value)}
+                        placeholder={
+                          product.fulfillmentType === 'email_invite'
+                            ? 'Masukkan email yang ingin di-invite (contoh: email-anda@gmail.com)'
+                            : 'Masukkan User ID / Server ID target (contoh: ID 12345678)'
+                        }
+                        className="w-full rounded-2xl border-2 border-blue-500 bg-blue-50/30 px-4 py-3 pl-10 text-xs font-bold text-slate-900 outline-none focus:border-blue-700 focus:bg-white transition shadow-xs"
+                      />
+                    </div>
+                    <p className="text-[10px] text-slate-400 mt-1.5 font-medium">
+                      {product.fulfillmentType === 'email_invite'
+                        ? 'Email di atas akan di-invite oleh admin ke dalam grup / family plan premium.'
+                        : 'Admin akan mengisikan kredit/topup ke ID target di atas.'}
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
 

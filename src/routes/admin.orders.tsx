@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, Link } from '@tanstack/react-router'
 import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { toast } from 'sonner'
@@ -354,6 +354,11 @@ function AdminOrdersPage() {
 
   return (
     <div className="space-y-6 relative">
+
+      <Link to="/admin/dashboard" className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-slate-900 transition-colors mb-4 group">
+        <span className="material-symbols-outlined text-base group-hover:-translate-x-0.5 transition-transform">arrow_back</span>
+        Kembali ke Dashboard Admin
+      </Link>
 
       {/* Title Panel */}
       <div>

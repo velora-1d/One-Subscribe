@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, Link } from '@tanstack/react-router'
 import { useState } from 'react'
 import { getPromos, createPromo, togglePromoActive, deletePromo, updatePromo } from '../utils/promo.functions'
 import { getAdminProducts } from '../utils/admin.functions'
@@ -278,6 +278,11 @@ function AdminPromosPage() {
           <span className="text-xs font-bold">{toast.message}</span>
         </div>
       )}
+
+      <Link to="/admin/dashboard" className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-slate-900 transition-colors mb-4 group">
+        <span className="material-symbols-outlined text-base group-hover:-translate-x-0.5 transition-transform">arrow_back</span>
+        Kembali ke Dashboard Admin
+      </Link>
 
       {/* Header Panel */}
       <header className="relative bg-white/80 backdrop-blur-md border border-slate-200/80 rounded-2xl p-6 flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-lg shadow-slate-100/30">

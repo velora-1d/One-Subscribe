@@ -60,6 +60,13 @@ function CheckoutSuccessPage() {
         <div className="pointer-events-none absolute -left-20 -top-20 h-48 w-48 rounded-full bg-[radial-gradient(circle,rgba(16,185,129,0.08),transparent_70%)]" />
         <div className="pointer-events-none absolute -right-20 -bottom-20 h-48 w-48 rounded-full bg-[radial-gradient(circle,rgba(59,130,246,0.08),transparent_70%)]" />
 
+        <div className="flex justify-start mb-2">
+          <Link to="/dashboard" className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-slate-900 transition-colors group">
+            <span className="material-symbols-outlined text-base group-hover:-translate-x-0.5 transition-transform">arrow_back</span>
+            Ke Dashboard Saya
+          </Link>
+        </div>
+
         {/* Success Icon */}
         <div className="mx-auto w-20 h-20 bg-emerald-50 border border-emerald-100 rounded-full flex items-center justify-center text-emerald-500 mb-6 shadow-inner relative">
           <span className="material-symbols-outlined text-[42px] font-bold animate-pulse">check_circle</span>
