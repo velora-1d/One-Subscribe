@@ -612,7 +612,7 @@ a[href]:active {
 
 /* Page Slide-Fade Transition */
 .page-transition {
-  animation: pageReveal 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: pageReveal 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 @keyframes pageReveal {
   from {

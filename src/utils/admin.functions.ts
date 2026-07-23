@@ -25,96 +25,91 @@ export const getAdminStats = createServerFn({ method: 'GET' }).handler(async () 
   verifyAdminSession();
 
   try {
-    // 1. Total Revenue (sum of completed orders)
-    const [revenueRes] = await db
-      .select({ total: sql<number>`COALESCE(SUM(${orders.price}), 0)` })
-      .from(orders)
-      .where(sql`${orders.status} IN ('aktif', 'expired', 'menunggu_aktivasi')`);
-
-    // 2. Total registered customers
-    const [usersRes] = await db
-      .select({ count: sql<number>`COUNT(*)` })
-      .from(users)
-      .where(eq(users.role, 'customer'));
-
-    // 3. Count of orders waiting for admin credentials activation
-    const [pendingRes] = await db
-      .select({ count: sql<number>`COUNT(*)` })
-      .from(orders)
-      .where(eq(orders.status, 'menunggu_aktivasi'));
-
-    // 4. Count of total orders
-    const [totalOrdersRes] = await db
-      .select({ count: sql<number>`COUNT(*)` })
-      .from(orders);
-
-    // 5. Active orders
-    const [activeOrdersRes] = await db
-      .select({ count: sql<number>`COUNT(*)` })
-      .from(orders)
-      .where(eq(orders.status, 'aktif'));
-
-    // 6. Unpaid orders
-    const [unpaidOrdersRes] = await db
-      .select({ count: sql<number>`COUNT(*)` })
-      .from(orders)
-      .where(eq(orders.status, 'menunggu_pembayaran'));
-
-    // 7. Expired orders
-    const [expiredOrdersRes] = await db
-      .select({ count: sql<number>`COUNT(*)` })
-      .from(orders)
-      .where(eq(orders.status, 'expired'));
-
-    // 8. Total products
-    const [totalProductsRes] = await db
-      .select({ count: sql<number>`COUNT(*)` })
-      .from(products);
-
-    // 9. Total categories
-    const [totalCategoriesRes] = await db
-      .select({ count: sql<number>`COUNT(*)` })
-      .from(categories);
-
-    // 10. Average Order Value
-    const [aovRes] = await db
-      .select({ avg: sql<number>`COALESCE(AVG(${orders.price}), 0)` })
-      .from(orders)
-      .where(sql`${orders.status} IN ('aktif', 'expired', 'menunggu_aktivasi')`);
-
-    // Recent orders list
-    const recentOrders = await db
-      .select({
-        id: orders.id,
-        status: orders.status,
-        price: orders.price,
-        parentOrderId: orders.parentOrderId,
-        createdAt: orders.createdAt,
-        productName: products.name,
-        customerName: users.name,
-        customerEmail: users.email,
-      })
-      .from(orders)
-      .innerJoin(products, eq(orders.productId, products.id))
-      .innerJoin(users, eq(orders.userId, users.id))
-      .orderBy(desc(orders.createdAt))
-      .limit(5);
+    // Query all stats and list concurrently in a single round-trip
+    const [
+      revenueRes,
+      usersRes,
+      pendingRes,
+      totalOrdersRes,
+      activeOrdersRes,
+      unpaidOrdersRes,
+      expiredOrdersRes,
+      totalProductsRes,
+      totalCategoriesRes,
+      aovRes,
+      recentOrders
+    ] = await Promise.all([
+      db
+        .select({ total: sql<number>`COALESCE(SUM(${orders.price}), 0)` })
+        .from(orders)
+        .where(sql`${orders.status} IN ('aktif', 'expired', 'menunggu_aktivasi')`),
+      db
+        .select({ count: sql<number>`COUNT(*)` })
+        .from(users)
+        .where(eq(users.role, 'customer')),
+      db
+        .select({ count: sql<number>`COUNT(*)` })
+        .from(orders)
+        .where(eq(orders.status, 'menunggu_aktivasi')),
+      db
+        .select({ count: sql<number>`COUNT(*)` })
+        .from(orders),
+      db
+        .select({ count: sql<number>`COUNT(*)` })
+        .from(orders)
+        .where(eq(orders.status, 'aktif')),
+      db
+        .select({ count: sql<number>`COUNT(*)` })
+        .from(orders)
+        .where(eq(orders.status, 'menunggu_pembayaran')),
+      db
+        .select({ count: sql<number>`COUNT(*)` })
+        .from(orders)
+        .where(eq(orders.status, 'expired')),
+      db
+        .select({ count: sql<number>`COUNT(*)` })
+        .from(products),
+      db
+        .select({ count: sql<number>`COUNT(*)` })
+        .from(categories),
+      db
+        .select({ avg: sql<number>`COALESCE(AVG(${orders.price}), 0)` })
+        .from(orders)
+        .where(sql`${orders.status} IN ('aktif', 'expired', 'menunggu_aktivasi')`),
+      db
+        .select({
+          id: orders.id,
+          status: orders.status,
+          price: orders.price,
+          parentOrderId: orders.parentOrderId,
+          createdAt: orders.createdAt,
+          productName: products.name,
+          customerName: users.name,
+          customerEmail: users.email,
+        })
+        .from(orders)
+        .innerJoin(products, eq(orders.productId, products.id))
+        .innerJoin(users, eq(orders.userId, users.id))
+        .orderBy(desc(orders.createdAt))
+        .limit(5)
+    ]);
 
     return {
       success: true,
       stats: {
-        totalRevenue: revenueRes.total,
-        totalCustomers: usersRes.count,
-        pendingActivations: pendingRes.count,
-        totalOrders: totalOrdersRes.count,
-        activeOrders: activeOrdersRes.count,
-        unpaidOrders: unpaidOrdersRes.count,
-        expiredOrders: expiredOrdersRes.count,
-        totalProducts: totalProductsRes.count,
-        totalCategories: totalCategoriesRes.count,
-        avgOrderValue: Math.round(aovRes.avg || 0),
+        totalRevenue: revenueRes[0]?.total || 0,
+        totalCustomers: usersRes[0]?.count || 0,
+        pendingActivations: pendingRes[0]?.count || 0,
+        totalOrders: totalOrdersRes[0]?.count || 0,
+        activeOrders: activeOrdersRes[0]?.count || 0,
+        unpaidOrders: unpaidOrdersRes[0]?.count || 0,
+        expiredOrders: expiredOrdersRes[0]?.count || 0,
+        totalProducts: totalProductsRes[0]?.count || 0,
+        totalCategories: totalCategoriesRes[0]?.count || 0,
+        averageOrderValue: Math.round(aovRes[0]?.avg || 0),
         recentOrders,
       },
+      recentOrders,
     };
   } catch (error: any) {
     return { success: false, error: error?.message || 'Gagal memuat statistik.' };

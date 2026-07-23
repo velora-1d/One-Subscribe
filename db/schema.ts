@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, integer, boolean, uuid } from 'drizzle-orm/pg-core';
+import { pgTable, text, timestamp, integer, boolean, uuid, index } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
 // Users Table
@@ -13,7 +13,10 @@ export const users = pgTable('users', {
   isActive: boolean('is_active').default(true).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
-});
+}, (table) => [
+  index('users_role_idx').on(table.role),
+  index('users_is_active_idx').on(table.isActive),
+]);
 
 // Products Table
 export const products = pgTable('products', {
@@ -28,7 +31,10 @@ export const products = pgTable('products', {
   isActive: boolean('is_active').default(true).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
-});
+}, (table) => [
+  index('products_category_idx').on(table.category),
+  index('products_is_active_idx').on(table.isActive),
+]);
 
 // Promos Table
 export const promos = pgTable('promos', {
@@ -47,7 +53,10 @@ export const promos = pgTable('promos', {
   isActive: boolean('is_active').default(true).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
-});
+}, (table) => [
+  index('promos_product_id_idx').on(table.productId),
+  index('promos_is_active_idx').on(table.isActive),
+]);
 
 // Orders Table
 export const orders = pgTable('orders', {
@@ -65,7 +74,13 @@ export const orders = pgTable('orders', {
   discountAmount: integer('discount_amount').default(0).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
-});
+}, (table) => [
+  index('orders_user_id_idx').on(table.userId),
+  index('orders_product_id_idx').on(table.productId),
+  index('orders_status_idx').on(table.status),
+  index('orders_created_at_idx').on(table.createdAt),
+  index('orders_parent_order_id_idx').on(table.parentOrderId),
+]);
 
 // Credentials Table (Encrypted login credentials for active subscriptions)
 export const credentials = pgTable('credentials', {
@@ -86,7 +101,10 @@ export const auditLogs = pgTable('audit_logs', {
   action: text('action').notNull(), // e.g., 'UPDATE_ORDER_STATUS', 'BLOCK_USER'
   details: text('details'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
-});
+}, (table) => [
+  index('audit_logs_user_id_idx').on(table.userId),
+  index('audit_logs_created_at_idx').on(table.createdAt),
+]);
 
 // Relations Definitions
 export const usersRelations = relations(users, ({ many }) => ({
