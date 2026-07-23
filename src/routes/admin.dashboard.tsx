@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useState } from 'react'
 import { getAdminStats } from '../utils/admin.functions'
+import { DashboardSkeleton } from '../components/ui/skeletons'
 
 export const Route = createFileRoute('/admin/dashboard')({
   loader: async () => {
@@ -14,6 +15,7 @@ export const Route = createFileRoute('/admin/dashboard')({
       return { stats: null, error: err?.message || 'Gagal memuat statistik' }
     }
   },
+  pendingComponent: DashboardSkeleton,
   component: AdminDashboardPage,
 })
 

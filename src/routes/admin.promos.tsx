@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { getPromos, createPromo, togglePromoActive, deletePromo, updatePromo } from '../utils/promo.functions'
 import { getAdminProducts } from '../utils/admin.functions'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog'
+import { PageTableSkeleton } from '../components/ui/skeletons'
 
 export const Route = createFileRoute('/admin/promos')({
   loader: async () => {
@@ -20,6 +21,7 @@ export const Route = createFileRoute('/admin/promos')({
       return { promos: [], products: [], error: err?.message || 'Gagal memuat data' }
     }
   },
+  pendingComponent: PageTableSkeleton,
   component: AdminPromosPage,
 })
 

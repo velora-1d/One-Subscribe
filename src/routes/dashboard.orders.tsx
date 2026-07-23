@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useState } from 'react'
 import { getMyOrders } from '../utils/order.functions'
+import { PageTableSkeleton } from '../components/ui/skeletons'
 
 export const Route = createFileRoute('/dashboard/orders')({
   loader: async () => {
@@ -14,6 +15,7 @@ export const Route = createFileRoute('/dashboard/orders')({
       return { orders: [], error: err?.message || 'Gagal memuat riwayat pesanan' }
     }
   },
+  pendingComponent: PageTableSkeleton,
   component: DashboardOrdersPage,
 })
 

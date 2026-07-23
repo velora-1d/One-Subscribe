@@ -2,6 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { getAllSystemSettings, updateSystemSettings, testConnection } from '../utils/settings.functions'
+import { PageTableSkeleton } from '../components/ui/skeletons'
 
 export const Route = createFileRoute('/admin/settings')({
   loader: async () => {
@@ -14,6 +15,7 @@ export const Route = createFileRoute('/admin/settings')({
       return { initialSettings: {} as Record<string, string> }
     }
   },
+  pendingComponent: PageTableSkeleton,
   component: AdminSettingsPage,
 })
 

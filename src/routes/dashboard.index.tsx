@@ -2,6 +2,7 @@ import { createFileRoute, Link } from '@tanstack/react-router'
 import { useState } from 'react'
 import { getActiveSubscriptions, createOrder } from '../utils/order.functions'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog'
+import { DashboardSkeleton } from '../components/ui/skeletons'
 
 export const Route = createFileRoute('/dashboard/')({
   loader: async () => {
@@ -15,6 +16,7 @@ export const Route = createFileRoute('/dashboard/')({
       return { subscriptions: [], error: err?.message || 'Gagal memuat langganan' }
     }
   },
+  pendingComponent: DashboardSkeleton,
   component: DashboardIndexPage,
 })
 

@@ -30,6 +30,8 @@ const WhatsappIcon = ({ className = "h-4 w-4" }: { className?: string }) => (
   </svg>
 )
 
+import { PageTableSkeleton } from '../components/ui/skeletons'
+
 export const Route = createFileRoute('/admin/users')({
   loader: async () => {
     try {
@@ -42,6 +44,7 @@ export const Route = createFileRoute('/admin/users')({
       return { users: [], error: err?.message || 'Gagal memuat data user' }
     }
   },
+  pendingComponent: PageTableSkeleton,
   component: AdminUsersPage,
 })
 

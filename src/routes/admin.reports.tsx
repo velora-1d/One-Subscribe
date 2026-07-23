@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
 import { getAdminReports, getAdminCategories } from '../utils/admin.functions'
+import { PageTableSkeleton } from '../components/ui/skeletons'
 
 export const Route = createFileRoute('/admin/reports')({
   loader: async () => {
@@ -18,6 +19,7 @@ export const Route = createFileRoute('/admin/reports')({
       return { orders: [], categories: [], error: err?.message || 'Gagal memuat data laporan' }
     }
   },
+  pendingComponent: PageTableSkeleton,
   component: AdminReportsPage,
 })
 

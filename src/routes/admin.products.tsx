@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Card } from '@/components/ui/card'
+import { PageTableSkeleton } from '../components/ui/skeletons'
 import {
   Dialog,
   DialogContent,
@@ -30,6 +31,7 @@ export const Route = createFileRoute('/admin/products')({
       return { products: [], categories: [], error: err?.message || 'Gagal memuat data produk' }
     }
   },
+  pendingComponent: PageTableSkeleton,
   component: AdminProductsPage,
 })
 
