@@ -64,6 +64,9 @@ interface ProductFormState {
   category: string
   imageUrl: string
   stock: number
+  fulfillmentType: 'credentials' | 'download_link' | 'license_key' | 'email_invite' | 'topup_service'
+  downloadUrl: string
+  fulfillmentInstructions: string
 }
 
 const emptyForm: ProductFormState = {
@@ -74,6 +77,9 @@ const emptyForm: ProductFormState = {
   category: '',
   imageUrl: '',
   stock: 10,
+  fulfillmentType: 'credentials',
+  downloadUrl: '',
+  fulfillmentInstructions: '',
 }
 
 function AdminProductsPage() {
@@ -264,6 +270,9 @@ function AdminProductsPage() {
        category: p.category,
        imageUrl: p.imageUrl || '',
        stock: p.stock ?? 0,
+       fulfillmentType: p.fulfillmentType || 'credentials',
+       downloadUrl: p.downloadUrl || '',
+       fulfillmentInstructions: p.fulfillmentInstructions || '',
      })
      setFormError(null)
      setIsModalOpen(true)
@@ -530,9 +539,9 @@ function AdminProductsPage() {
 
       {/* dialog Popup for Product Form */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="max-w-2xl bg-white border border-slate-200 rounded-xl p-6 shadow-xl max-h-[90vh] overflow-y-auto font-sans text-left">
+        <DialogContent className="max-w-4xl sm:max-w-4xl bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-2xl max-h-[90vh] overflow-y-auto font-sans text-left">
           <DialogHeader className="mb-4">
-            <DialogTitle className="text-lg font-bold text-slate-900 font-display">
+            <DialogTitle className="text-xl font-black text-slate-900 font-display">
               {editingId ? 'Edit Detail Produk' : 'Tambah Produk Baru'}
             </DialogTitle>
           </DialogHeader>
@@ -543,36 +552,38 @@ function AdminProductsPage() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <Label className="block text-xs font-semibold text-slate-700 mb-1">
-                Nama Layanan
-              </Label>
-              <Input
-                type="text"
-                required
-                value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
-                placeholder="Contoh: Netflix Premium 1 Bulan"
-                className="w-full rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100/50 focus:bg-white focus:border-slate-900 px-3 h-10 text-xs text-slate-800 outline-none transition"
-              />
-            </div>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <Label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Nama Layanan
+                </Label>
+                <Input
+                  type="text"
+                  required
+                  value={form.name}
+                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                  placeholder="Contoh: Netflix Premium 1 Bulan"
+                  className="w-full rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100/50 focus:bg-white focus:border-slate-900 px-3 h-10 text-xs text-slate-800 outline-none transition"
+                />
+              </div>
 
-            <div>
-              <Label className="block text-xs font-semibold text-slate-700 mb-1">
-                Kategori
-              </Label>
-              <select
-                value={form.category}
-                onChange={(e) => setForm({ ...form, category: e.target.value })}
-                className="w-full rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100/50 focus:bg-white focus:border-slate-900 px-3 h-10 text-xs text-slate-800 outline-none transition cursor-pointer"
-              >
-                {categories.map((cat: any) => (
-                  <option key={cat.id} value={cat.name}>
-                    {cat.name}
-                  </option>
-                ))}
-              </select>
+              <div>
+                <Label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Kategori
+                </Label>
+                <select
+                  value={form.category}
+                  onChange={(e) => setForm({ ...form, category: e.target.value })}
+                  className="w-full rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100/50 focus:bg-white focus:border-slate-900 px-3 h-10 text-xs text-slate-800 outline-none transition cursor-pointer font-medium"
+                >
+                  {categories.map((cat: any) => (
+                    <option key={cat.id} value={cat.name}>
+                      {cat.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             <div>
@@ -631,6 +642,97 @@ function AdminProductsPage() {
                 />
               </div>
             </div>
+
+            {/* Interactive Fulfillment Type Selector */}
+            <div className="pt-2">
+              <Label className="block text-xs font-bold text-slate-800 uppercase tracking-wider mb-2.5">
+                Tipe Pengiriman Produk (Fulfillment Type)
+              </Label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {[
+                  {
+                    id: 'credentials',
+                    title: 'Kredensial Akun',
+                    subtitle: 'Email & Password',
+                    desc: 'Admin mengisikan kredensial Email & Password saat memproses pesanan.',
+                    icon: 'key',
+                  },
+                  {
+                    id: 'download_link',
+                    title: 'Link Download',
+                    subtitle: 'Material / File Digital',
+                    desc: 'Pembeli langsung mendapat link download/akses file digital saat pesanan diaktifkan.',
+                    icon: 'link',
+                  },
+                  {
+                    id: 'license_key',
+                    title: 'Kode Lisensi',
+                    subtitle: 'Serial Key Unik',
+                    desc: 'Pembeli mendapatkan kode lisensi / serial key aktivasi.',
+                    icon: 'confirmation_number',
+                  },
+                  {
+                    id: 'email_invite',
+                    title: 'Undangan Email',
+                    subtitle: 'Family / Team Plan',
+                    desc: 'Admin meng-invite email pelanggan ke akun family/team.',
+                    icon: 'mail',
+                  },
+                  {
+                    id: 'topup_service',
+                    title: 'Jasa Top-Up',
+                    subtitle: 'Input User ID / Target',
+                    desc: 'Pembeli memasukkan ID Account/No Target saat checkout untuk diproses admin.',
+                    icon: 'bolt',
+                  },
+                ].map((opt) => {
+                  const isSelected = form.fulfillmentType === opt.id
+                  return (
+                    <div
+                      key={opt.id}
+                      onClick={() => setForm({ ...form, fulfillmentType: opt.id as any })}
+                      className={`relative flex flex-col p-3.5 rounded-xl border-2 cursor-pointer transition-all duration-200 select-none ${
+                        isSelected
+                          ? 'border-slate-900 bg-slate-950/5 shadow-sm'
+                          : 'border-slate-200 bg-slate-50 hover:bg-slate-100/80 hover:border-slate-300'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <div className={`p-1.5 rounded-lg flex items-center justify-center ${isSelected ? 'bg-slate-900 text-white' : 'bg-slate-200 text-slate-700'}`}>
+                            <span className="material-symbols-outlined text-sm font-bold">{opt.icon}</span>
+                          </div>
+                          <span className="text-xs font-black text-slate-900">{opt.title}</span>
+                        </div>
+                        {/* Custom Checkbox Indicator */}
+                        <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition-all ${
+                          isSelected ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-300 bg-white'
+                        }`}>
+                          {isSelected && <span className="material-symbols-outlined text-[10px] font-black">check</span>}
+                        </div>
+                      </div>
+                      <p className="text-[10px] font-bold text-slate-500 mb-1">{opt.subtitle}</p>
+                      <p className="text-[9px] text-slate-400 leading-tight mt-auto pt-1">{opt.desc}</p>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+
+            {form.fulfillmentType === 'download_link' && (
+              <div>
+                <Label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Default Link Download / Akses File (Google Drive / Cloud URL)
+                </Label>
+                <Input
+                  type="url"
+                  placeholder="https://drive.google.com/file/d/..."
+                  value={form.downloadUrl}
+                  onChange={(e) => setForm({ ...form, downloadUrl: e.target.value })}
+                  className="w-full rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:border-slate-900 px-3 h-10 text-xs text-slate-800 outline-none transition"
+                />
+              </div>
+            )}
 
             <div>
               <Label className="block text-xs font-semibold text-slate-700 mb-1">

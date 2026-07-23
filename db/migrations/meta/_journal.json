@@ -64,6 +64,13 @@
       "when": 1784780150663,
       "tag": "0008_friendly_victor_mancha",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1784787084961,
+      "tag": "0009_sour_thunderbolt_ross",
+      "breakpoints": true
     }
   ]
 }

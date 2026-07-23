@@ -125,18 +125,11 @@ export async function createOrderServer(data: any, user: any, origin: string) {
 
   if (paymentMethod === 'midtrans') {
     try {
-      const midtransEnv = settingsRecord['midtrans_env'] || 'sandbox';
-      const isProduction = midtransEnv.toLowerCase() === 'production';
-      const serverKey = isProduction
-        ? (settingsRecord['midtrans_server_key_production'] || process.env.MIDTRANS_PRODUCTION_SERVER_KEY)
-        : (settingsRecord['midtrans_server_key_sandbox'] || process.env.MIDTRANS_SANDBOX_SERVER_KEY);
+      const isProduction = process.env.NODE_ENV === 'production';
+      const serverKey = settingsRecord['midtrans_server_key'] || process.env.MIDTRANS_SERVER_KEY || 'SB-Mid-server-DUMMY_KEY';
       const endpoint = isProduction
         ? 'https://app.midtrans.com/snap/v1/transactions'
         : 'https://app.sandbox.midtrans.com/snap/v1/transactions';
-
-      if (!serverKey) {
-        throw new Error('Midtrans Server Key belum dikonfigurasi di .env');
-      }
 
       const authHeader = Buffer.from(`${serverKey}:`).toString('base64');
       const response = await fetch(endpoint, {
@@ -151,13 +144,10 @@ export async function createOrderServer(data: any, user: any, origin: string) {
             order_id: orderId,
             gross_amount: finalPrice,
           },
-          credit_card: {
-            secure: true,
-          },
+          credit_card: { secure: true },
           customer_details: {
             first_name: user.name,
             email: user.email,
-            phone: user.whatsapp,
           },
         }),
       });
@@ -165,15 +155,11 @@ export async function createOrderServer(data: any, user: any, origin: string) {
       const resData = await response.json() as any;
       if (response.ok && resData.redirect_url) {
         paymentRedirectUrl = resData.redirect_url;
-        if (resData.token) {
-          paymentTransactionId = resData.token;
-        }
+        paymentTransactionId = resData.token;
       } else {
-        console.error('[Midtrans Snap API Error]', resData);
         throw new Error(resData.error_messages?.[0] || 'Gagal membuat transaksi Midtrans.');
       }
     } catch (err: any) {
-      console.error('[Midtrans integration failed]', err);
       throw new Error(`Integrasi Midtrans Gagal: ${err.message}`);
     }
   } else if (paymentMethod === 'pakasir') {
@@ -208,6 +194,7 @@ export async function createOrderServer(data: any, user: any, origin: string) {
         parentOrderId: parentOrderId || null,
         appliedPromoId: appliedPromoId || null,
         discountAmount,
+        customerInput: customerInput || null,
       })
       .returning();
 
@@ -243,9 +230,11 @@ export async function getMyOrdersServer(userId: string) {
       paymentRedirectUrl: orders.paymentRedirectUrl,
       remainingDuration: orders.remainingDuration,
       createdAt: orders.createdAt,
+      customerInput: orders.customerInput,
       productName: products.name,
       productCategory: products.category,
       productImageUrl: products.imageUrl,
+      productFulfillmentType: products.fulfillmentType,
     })
     .from(orders)
     .innerJoin(products, eq(orders.productId, products.id))
@@ -266,9 +255,11 @@ export async function getOrderByIdServer(id: string) {
       remainingDuration: orders.remainingDuration,
       createdAt: orders.createdAt,
       userId: orders.userId,
+      customerInput: orders.customerInput,
       productName: products.name,
       productCategory: products.category,
       productImageUrl: products.imageUrl,
+      productFulfillmentType: products.fulfillmentType,
     })
     .from(orders)
     .innerJoin(products, eq(orders.productId, products.id))
@@ -311,12 +302,18 @@ export async function getActiveSubscriptionsServer(userId: string) {
       status: orders.status,
       remainingDuration: orders.remainingDuration,
       createdAt: orders.createdAt,
+      customerInput: orders.customerInput,
       productId: products.id,
       productName: products.name,
       productCategory: products.category,
       productImageUrl: products.imageUrl,
       productPrice: products.price,
       productDurationMonths: products.durationMonths,
+      productFulfillmentType: products.fulfillmentType,
+      productDownloadUrl: products.downloadUrl,
+      productFulfillmentInstructions: products.fulfillmentInstructions,
+      fulfillmentType: credentials.fulfillmentType,
+      fulfillmentData: credentials.fulfillmentData,
       encryptedAccountEmail: credentials.encryptedAccountEmail,
       encryptedAccountPassword: credentials.encryptedAccountPassword,
       remarks: credentials.remarks,
@@ -345,6 +342,15 @@ export async function getActiveSubscriptionsServer(userId: string) {
       }
     }
 
+    let parsedFulfillmentData: any = {};
+    if (sub.fulfillmentData) {
+      try {
+        parsedFulfillmentData = JSON.parse(sub.fulfillmentData);
+      } catch (e) {}
+    }
+
+    const effectiveFulfillmentType = sub.fulfillmentType || sub.productFulfillmentType || 'credentials';
+
     return {
       id: sub.id,
       productId: sub.productId,
@@ -353,6 +359,14 @@ export async function getActiveSubscriptionsServer(userId: string) {
       productName: sub.productName,
       productCategory: sub.productCategory,
       productImageUrl: sub.productImageUrl,
+      productFulfillmentType: sub.productFulfillmentType || 'credentials',
+      productDownloadUrl: sub.productDownloadUrl,
+      productFulfillmentInstructions: sub.productFulfillmentInstructions,
+      fulfillmentType: effectiveFulfillmentType,
+      downloadUrl: parsedFulfillmentData.downloadUrl || sub.productDownloadUrl,
+      licenseKey: parsedFulfillmentData.licenseKey,
+      fulfillmentInstructions: parsedFulfillmentData.fulfillmentInstructions || sub.productFulfillmentInstructions,
+      customerInput: sub.customerInput,
       remainingDuration: sub.remainingDuration,
       createdAt: sub.createdAt,
       accountEmail,

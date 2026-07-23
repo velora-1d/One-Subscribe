@@ -152,13 +152,86 @@ function DashboardIndexPage() {
                   </span>
                 </div>
 
-                {/* Credentials display block */}
+                {/* Dynamic fulfillment display block */}
                 <div className="mt-4 p-4 rounded-2xl bg-[var(--chip-bg)] border border-[var(--chip-line)] space-y-3">
-                  <h4 className="text-[10px] font-extrabold uppercase tracking-widest text-[var(--sea-ink-soft)] mb-2">
-                    Kredensial Login
+                  <h4 className="text-[10px] font-extrabold uppercase tracking-widest text-[var(--sea-ink-soft)] mb-2 flex items-center gap-1.5">
+                    <span className="material-symbols-outlined text-xs">
+                      {sub.fulfillmentType === 'download_link' ? 'link' :
+                       sub.fulfillmentType === 'license_key' ? 'confirmation_number' :
+                       sub.fulfillmentType === 'email_invite' ? 'mail' :
+                       sub.fulfillmentType === 'topup_service' ? 'bolt' :
+                       'key'}
+                    </span>
+                    {sub.fulfillmentType === 'download_link' ? 'Access / Download Material' :
+                     sub.fulfillmentType === 'license_key' ? 'Kode Lisensi' :
+                     sub.fulfillmentType === 'email_invite' ? 'Status Undangan Email' :
+                     sub.fulfillmentType === 'topup_service' ? 'Status Top-Up' :
+                     'Kredensial Login'}
                   </h4>
 
-                  {sub.accountEmail && sub.accountPassword ? (
+                  {sub.fulfillmentType === 'download_link' ? (
+                    sub.downloadUrl ? (
+                      <div className="flex flex-col gap-2">
+                        <p className="text-xs text-[var(--sea-ink-soft)] font-medium m-0">Link akses atau file digital Anda sudah siap:</p>
+                        <a
+                          href={sub.downloadUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs px-4 py-2.5 rounded-xl no-underline shadow-sm transition"
+                        >
+                          <span className="material-symbols-outlined text-sm">download</span>
+                          Buka / Download Material
+                        </a>
+                      </div>
+                    ) : (
+                      <p className="text-xs text-[var(--sea-ink-soft)] italic m-0">Link download sedang disiapkan admin.</p>
+                    )
+                  ) : sub.fulfillmentType === 'license_key' ? (
+                    sub.licenseKey ? (
+                      <div className="flex items-center justify-between gap-4">
+                        <span className="text-[var(--sea-ink-soft)] text-xs font-semibold">Serial Key:</span>
+                        <div className="flex items-center gap-2 overflow-hidden">
+                          <code className="text-xs font-mono font-bold text-slate-900 bg-white border border-slate-200 px-3 py-1.5 rounded-lg select-all">
+                            {sub.licenseKey}
+                          </code>
+                          <button
+                            onClick={() => copyToClipboard(sub.licenseKey, `${sub.id}-key`)}
+                            className="text-[10px] text-blue-600 font-extrabold hover:underline bg-transparent border-0 cursor-pointer"
+                          >
+                            {copiedId === `${sub.id}-key` ? 'Tersalin' : 'Salin'}
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="text-xs text-[var(--sea-ink-soft)] italic m-0">Kode lisensi sedang diproses admin.</p>
+                    )
+                  ) : sub.fulfillmentType === 'email_invite' ? (
+                    <div className="space-y-1 text-xs">
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-500 font-semibold">Status Invite:</span>
+                        <span className="font-extrabold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full text-[10px]">Telah Di-Invite</span>
+                      </div>
+                      {sub.customerInput && (
+                        <div className="flex justify-between items-center">
+                          <span className="text-slate-500 font-semibold">Target Email:</span>
+                          <span className="font-mono font-bold text-slate-800">{sub.customerInput}</span>
+                        </div>
+                      )}
+                    </div>
+                  ) : sub.fulfillmentType === 'topup_service' ? (
+                    <div className="space-y-1 text-xs">
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-500 font-semibold">Status Topup:</span>
+                        <span className="font-extrabold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full text-[10px]">Topup Sukses</span>
+                      </div>
+                      {sub.customerInput && (
+                        <div className="flex justify-between items-center">
+                          <span className="text-slate-500 font-semibold">Target ID:</span>
+                          <span className="font-mono font-bold text-slate-800">{sub.customerInput}</span>
+                        </div>
+                      )}
+                    </div>
+                  ) : sub.accountEmail && sub.accountPassword ? (
                     <div className="space-y-2 text-xs">
                       {/* Email field */}
                       <div className="flex items-center justify-between gap-4">

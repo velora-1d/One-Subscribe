@@ -66,6 +66,15 @@ function AdminOrdersPage() {
 
   // Fulfillment Dialog States
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null)
+  const [targetOrder, setTargetOrder] = useState<any>(null)
+  const [fulfillmentType, setFulfillmentType] = useState<string>('credentials')
+  const [downloadUrl, setDownloadUrl] = useState('')
+  const [licenseKey, setLicenseKey] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [remarks, setRemarks] = useState('')
+  const [isFulfilling, setIsFulfilling] = useState(false)
+  const [fulfillError, setFulfillError] = useState<string | null>(null)
 
   // WhatsApp Modal States
   const [isWaModalOpen, setIsWaModalOpen] = useState(false)
@@ -175,11 +184,6 @@ function AdminOrdersPage() {
     window.open(waUrl, '_blank')
     setIsWaModalOpen(false)
   }
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [remarks, setRemarks] = useState('')
-  const [isFulfilling, setIsFulfilling] = useState(false)
-  const [fulfillError, setFulfillError] = useState<string | null>(null)
 
   // Custom confirmation modal state
   const [confirmModal, setConfirmModal] = useState<{
@@ -206,8 +210,13 @@ function AdminOrdersPage() {
     }
   }
 
-  const handleOpenFulfill = (orderId: string) => {
-    setSelectedOrderId(orderId)
+  const handleOpenFulfill = (order: any) => {
+    setSelectedOrderId(order.id)
+    setTargetOrder(order)
+    const type = order.productFulfillmentType || 'credentials'
+    setFulfillmentType(type)
+    setDownloadUrl(order.productDownloadUrl || '')
+    setLicenseKey('')
     setEmail('')
     setPassword('')
     setRemarks('')
@@ -276,8 +285,11 @@ function AdminOrdersPage() {
       const res = await fulfillOrder({
         data: {
           orderId: selectedOrderId,
-          email,
-          password,
+          fulfillmentType,
+          email: fulfillmentType === 'credentials' ? email : undefined,
+          password: fulfillmentType === 'credentials' ? password : undefined,
+          downloadUrl: fulfillmentType === 'download_link' ? downloadUrl : undefined,
+          licenseKey: fulfillmentType === 'license_key' ? licenseKey : undefined,
           remarks,
         },
       })
@@ -421,18 +433,18 @@ function AdminOrdersPage() {
                       <div className="flex items-center justify-center gap-2">
                         {order.status === 'menunggu_aktivasi' && (
                           <button
-                            onClick={() => handleOpenFulfill(order.id)}
+                            onClick={() => handleOpenFulfill(order)}
                             className="rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-sm px-3.5 py-1.5 text-[10px] font-extrabold cursor-pointer transition whitespace-nowrap"
                           >
-                            Aktivasi Akun
+                            Proses Fulfillment
                           </button>
                         )}
                         {order.status === 'aktif' && (
                           <button
-                            onClick={() => handleOpenFulfill(order.id)}
+                            onClick={() => handleOpenFulfill(order)}
                             className="rounded-full bg-[var(--chip-bg)] border border-[var(--chip-line)] hover:bg-slate-200 text-[var(--sea-ink)] px-3.5 py-1.5 text-[10px] font-bold cursor-pointer transition whitespace-nowrap"
                           >
-                            Update Kredensial
+                            Update Fulfillment
                           </button>
                         )}
                         
@@ -557,10 +569,18 @@ function AdminOrdersPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
           <div className="w-full max-w-md bg-[var(--header-bg)] border border-[var(--line)] rounded-[2rem] p-8 shadow-xl animate-fadeIn bg-white">
             <h2 className="text-lg font-extrabold text-[var(--sea-ink)] mb-1">
-              Fulfillment Akun Premium
+              {fulfillmentType === 'download_link' ? 'Fulfillment Link Download' :
+               fulfillmentType === 'license_key' ? 'Fulfillment Kode Lisensi' :
+               fulfillmentType === 'email_invite' ? 'Fulfillment Undangan Email' :
+               fulfillmentType === 'topup_service' ? 'Fulfillment Top-Up / Jasa' :
+               'Fulfillment Akun Premium'}
             </h2>
             <p className="text-[10px] text-[var(--sea-ink-soft)] mb-6">
-              Kredensial email & password ini akan di-enkripsi di database sebelum disimpan demi keamanan pelanggan.
+              {fulfillmentType === 'download_link' ? 'Masukkan link download/akses file yang akan dikirimkan ke pelanggan.' :
+               fulfillmentType === 'license_key' ? 'Masukkan kode serial key / lisensi unik untuk pelanggan.' :
+               fulfillmentType === 'email_invite' ? 'Pastikan Anda telah meng-invite email pelanggan di aplikasi/layanan terkait.' :
+               fulfillmentType === 'topup_service' ? 'Pastikan proses Top-Up / Jasa untuk ID pelanggan telah diselesaikan.' :
+               'Kredensial email & password ini akan di-enkripsi di database demi keamanan pelanggan.'}
             </p>
 
             {fulfillError && (
@@ -570,33 +590,89 @@ function AdminOrdersPage() {
             )}
 
             <form onSubmit={handleFulfillSubmit} className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold text-[var(--sea-ink-soft)] uppercase tracking-wider mb-1">
-                  Email Akun Premium
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="name@premium-service.com"
-                  className="w-full rounded-xl border border-[var(--line)] bg-[var(--chip-bg)] px-4 py-2.5 text-xs text-[var(--sea-ink)] outline-none focus:border-slate-900 transition"
-                />
-              </div>
+              {fulfillmentType === 'credentials' && (
+                <>
+                  <div>
+                    <label className="block text-xs font-bold text-[var(--sea-ink-soft)] uppercase tracking-wider mb-1">
+                      Email Akun Premium
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="name@premium-service.com"
+                      className="w-full rounded-xl border border-[var(--line)] bg-[var(--chip-bg)] px-4 py-2.5 text-xs text-[var(--sea-ink)] outline-none focus:border-slate-900 transition"
+                    />
+                  </div>
 
-              <div>
-                <label className="block text-xs font-bold text-[var(--sea-ink-soft)] uppercase tracking-wider mb-1">
-                  Password Akun
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full rounded-xl border border-[var(--line)] bg-[var(--chip-bg)] px-4 py-2.5 text-xs text-[var(--sea-ink)] outline-none focus:border-slate-900 transition"
-                />
-              </div>
+                  <div>
+                    <label className="block text-xs font-bold text-[var(--sea-ink-soft)] uppercase tracking-wider mb-1">
+                      Password Akun
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="••••••••"
+                      className="w-full rounded-xl border border-[var(--line)] bg-[var(--chip-bg)] px-4 py-2.5 text-xs text-[var(--sea-ink)] outline-none focus:border-slate-900 transition"
+                    />
+                  </div>
+                </>
+              )}
+
+              {fulfillmentType === 'download_link' && (
+                <div>
+                  <label className="block text-xs font-bold text-[var(--sea-ink-soft)] uppercase tracking-wider mb-1">
+                    Link Download / Access URL
+                  </label>
+                  <input
+                    type="url"
+                    required
+                    value={downloadUrl}
+                    onChange={(e) => setDownloadUrl(e.target.value)}
+                    placeholder="https://drive.google.com/file/d/..."
+                    className="w-full rounded-xl border border-[var(--line)] bg-[var(--chip-bg)] px-4 py-2.5 text-xs text-[var(--sea-ink)] outline-none focus:border-slate-900 transition"
+                  />
+                </div>
+              )}
+
+              {fulfillmentType === 'license_key' && (
+                <div>
+                  <label className="block text-xs font-bold text-[var(--sea-ink-soft)] uppercase tracking-wider mb-1">
+                    Kode Lisensi / Serial Key
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={licenseKey}
+                    onChange={(e) => setLicenseKey(e.target.value)}
+                    placeholder="XXXXX-YYYYY-ZZZZZ-12345"
+                    className="w-full rounded-xl border border-[var(--line)] bg-[var(--chip-bg)] px-4 py-2.5 text-xs font-mono text-[var(--sea-ink)] outline-none focus:border-slate-900 transition"
+                  />
+                </div>
+              )}
+
+              {fulfillmentType === 'email_invite' && (
+                <div className="p-3 bg-blue-50/70 border border-blue-200 rounded-xl text-xs text-blue-900 space-y-1">
+                  <p className="font-bold">Target Email Undangan:</p>
+                  <p className="font-mono text-sm">{targetOrder?.customerInput || targetOrder?.user?.email}</p>
+                  <p className="text-[10px] text-blue-700 pt-1">
+                    Lakukan invite email ini pada platform (misal Canva Team/Spotify Family). Klik konfirmasi di bawah jika sudah di-invite.
+                  </p>
+                </div>
+              )}
+
+              {fulfillmentType === 'topup_service' && (
+                <div className="p-3 bg-amber-50/70 border border-amber-200 rounded-xl text-xs text-amber-900 space-y-1">
+                  <p className="font-bold">Target ID / Input Pembeli:</p>
+                  <p className="font-mono text-sm">{targetOrder?.customerInput || targetOrder?.user?.whatsapp || '-'}</p>
+                  <p className="text-[10px] text-amber-700 pt-1">
+                    Pastikan kredit/topup telah berhasil diisi ke ID ini sebelum mengaktifkan pesanan.
+                  </p>
+                </div>
+              )}
 
               <div>
                 <label className="block text-xs font-bold text-[var(--sea-ink-soft)] uppercase tracking-wider mb-1">
@@ -605,7 +681,7 @@ function AdminOrdersPage() {
                 <textarea
                   value={remarks}
                   onChange={(e) => setRemarks(e.target.value)}
-                  placeholder="Tulis informasi tambahan seperti profile user, durasi garansi, dll."
+                  placeholder="Tulis instruksi tambahan, durasi garansi, atau catatan khusus..."
                   rows={3}
                   className="w-full rounded-xl border border-[var(--line)] bg-[var(--chip-bg)] px-4 py-2.5 text-xs text-[var(--sea-ink)] outline-none focus:border-slate-900 transition resize-none"
                 />
@@ -624,7 +700,7 @@ function AdminOrdersPage() {
                   disabled={isFulfilling}
                   className="rounded-full bg-slate-950 hover:bg-slate-900 text-white shadow-sm px-6 py-2.5 text-xs font-black transition cursor-pointer"
                 >
-                  {isFulfilling ? 'Mengaktifkan...' : 'Kirim Kredensial'}
+                  {isFulfilling ? 'Mengaktifkan...' : 'Kirim / Aktifkan'}
                 </button>
               </div>
             </form>

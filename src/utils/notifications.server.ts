@@ -263,6 +263,10 @@ export async function sendFulfillmentNotification({
   accountPassword: _accountPassword,
   remarks,
   orderId,
+  fulfillmentType,
+  downloadUrl,
+  licenseKey,
+  customerInput,
 }: SendNotifParams) {
   // Fetch configurations from systemSettings
   const settingsList = await db.select().from(systemSettings);
@@ -284,9 +288,22 @@ export async function sendFulfillmentNotification({
       .replaceAll('{customerName}', customerName)
       .replaceAll('{productName}', productName)
       .replaceAll('{orderId}', orderId || '')
-      .replaceAll('{remarks}', remarks || '');
+      .replaceAll('{remarks}', remarks || '')
+      .replaceAll('{downloadUrl}', downloadUrl || '')
+      .replaceAll('{licenseKey}', licenseKey || '')
+      .replaceAll('{customerInput}', customerInput || '');
   } else {
-    messageText = `Halo ${customerName},\n\nLayanan langganan premium Anda *${productName}* telah diaktifkan! 🎉\n\nDetail akun dikirimkan secara manual oleh admin.\n${remarks ? `- Catatan: ${remarks}\n` : ''}\nTerima kasih telah berlangganan di OneSubscribe!`;
+    if (fulfillmentType === 'download_link') {
+      messageText = `Halo *${customerName}*,\n\nPembelian & akses file untuk *${productName}* (${orderId || ''}) telah siap! 🚀\n\n🔗 Link Download / Akses:\n${downloadUrl || ''}\n${remarks ? `\n- Catatan: ${remarks}` : ''}\n\nTerima kasih telah berbelanja di OneSubscribe!`;
+    } else if (fulfillmentType === 'license_key') {
+      messageText = `Halo *${customerName}*,\n\nKode lisensi untuk *${productName}* (${orderId || ''}) telah diaktifkan! 🎟️\n\n🔑 Kode Lisensi:\n*${licenseKey || ''}*\n${remarks ? `\n- Catatan: ${remarks}` : ''}\n\nTerima kasih telah berbelanja di OneSubscribe!`;
+    } else if (fulfillmentType === 'email_invite') {
+      messageText = `Halo *${customerName}*,\n\nEmail Anda (*${customerInput || toEmail}*) telah di-invite ke grup/family plan *${productName}*! ✉️🎉\n\nSilakan periksa kotak masuk (Inbox/Spam) email Anda untuk menerima undangan.\n${remarks ? `\n- Catatan: ${remarks}` : ''}\n\nTerima kasih telah berlangganan di OneSubscribe!`;
+    } else if (fulfillmentType === 'topup_service') {
+      messageText = `Halo *${customerName}*,\n\nProses Top-Up / Jasa untuk *${productName}* (ID Target: *${customerInput || '-'}*) telah SUKSES diproses! ⚡\n${remarks ? `\n- Catatan: ${remarks}` : ''}\n\nTerima kasih telah berbelanja di OneSubscribe!`;
+    } else {
+      messageText = `Halo *${customerName}*,\n\nLayanan langganan premium Anda *${productName}* telah diaktifkan! 🎉\n\nDetail akun dikirimkan secara manual oleh admin.\n${remarks ? `- Catatan: ${remarks}\n` : ''}\nTerima kasih telah berlangganan di OneSubscribe!`;
+    }
   }
 
   // 1. Dispatch WhatsApp (Unified)
@@ -301,14 +318,14 @@ export async function sendFulfillmentNotification({
     const emailHtmlText = messageText.replace(/\n/g, '<br />');
     const emailHtml = `
       <div style="font-family: sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px;">
-        <h2 style="color: #4fba7b;">Layanan Aktif!</h2>
+        <h2 style="color: #4fba7b;">Layanan / Pesanan Aktif!</h2>
         <p>${emailHtmlText}</p>
         <p style="font-size: 12px; color: #a0aec0; margin-top: 40px;">Tim OneSubscribe</p>
       </div>
     `
     await sendEmail({
       to: toEmail,
-      subject: `Aktivasi Akun Premium: ${productName}`,
+      subject: `Aktivasi Pesanan: ${productName}`,
       html: emailHtml,
       settingsRecord,
     })

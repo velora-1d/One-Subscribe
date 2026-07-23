@@ -238,7 +238,16 @@ export async function getAdminOrdersServer() {
 }
 
 export async function fulfillOrderServer(data: any, adminUserId: string) {
-  const { orderId, email, password, remarks } = data;
+  const {
+    orderId,
+    email,
+    password,
+    remarks,
+    fulfillmentType = 'credentials',
+    downloadUrl,
+    licenseKey,
+    fulfillmentInstructions,
+  } = data;
 
   const [order] = await db
     .select({
@@ -247,6 +256,7 @@ export async function fulfillOrderServer(data: any, adminUserId: string) {
       customerEmail: users.email,
       customerWhatsapp: users.whatsapp,
       productName: products.name,
+      customerInput: orders.customerInput,
     })
     .from(orders)
     .innerJoin(users, eq(orders.userId, users.id))
@@ -258,8 +268,14 @@ export async function fulfillOrderServer(data: any, adminUserId: string) {
     throw new Error('Pesanan tidak ditemukan.');
   }
 
-  const encryptedEmail = encrypt(email);
-  const encryptedPassword = encrypt(password);
+  const encryptedEmail = email ? encrypt(email) : null;
+  const encryptedPassword = password ? encrypt(password) : null;
+
+  const fulfillmentDataJson = JSON.stringify({
+    downloadUrl: downloadUrl || null,
+    licenseKey: licenseKey || null,
+    fulfillmentInstructions: fulfillmentInstructions || null,
+  });
 
   await db.transaction(async (tx) => {
     await tx
@@ -268,6 +284,8 @@ export async function fulfillOrderServer(data: any, adminUserId: string) {
         orderId,
         encryptedAccountEmail: encryptedEmail,
         encryptedAccountPassword: encryptedPassword,
+        fulfillmentType,
+        fulfillmentData: fulfillmentDataJson,
         remarks,
         sentAt: new Date(),
       })
@@ -276,6 +294,8 @@ export async function fulfillOrderServer(data: any, adminUserId: string) {
         set: {
           encryptedAccountEmail: encryptedEmail,
           encryptedAccountPassword: encryptedPassword,
+          fulfillmentType,
+          fulfillmentData: fulfillmentDataJson,
           remarks,
           sentAt: new Date(),
           updatedAt: new Date(),
@@ -290,7 +310,7 @@ export async function fulfillOrderServer(data: any, adminUserId: string) {
     await tx.insert(auditLogs).values({
       userId: adminUserId,
       action: 'FULFILL_ORDER',
-      details: `Mengaktifkan layanan untuk pesanan ${orderId}`,
+      details: `Mengaktifkan layanan (${fulfillmentType}) untuk pesanan ${orderId}`,
     });
   });
 
@@ -304,6 +324,10 @@ export async function fulfillOrderServer(data: any, adminUserId: string) {
       accountPassword: password,
       remarks,
       orderId: order.id,
+      fulfillmentType,
+      downloadUrl,
+      licenseKey,
+      customerInput: order.customerInput || undefined,
     });
   } catch (notifError: any) {
     console.error('[Notification Dispatch Failure]', notifError);

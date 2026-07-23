@@ -29,6 +29,9 @@ export const products = pgTable('products', {
   imageUrl: text('image_url'),
   stock: integer('stock').default(0).notNull(), // Available stock/slots
   sortOrder: integer('sort_order').default(0).notNull(), // Display ordering index
+  fulfillmentType: text('fulfillment_type').$type<'credentials' | 'download_link' | 'license_key' | 'email_invite' | 'topup_service'>().default('credentials').notNull(),
+  downloadUrl: text('download_url'),
+  fulfillmentInstructions: text('fulfillment_instructions'),
   isActive: boolean('is_active').default(true).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
@@ -73,6 +76,7 @@ export const orders = pgTable('orders', {
   parentOrderId: text('parent_order_id'),
   appliedPromoId: uuid('applied_promo_id').references(() => promos.id, { onDelete: 'set null' }),
   discountAmount: integer('discount_amount').default(0).notNull(),
+  customerInput: text('customer_input'), // Optional input from customer during checkout (e.g. User ID / Target Email)
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 }, (table) => [
@@ -83,12 +87,14 @@ export const orders = pgTable('orders', {
   index('orders_parent_order_id_idx').on(table.parentOrderId),
 ]);
 
-// Credentials Table (Encrypted login credentials for active subscriptions)
+// Credentials Table (Encrypted login credentials or fulfillment data for active subscriptions)
 export const credentials = pgTable('credentials', {
   id: uuid('id').defaultRandom().primaryKey(),
   orderId: text('order_id').references(() => orders.id, { onDelete: 'cascade' }).notNull().unique(),
-  encryptedAccountEmail: text('encrypted_account_email').notNull(),
-  encryptedAccountPassword: text('encrypted_account_password').notNull(),
+  encryptedAccountEmail: text('encrypted_account_email'),
+  encryptedAccountPassword: text('encrypted_account_password'),
+  fulfillmentType: text('fulfillment_type').$type<'credentials' | 'download_link' | 'license_key' | 'email_invite' | 'topup_service'>().default('credentials'),
+  fulfillmentData: text('fulfillment_data'), // JSON payload for download links, license keys, or custom notes
   remarks: text('remarks'),
   sentAt: timestamp('sent_at'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
