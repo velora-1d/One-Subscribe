@@ -106,13 +106,13 @@ function ProductDetailPage() {
             {/* Glossy Overlay */}
             <div className="absolute inset-0 bg-linear-to-tr from-transparent via-white/5 to-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
             
-            {/* Image Wrapper with Scale Effect */}
-            <div className="w-full h-88 rounded-none overflow-hidden bg-slate-50 border border-[var(--line)] relative">
+            {/* Image Wrapper with Scale Effect (1:1 Aspect Ratio) */}
+            <div className="w-full aspect-square rounded-none overflow-hidden bg-slate-50 border border-[var(--line)] relative flex items-center justify-center">
               {product.imageUrl ? (
                 <img
                   src={product.imageUrl}
                   alt={product.name}
-                  className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                  className="w-full h-full object-contain p-1 transition-transform duration-700 ease-out group-hover:scale-105"
                 />
               ) : (
                 <div className="w-full h-full flex flex-col items-center justify-center text-slate-300 gap-2">

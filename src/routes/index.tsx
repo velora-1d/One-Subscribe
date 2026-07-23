@@ -144,7 +144,7 @@ function CatalogPage() {
                     <img
                       src={product.imageUrl}
                       alt={product.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                      className="w-full h-full object-contain p-1 group-hover:scale-105 transition duration-500"
                     />
                   ) : (
                     <div className="flex flex-col items-center justify-center text-slate-300">

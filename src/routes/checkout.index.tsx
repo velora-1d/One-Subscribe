@@ -192,101 +192,84 @@ function CheckoutPage() {
   }
 
   return (
-    <main className="page-wrap px-4 pb-24 pt-10 min-h-[85vh] bg-[#FCFBF7]/50 relative overflow-hidden">
-      {/* Decorative Blur Spheres */}
-      <div className="pointer-events-none absolute -left-40 top-20 h-96 w-96 rounded-full bg-[radial-gradient(circle,rgba(251,146,60,0.08),transparent_70%)] blur-2xl" />
-      <div className="pointer-events-none absolute -right-40 bottom-10 h-96 w-96 rounded-full bg-[radial-gradient(circle,rgba(59,130,246,0.05),transparent_70%)] blur-2xl" />
-
-      <div className="max-w-4xl mx-auto relative">
-        {/* Header Breadcrumb */}
-        <div className="flex items-center gap-2 text-[10px] font-bold text-[var(--sea-ink-soft)] uppercase tracking-wider mb-3">
-          <Link to="/" className="hover:text-slate-900 transition no-underline">Katalog</Link>
-          <span className="material-symbols-outlined text-[10px] select-none text-slate-300">chevron_right</span>
-          <span className="text-slate-900">Checkout</span>
+    <main className="page-wrap px-4 py-6 min-h-[85vh] bg-slate-50 relative">
+      <div className="max-w-4xl mx-auto">
+        {/* Header & Breadcrumb */}
+        <div className="flex items-center justify-between border-b border-slate-200 pb-3 mb-4">
+          <div className="flex items-center gap-2 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+            <Link to="/" className="hover:text-slate-900 transition no-underline">Katalog</Link>
+            <span className="material-symbols-outlined text-[10px] select-none text-slate-300">chevron_right</span>
+            <span className="text-slate-900">Checkout</span>
+          </div>
+          <Link to="/" className="inline-flex items-center gap-1 text-xs font-bold text-slate-600 hover:text-slate-900 transition-colors">
+            <span className="material-symbols-outlined text-sm">arrow_back</span>
+            Kembali ke Katalog
+          </Link>
         </div>
 
-        <Link to="/" className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-slate-900 transition-colors mb-4 group">
-          <span className="material-symbols-outlined text-base group-hover:-translate-x-0.5 transition-transform">arrow_back</span>
-          Kembali ke Katalog
-        </Link>
-
-        <h1 className="text-3xl font-black text-slate-900 mb-8 tracking-tight">
+        <h1 className="text-xl font-black text-slate-900 mb-4 tracking-tight">
           Checkout Pembayaran
         </h1>
 
         {submitError && (
-          <div className="mb-6 p-4 rounded-2xl bg-red-50 border border-red-200 text-xs font-semibold text-red-600 flex gap-3 items-center animate-shake">
-            <span className="material-symbols-outlined text-red-500">warning</span>
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 text-xs font-semibold text-red-600 flex gap-2 items-center">
+            <span className="material-symbols-outlined text-red-500 text-sm">warning</span>
             <span>{submitError}</span>
           </div>
         )}
 
-        <form onSubmit={handleCheckout} className="grid gap-8 md:grid-cols-12 items-start">
-          {/* Left Panel: Checkout Form & Payment Gateway Selector */}
-          <div className="md:col-span-7 space-y-6">
+        <form onSubmit={handleCheckout} className="grid gap-5 md:grid-cols-12 items-start">
+          {/* Left Panel: Customer Info & Payment */}
+          <div className="md:col-span-7 space-y-4">
             {/* Customer Details Box */}
-            <div className="island-shell rounded-[2rem] p-6 border border-[var(--line)] bg-white shadow-[0_10px_30px_rgba(0,0,0,0.02)] space-y-5">
-              <div className="flex items-center gap-3 pb-3 border-b border-[var(--line)]">
-                <div className="h-8 w-8 rounded-xl bg-slate-900 text-white flex items-center justify-center">
-                  <span className="material-symbols-outlined text-sm">person</span>
-                </div>
-                <div>
-                  <h2 className="text-sm font-extrabold text-slate-950">
-                    Informasi Pelanggan
-                  </h2>
-                  <p className="text-[10px] text-[var(--sea-ink-soft)] font-medium">Data akun terisi otomatis untuk pengiriman kredensial</p>
-                </div>
+            <div className="bg-white border border-slate-200 p-4 space-y-3 shadow-xs">
+              <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
+                <span className="material-symbols-outlined text-base text-slate-700">person</span>
+                <h2 className="text-xs font-black text-slate-900 uppercase tracking-wide">
+                  Informasi Pelanggan
+                </h2>
               </div>
 
-              <div className="space-y-4">
+              <div className="grid gap-3 text-xs">
                 <div>
-                  <span className="block text-[10px] text-[var(--sea-ink-soft)] font-bold uppercase tracking-wider mb-1.5">
+                  <span className="block text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">
                     Nama Akun
                   </span>
-                  <div className="relative">
-                    <span className="material-symbols-outlined text-slate-400 absolute left-4 top-1/2 -translate-y-1/2 text-sm select-none">person_outline</span>
-                    <p className="text-xs font-semibold text-slate-900 bg-slate-50 border border-slate-200/80 rounded-2xl pl-10 pr-4 py-3 mb-0">
-                      {user?.name}
-                    </p>
+                  <div className="p-2.5 bg-slate-100 border border-slate-200 font-semibold text-slate-900">
+                    {user?.name}
                   </div>
                 </div>
 
-                <div className="grid gap-4 sm:grid-cols-2">
+                <div className="grid gap-3 sm:grid-cols-2">
                   <div>
-                    <span className="block text-[10px] text-[var(--sea-ink-soft)] font-bold uppercase tracking-wider mb-1.5">
+                    <span className="block text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">
                       Email Akun (Login)
                     </span>
-                    <div className="relative">
-                      <span className="material-symbols-outlined text-slate-400 absolute left-4 top-1/2 -translate-y-1/2 text-sm select-none">mail_outline</span>
-                      <p className="text-xs font-semibold text-slate-900 bg-slate-50 border border-slate-200/80 rounded-2xl pl-10 pr-4 py-3 mb-0 overflow-hidden text-ellipsis whitespace-nowrap">
-                        {user?.email}
-                      </p>
+                    <div className="p-2.5 bg-slate-100 border border-slate-200 font-semibold text-slate-900 truncate">
+                      {user?.email}
                     </div>
                   </div>
                   <div>
-                    <span className="block text-[10px] text-[var(--sea-ink-soft)] font-bold uppercase tracking-wider mb-1.5">
+                    <span className="block text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">
                       No. WhatsApp
                     </span>
-                    <div className="relative">
-                      <span className="material-symbols-outlined text-slate-400 absolute left-4 top-1/2 -translate-y-1/2 text-sm select-none">chat</span>
-                      <p className="text-xs font-semibold text-slate-900 bg-slate-50 border border-slate-200/80 rounded-2xl pl-10 pr-4 py-3 mb-0">
-                        {user?.whatsapp}
-                      </p>
+                    <div className="p-2.5 bg-slate-100 border border-slate-200 font-semibold text-slate-900">
+                      {user?.whatsapp}
                     </div>
                   </div>
                 </div>
 
                 {/* Mandatory Target Email / User ID Field for email_invite or topup_service */}
                 {(product.fulfillmentType === 'email_invite' || product.fulfillmentType === 'topup_service') && (
-                  <div className="pt-3 border-t border-slate-100">
-                    <div className="flex items-center justify-between mb-1.5">
+                  <div className="pt-2 border-t border-slate-100 space-y-1.5">
+                    <div className="flex items-center justify-between">
                       <label className="block text-[10px] font-black text-blue-900 uppercase tracking-wider">
                         {product.fulfillmentType === 'email_invite' ? 'Email Target Undangan (Family/Team Join)' : 'User ID / Data Target Topup'}
                       </label>
-                      <span className="text-[9px] font-black text-red-600 bg-red-50 border border-red-200 px-2 py-0.5 rounded-full uppercase">Wajib Diisi</span>
+                      <span className="text-[9px] font-black text-red-600 bg-red-50 border border-red-200 px-1.5 py-0.5 uppercase">Wajib Diisi</span>
                     </div>
                     <div className="relative">
-                      <span className="material-symbols-outlined text-blue-600 absolute left-4 top-1/2 -translate-y-1/2 text-sm select-none">
+                      <span className="material-symbols-outlined text-blue-600 absolute left-3 top-1/2 -translate-y-1/2 text-sm select-none">
                         {product.fulfillmentType === 'email_invite' ? 'alternate_email' : 'badge'}
                       </span>
                       <input
@@ -296,15 +279,15 @@ function CheckoutPage() {
                         onChange={(e) => setCustomerInput(e.target.value)}
                         placeholder={
                           product.fulfillmentType === 'email_invite'
-                            ? 'Masukkan email yang ingin di-invite (contoh: email-anda@gmail.com)'
-                            : 'Masukkan User ID / Server ID target (contoh: ID 12345678)'
+                            ? 'Masukkan email target yang ingin di-invite'
+                            : 'Masukkan User ID / Server ID target'
                         }
-                        className="w-full rounded-2xl border-2 border-blue-500 bg-blue-50/30 px-4 py-3 pl-10 text-xs font-bold text-slate-900 outline-none focus:border-blue-700 focus:bg-white transition shadow-xs"
+                        className="w-full border-2 border-blue-600 bg-blue-50/50 p-2.5 pl-9 text-xs font-bold text-slate-900 outline-none focus:border-blue-700 focus:bg-white transition"
                       />
                     </div>
-                    <p className="text-[10px] text-slate-400 mt-1.5 font-medium">
+                    <p className="text-[10px] text-slate-500 font-medium">
                       {product.fulfillmentType === 'email_invite'
-                        ? 'Email di atas akan di-invite oleh admin ke dalam grup / family plan premium.'
+                        ? 'Email ini yang akan di-invite oleh admin ke akun/family plan premium.'
                         : 'Admin akan mengisikan kredit/topup ke ID target di atas.'}
                     </p>
                   </div>
@@ -313,154 +296,136 @@ function CheckoutPage() {
             </div>
 
             {/* Payment Method Selector */}
-            <div className="island-shell rounded-[2rem] p-6 border border-[var(--line)] bg-white shadow-[0_10px_30px_rgba(0,0,0,0.02)] space-y-5">
-              <div className="flex items-center gap-3 pb-3 border-b border-[var(--line)]">
-                <div className="h-8 w-8 rounded-xl bg-slate-900 text-white flex items-center justify-center">
-                  <span className="material-symbols-outlined text-sm">payments</span>
-                </div>
-                <div>
-                  <h2 className="text-sm font-extrabold text-slate-950">
-                    Metode Pembayaran
-                  </h2>
-                  <p className="text-[10px] text-[var(--sea-ink-soft)] font-medium">Proses pembayaran instan & otomatis yang aman</p>
-                </div>
+            <div className="bg-white border border-slate-200 p-4 space-y-3 shadow-xs">
+              <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
+                <span className="material-symbols-outlined text-base text-slate-700">payments</span>
+                <h2 className="text-xs font-black text-slate-900 uppercase tracking-wide">
+                  Metode Pembayaran
+                </h2>
               </div>
 
               {/* Automatic Payment Card */}
-              <div className="relative flex flex-col p-6 rounded-[1.5rem] border-2 border-slate-900 bg-slate-50 shadow-[0_10px_30px_rgba(0,0,0,0.02)] transition-all duration-300">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="h-6 w-6 rounded-lg bg-emerald-500 text-white flex items-center justify-center">
-                    <span className="material-symbols-outlined text-xs font-bold">bolt</span>
-                  </div>
-                  <span className="text-sm font-black text-slate-900">Pembayaran Otomatis</span>
+              <div className="p-3 border border-slate-900 bg-slate-50 space-y-2">
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-sm font-bold text-emerald-600">bolt</span>
+                  <span className="text-xs font-black text-slate-900">Pembayaran Otomatis (QRIS, VA, E-Wallet)</span>
                 </div>
-                <p className="text-[10px] text-[var(--sea-ink-soft)] leading-relaxed mb-4">
-                  Sistem akan mengarahkan Anda ke gerbang pembayaran aman terbaik secara otomatis. Bayar menggunakan QRIS (GoPay, OVO, ShopeePay, LinkAja), Transfer Bank (Virtual Account), atau retail outlet resmi.
+                <p className="text-[10px] text-slate-600 leading-normal">
+                  Sistem akan mengarahkan Anda ke gerbang pembayaran aman resmi secara otomatis. Bayar via QRIS (GoPay, OVO, ShopeePay), VA Bank, atau Retail Outlet.
                 </p>
-                <div className="flex gap-1.5 flex-wrap">
-                  <span className="px-2 py-0.5 rounded bg-slate-200 text-[8px] font-bold text-slate-700">QRIS</span>
-                  <span className="px-2 py-0.5 rounded bg-slate-200 text-[8px] font-bold text-slate-700">E-WALLET</span>
-                  <span className="px-2 py-0.5 rounded bg-slate-200 text-[8px] font-bold text-slate-700">VA TRANSFER</span>
-                  <span className="px-2 py-0.5 rounded bg-slate-200 text-[8px] font-bold text-slate-700">RETAIL OUTLETS</span>
+                <div className="flex gap-1 flex-wrap pt-1">
+                  <span className="px-1.5 py-0.5 bg-slate-200 text-[8px] font-bold text-slate-700">QRIS</span>
+                  <span className="px-1.5 py-0.5 bg-slate-200 text-[8px] font-bold text-slate-700">E-WALLET</span>
+                  <span className="px-1.5 py-0.5 bg-slate-200 text-[8px] font-bold text-slate-700">VA TRANSFER</span>
+                  <span className="px-1.5 py-0.5 bg-slate-200 text-[8px] font-bold text-slate-700">RETAIL OUTLETS</span>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Right Panel: Order Summary */}
-          <div className="md:col-span-5 flex flex-col gap-6">
-            <div className="island-shell rounded-[2rem] p-6 border border-[var(--line)] bg-white shadow-[0_15px_40px_rgba(0,0,0,0.03)] flex flex-col gap-5">
-              <h2 className="text-sm font-extrabold text-slate-950 pb-3 border-b border-[var(--line)]">
+          <div className="md:col-span-5 space-y-4">
+            <div className="bg-white border border-slate-200 p-4 space-y-3 shadow-xs">
+              <h2 className="text-xs font-black text-slate-900 uppercase tracking-wide pb-2 border-b border-slate-100">
                 Ringkasan Pesanan
               </h2>
 
               {/* Product Card Info */}
-              <div className="flex gap-4 items-start bg-slate-50 border border-slate-100 rounded-2xl p-4">
+              <div className="flex gap-3 items-center bg-slate-50 border border-slate-200 p-2.5">
                 {product.imageUrl ? (
-                  <div className="w-14 h-14 rounded-xl overflow-hidden bg-white border border-slate-200/80 flex-shrink-0">
-                    <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
+                  <div className="w-10 h-10 overflow-hidden bg-white border border-slate-200 shrink-0 flex items-center justify-center">
+                    <img src={product.imageUrl} alt={product.name} className="w-full h-full object-contain p-0.5" />
                   </div>
                 ) : (
-                  <div className="w-14 h-14 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center flex-shrink-0 text-orange-600">
-                    <span className="material-symbols-outlined text-2xl">workspace_premium</span>
+                  <div className="w-10 h-10 bg-orange-100 border border-orange-200 flex items-center justify-center shrink-0 text-orange-600">
+                    <span className="material-symbols-outlined text-lg">workspace_premium</span>
                   </div>
                 )}
-                <div className="overflow-hidden">
-                  <h3 className="text-xs font-extrabold text-slate-900 leading-snug truncate">
+                <div className="overflow-hidden text-xs">
+                  <h3 className="font-extrabold text-slate-900 truncate">
                     {product.name}
                   </h3>
-                  <span className="text-[9px] text-[var(--sea-ink-soft)] font-bold uppercase tracking-wider block mt-1">
+                  <span className="text-[10px] text-slate-500 font-bold uppercase block">
                     Kategori: {product.category}
-                  </span>
-                  <span className="text-[9px] text-[var(--sea-ink-soft)] font-bold block">
-                    Durasi: {chosenDuration} Bulan
                   </span>
                 </div>
               </div>
 
               {/* Duration Selector */}
-              <div className="pt-3 border-t border-slate-100 flex flex-col gap-2">
-                <span className="block text-[10px] text-[var(--sea-ink-soft)] font-bold uppercase tracking-wider">
-                  Pilih Durasi Langganan
-                </span>
-                <div className="flex items-center gap-3 bg-slate-50 border border-slate-100 rounded-xl p-3 justify-between">
-                  <div className="text-left">
-                    <span className="text-xs font-black text-slate-900 block">
-                      {chosenDuration} Bulan
-                    </span>
-                    <span className="text-[9px] text-[var(--sea-ink-soft)] font-bold">
-                      Minimal: {product.durationMonths} Bulan
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-1 bg-white border border-slate-200 rounded-lg p-0.5 shadow-sm">
-                    <button
-                      type="button"
-                      disabled={chosenDuration <= product.durationMonths}
-                      onClick={() => handleDurationChange(chosenDuration - 1)}
-                      className="h-6 w-6 rounded bg-slate-50 hover:bg-slate-100 disabled:opacity-30 flex items-center justify-center text-xs font-black text-slate-700 cursor-pointer border-0 select-none"
-                    >
-                      -
-                    </button>
-                    <span className="text-xs font-black text-slate-900 w-6 text-center select-none">
-                      {chosenDuration}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => handleDurationChange(chosenDuration + 1)}
-                      className="h-6 w-6 rounded bg-slate-50 hover:bg-slate-100 flex items-center justify-center text-xs font-black text-slate-700 cursor-pointer border-0 select-none"
-                    >
-                      +
-                    </button>
-                  </div>
+              <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
+                <div>
+                  <span className="block text-[10px] text-slate-500 font-bold uppercase">
+                    Durasi Langganan
+                  </span>
+                  <span className="font-black text-slate-900">
+                    {chosenDuration} Bulan <span className="text-[9px] font-normal text-slate-400">(Min: {product.durationMonths} Bulan)</span>
+                  </span>
+                </div>
+                <div className="flex items-center border border-slate-300 bg-white">
+                  <button
+                    type="button"
+                    disabled={chosenDuration <= product.durationMonths}
+                    onClick={() => handleDurationChange(chosenDuration - 1)}
+                    className="h-7 w-7 bg-slate-100 hover:bg-slate-200 disabled:opacity-40 flex items-center justify-center text-xs font-black text-slate-700 cursor-pointer border-r border-slate-300 select-none"
+                  >
+                    -
+                  </button>
+                  <span className="text-xs font-black text-slate-900 w-7 text-center select-none">
+                    {chosenDuration}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => handleDurationChange(chosenDuration + 1)}
+                    className="h-7 w-7 bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-xs font-black text-slate-700 cursor-pointer border-l border-slate-300 select-none"
+                  >
+                    +
+                  </button>
                 </div>
               </div>
 
               {/* Promo / Voucher Form */}
-              <div className="pt-3 border-t border-slate-100">
-                <span className="block text-[10px] text-[var(--sea-ink-soft)] font-bold uppercase tracking-wider mb-2">
-                  Punya Kode Voucer?
+              <div className="pt-2 border-t border-slate-100 text-xs">
+                <span className="block text-[10px] text-slate-500 font-bold uppercase mb-1">
+                  Kode Voucer
                 </span>
                 
                 {appliedVoucher && appliedVoucher.code ? (
-                  <div className="flex items-center justify-between bg-indigo-50 border border-indigo-100 rounded-xl p-3">
-                    <div className="flex items-center gap-2">
+                  <div className="flex items-center justify-between bg-indigo-50 border border-indigo-200 p-2">
+                    <div className="flex items-center gap-1.5">
                       <span className="material-symbols-outlined text-indigo-600 text-sm">local_offer</span>
-                      <div className="text-left">
-                        <code className="text-xs font-black text-indigo-700 uppercase">{appliedVoucher.code}</code>
-                        <span className="block text-[9px] text-indigo-500 font-bold">
-                          Kupon berhasil dipasang
-                        </span>
+                      <div>
+                        <code className="font-black text-indigo-700 uppercase">{appliedVoucher.code}</code>
                       </div>
                     </div>
                     <button
                       type="button"
                       onClick={handleRemoveVoucher}
-                      className="text-xs font-bold text-red-600 hover:text-red-800 transition bg-transparent border-0 cursor-pointer"
+                      className="text-[10px] font-bold text-red-600 hover:underline bg-transparent border-0 cursor-pointer"
                     >
-                      Batal
+                      Hapus
                     </button>
                   </div>
                 ) : (
-                  <div className="space-y-2">
-                    <div className="flex gap-2">
+                  <div>
+                    <div className="flex gap-1.5">
                       <input
                         type="text"
                         value={voucherCode}
                         onChange={(e) => setVoucherCode(e.target.value.toUpperCase())}
-                        placeholder="MASUKKAN KODE VOUCER"
-                        className="flex-1 rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2 text-xs outline-none focus:border-slate-900 transition"
+                        placeholder="KODE VOUCER"
+                        className="flex-1 border border-slate-300 bg-white p-2 text-xs font-bold uppercase outline-none focus:border-slate-900"
                       />
                       <button
                         type="button"
                         onClick={handleApplyVoucher}
                         disabled={isValidatingVoucher || !voucherCode.trim()}
-                        className="rounded-xl bg-slate-900 hover:bg-slate-800 text-white px-4 text-xs font-bold border-0 cursor-pointer disabled:opacity-50 transition"
+                        className="bg-slate-900 hover:bg-slate-800 text-white px-3 text-xs font-bold border-0 cursor-pointer disabled:opacity-50"
                       >
                         {isValidatingVoucher ? '...' : 'Gunakan'}
                       </button>
                     </div>
                     {voucherError && (
-                      <p className="text-[10px] text-red-600 font-semibold mb-0 pl-1 leading-normal text-left">
+                      <p className="text-[10px] text-red-600 font-semibold mt-1">
                         ⚠️ {voucherError}
                       </p>
                     )}
@@ -469,60 +434,40 @@ function CheckoutPage() {
               </div>
 
               {/* Billing breakdown */}
-              <div className="space-y-3 pt-3 text-xs text-slate-500 border-t border-[var(--line)]">
+              <div className="space-y-1.5 pt-2 text-xs text-slate-600 border-t border-slate-200">
                 <div className="flex justify-between">
-                  <span>Harga Langganan ({chosenDuration} Bulan)</span>
-                  <span className="font-semibold text-slate-800">{formatIDR(basePrice)}</span>
+                  <span>Harga ({chosenDuration} Bulan)</span>
+                  <span className="font-semibold text-slate-900">{formatIDR(basePrice)}</span>
                 </div>
 
                 {appliedVoucher && (
-                  <div className="flex justify-between text-indigo-600 font-semibold bg-indigo-50/50 p-2 rounded-xl border border-indigo-100/50">
-                    <span className="flex items-center gap-1">
+                  <div className="flex justify-between text-indigo-700 font-bold bg-indigo-50 p-1.5 border border-indigo-100">
+                    <span className="flex items-center gap-1 text-[10px]">
                       <span className="material-symbols-outlined text-xs">local_offer</span>
-                      {appliedVoucher.code ? `Kupon (${appliedVoucher.code})` : 'Promo Katalog'}
+                      {appliedVoucher.code ? `Voucher (${appliedVoucher.code})` : 'Diskon Katalog'}
                     </span>
                     <span>-{formatIDR(discountAmount)}</span>
                   </div>
                 )}
 
                 <div className="flex justify-between">
-                  <span>Biaya Layanan & PPN</span>
-                  <span className="text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded text-[10px]">Rp 0 (Gratis)</span>
+                  <span>Biaya Layanan</span>
+                  <span className="text-emerald-600 font-bold text-[10px] uppercase">Rp 0 (Gratis)</span>
                 </div>
                 
-                <div className="flex justify-between pt-4 border-t border-[var(--line)] text-sm font-black text-slate-950">
+                <div className="flex justify-between pt-2 border-t border-slate-900 text-sm font-black text-slate-950">
                   <span>Total Tagihan</span>
                   <span className="text-slate-900 text-base">{formatIDR(finalPrice)}</span>
-                </div>
-              </div>
-
-              {/* Key Features Bullet List */}
-              <div className="space-y-2 pt-2 border-t border-slate-100 text-[10px] text-slate-400 font-medium">
-                <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-emerald-500 text-sm select-none">check_circle</span>
-                  <span>Aktivasi Akun Cepat (5-10 Menit)</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-emerald-500 text-sm select-none">check_circle</span>
-                  <span>Notifikasi WhatsApp & Email Otomatis</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-emerald-500 text-sm select-none">check_circle</span>
-                  <span>Layanan Bergaransi Penuh 100%</span>
                 </div>
               </div>
 
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full rounded-2xl bg-slate-950 hover:bg-slate-900 active:scale-95 text-white py-4 text-xs font-black shadow-md shadow-slate-900/10 hover:shadow-lg transition-all duration-300 disabled:opacity-50 cursor-pointer mt-2 border-0 select-none"
+                className="w-full bg-slate-950 hover:bg-slate-800 text-white py-3 text-xs font-black tracking-wide uppercase transition border-0 cursor-pointer disabled:opacity-50"
               >
-                {isLoading ? 'Mengalihkan ke Gerbang Pembayaran...' : 'Bayar Sekarang'}
+                {isLoading ? 'Memproses Pesanan...' : 'Bayar Sekarang'}
               </button>
-
-              <p className="text-[9px] text-center text-slate-400 font-medium leading-relaxed max-w-[240px] mx-auto">
-                Dengan mengeklik tombol di atas, Anda akan dialihkan ke halaman pembayaran eksternal resmi secara aman.
-              </p>
             </div>
           </div>
         </form>
