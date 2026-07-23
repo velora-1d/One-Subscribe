@@ -267,10 +267,18 @@ function DashboardOrdersPage() {
             {/* Printable Area */}
             <div 
               id="print-receipt-area" 
-              className="bg-slate-50/50 border border-slate-100 rounded-2xl p-5 flex flex-col gap-4 overflow-y-auto text-left"
+              className="bg-slate-50/50 border border-slate-100 rounded-2xl p-5 flex flex-col gap-4 overflow-y-auto text-left relative"
             >
+              {/* LUNAS Watermark */}
+              {(selectedOrder.status === 'aktif' || selectedOrder.status === 'menunggu_aktivasi') && (
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none z-0 overflow-hidden">
+                  <div className="border-[6px] border-emerald-500/10 rounded-2xl px-6 py-2 rotate-[-25deg] text-center">
+                    <span className="text-5xl font-black text-emerald-500/10 tracking-widest uppercase">LUNAS</span>
+                  </div>
+                </div>
+              )}
               {/* Logo & Inv Header */}
-              <div className="flex items-center justify-between border-b border-dashed border-slate-200 pb-4">
+              <div className="flex items-center justify-between border-b border-dashed border-slate-200 pb-4 z-10">
                 <div className="flex items-center gap-2">
                   <img src="/logo-onesubs.webp" className="w-8 h-8 rounded-full object-cover" alt="Logo" />
                   <div>
