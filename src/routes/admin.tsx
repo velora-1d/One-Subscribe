@@ -508,7 +508,7 @@ function AdminLayout() {
 
         {/* Main Content Canvas Wrap */}
         <div className="max-w-container-max w-full mx-auto px-6 py-8 md:py-12 flex flex-col gap-10">
-          <div key={router.state.location.pathname} className="page-transition flex flex-col gap-10">
+          <div className="page-transition flex flex-col gap-10">
             <Outlet />
           </div>
         </div>

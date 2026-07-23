@@ -384,7 +384,7 @@ function DashboardLayout() {
               </button>
             </div>
           )}
-          <div key={router.state.location.pathname} className="page-transition flex flex-col gap-8">
+          <div className="page-transition flex flex-col gap-8">
             <Outlet />
           </div>
         </div>

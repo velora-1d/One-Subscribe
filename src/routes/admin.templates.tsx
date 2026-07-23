@@ -172,9 +172,10 @@ function AdminTemplatesPage() {
   )
 
   const totalPages = Math.ceil(filteredTemplates.length / itemsPerPage)
+  const activePage = Math.min(currentPage, totalPages || 1)
   const paginatedTemplates = filteredTemplates.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
+    (activePage - 1) * itemsPerPage,
+    activePage * itemsPerPage
   )
 
   return (
@@ -247,7 +248,7 @@ function AdminTemplatesPage() {
                 paginatedTemplates.map((t, index) => (
                   <tr key={t.id} className="hover:bg-slate-50/50 transition-colors">
                     <td className="px-3 py-4 text-center font-semibold text-slate-500 whitespace-nowrap">
-                      {(currentPage - 1) * itemsPerPage + index + 1}
+                      {(activePage - 1) * itemsPerPage + index + 1}
                     </td>
                     <td className="px-6 py-4 font-bold text-slate-900">{t.name}</td>
                     <td className="px-6 py-4">
@@ -304,7 +305,7 @@ function AdminTemplatesPage() {
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 text-slate-500 font-semibold text-left">
             <div className="flex flex-wrap items-center gap-3">
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                Menampilkan {((currentPage - 1) * itemsPerPage) + 1} - {Math.min(currentPage * itemsPerPage, filteredTemplates.length)} dari {filteredTemplates.length} Template
+                Menampilkan {((activePage - 1) * itemsPerPage) + 1} - {Math.min(activePage * itemsPerPage, filteredTemplates.length)} dari {filteredTemplates.length} Template
               </span>
               <div className="flex items-center gap-1.5 ml-0 sm:ml-2 border-l border-slate-200 pl-3">
                 <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Tampilkan:</span>
@@ -328,16 +329,16 @@ function AdminTemplatesPage() {
               <div className="flex gap-1.5">
                 <button
                   type="button"
-                  onClick={() => setCurrentPage(currentPage - 1)}
-                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage(activePage - 1)}
+                  disabled={activePage === 1}
                   className="rounded-xl border border-slate-200 bg-white hover:bg-slate-50 p-2 text-slate-700 transition cursor-pointer hover:scale-95 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <span className="material-symbols-outlined text-[18px]">chevron_left</span>
                 </button>
                 <button
                   type="button"
-                  onClick={() => setCurrentPage(currentPage + 1)}
-                  disabled={currentPage === totalPages}
+                  onClick={() => setCurrentPage(activePage + 1)}
+                  disabled={activePage === totalPages}
                   className="rounded-xl border border-slate-200 bg-white hover:bg-slate-50 p-2 text-slate-700 transition cursor-pointer hover:scale-95 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <span className="material-symbols-outlined text-[18px]">chevron_right</span>
