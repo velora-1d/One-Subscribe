@@ -1,6 +1,10 @@
 import crypto from 'crypto';
 import dotenv from 'dotenv';
 import { getCookie, setCookie, deleteCookie } from '@tanstack/react-start/server';
+import bcrypt from 'bcryptjs';
+import { eq } from 'drizzle-orm';
+import { db } from '../../db';
+import { users } from '../../db/schema';
 
 dotenv.config();
 
@@ -124,4 +128,171 @@ export function deleteSessionCookie(): void {
   deleteCookie(COOKIE_NAME, {
     path: '/',
   });
+}
+
+export async function registerUserServer(data: any) {
+  const { name, email, password, whatsapp } = data;
+
+  const existingUsers = await db.select().from(users).where(eq(users.email, email)).limit(1);
+  if (existingUsers.length > 0) {
+    return { success: false, error: 'Email sudah terdaftar. Silakan gunakan email lain.' };
+  }
+
+  const passwordHash = await bcrypt.hash(password, 10);
+
+  const [insertedUser] = await db
+    .insert(users)
+    .values({
+      name,
+      email,
+      whatsapp,
+      passwordHash,
+      role: 'customer',
+      isActive: true,
+    })
+    .returning();
+
+  if (!insertedUser) {
+    return { success: false, error: 'Gagal mendaftarkan user baru.' };
+  }
+
+  const sessionUser: UserSession = {
+    userId: insertedUser.id,
+    name: insertedUser.name,
+    email: insertedUser.email,
+    whatsapp: insertedUser.whatsapp,
+    role: insertedUser.role,
+  };
+
+  setSessionCookie(sessionUser);
+
+  return {
+    success: true,
+    error: null,
+    user: sessionUser,
+  };
+}
+
+export async function loginUserServer(data: any) {
+  const { email, password } = data;
+
+  const [user] = await db.select().from(users).where(eq(users.email, email)).limit(1);
+  if (!user) {
+    return { success: false, error: 'Email atau password salah.' };
+  }
+
+  if (!user.isActive) {
+    return { success: false, error: 'Akun Anda telah dinonaktifkan. Silakan hubungi admin.' };
+  }
+
+  const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+  if (!isPasswordValid) {
+    return { success: false, error: 'Email atau password salah.' };
+  }
+
+  const sessionUser: UserSession = {
+    userId: user.id,
+    name: user.name,
+    email: user.email,
+    whatsapp: user.whatsapp,
+    role: user.role,
+  };
+
+  setSessionCookie(sessionUser);
+
+  return {
+    success: true,
+    error: null,
+    user: sessionUser,
+  };
+}
+
+export async function updateProfileServer(data: any, user: UserSession) {
+  const { name, email, whatsapp } = data;
+
+  const existing = await db
+    .select()
+    .from(users)
+    .where(eq(users.email, email))
+    .limit(1);
+
+  if (existing.length > 0 && existing[0].id !== user.userId) {
+    return { success: false, error: 'Email sudah digunakan oleh akun lain.' };
+  }
+
+  const [updatedUser] = await db
+    .update(users)
+    .set({
+      name,
+      email,
+      whatsapp,
+      updatedAt: new Date(),
+    })
+    .where(eq(users.id, user.userId))
+    .returning();
+
+  if (!updatedUser) {
+    return { success: false, error: 'Gagal memperbarui profil.' };
+  }
+
+  const newSession: UserSession = {
+    userId: updatedUser.id,
+    name: updatedUser.name,
+    email: updatedUser.email,
+    whatsapp: updatedUser.whatsapp,
+    role: updatedUser.role,
+  };
+
+  setSessionCookie(newSession);
+
+  return { success: true, error: null, user: newSession };
+}
+
+export async function changePasswordServer(data: any, user: UserSession) {
+  const { oldPassword, newPassword } = data;
+
+  const [dbUser] = await db
+    .select()
+    .from(users)
+    .where(eq(users.id, user.userId))
+    .limit(1);
+
+  if (!dbUser) {
+    return { success: false, error: 'User tidak ditemukan.' };
+  }
+
+  const isPasswordValid = await bcrypt.compare(oldPassword, dbUser.passwordHash);
+  if (!isPasswordValid) {
+    return { success: false, error: 'Password lama yang Anda masukkan salah.' };
+  }
+
+  const passwordHash = await bcrypt.hash(newPassword, 10);
+
+  await db
+    .update(users)
+    .set({
+      passwordHash,
+      updatedAt: new Date(),
+    })
+    .where(eq(users.id, user.userId));
+
+  return { success: true, error: null };
+}
+
+export async function verifyAdminPinServer(pin: string, user: UserSession) {
+  const [dbUser] = await db
+    .select({ pin: users.pin })
+    .from(users)
+    .where(eq(users.id, user.userId))
+    .limit(1);
+
+  if (!dbUser) {
+    return { success: false, error: 'User tidak ditemukan.' };
+  }
+
+  if (dbUser.pin === pin) {
+    return { success: true, error: null };
+  }
+
+  return { success: false, error: 'PIN Admin salah.' };
 }
