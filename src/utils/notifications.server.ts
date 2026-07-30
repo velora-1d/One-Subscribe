@@ -112,6 +112,11 @@ export async function sendWhatsappNotification(to: string, message: string) {
     provider = (process.env.WA_PROVIDER || 'fonnte').toLowerCase();
   }
   
+  if (provider === 'none' || provider === 'disabled' || provider === 'off') {
+    console.log('[NOTIFICATION WA] WA notifications disabled by admin setting. Skipping message to:', to);
+    return;
+  }
+  
   if (provider === 'evolution') {
     const EVO_API_URL = process.env.EVO_API_URL
     const EVO_API_KEY = process.env.EVO_API_KEY

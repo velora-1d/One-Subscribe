@@ -383,7 +383,34 @@ function AdminSettingsPage() {
             </div>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-4 md:grid-cols-3">
+            {/* Disabled / None WA Gateway Active Card */}
+            <div
+              onClick={() => setActiveWaGateway('none')}
+              className={`relative flex items-center justify-between p-5 rounded-2xl border-2 cursor-pointer transition-all ${
+                activeWaGateway === 'none'
+                  ? 'border-slate-900 bg-slate-50 shadow-sm'
+                  : 'border-[var(--line)] hover:border-slate-300 bg-white'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <div className={`h-5 w-5 rounded-full border-2 flex items-center justify-center ${
+                  activeWaGateway === 'none' ? 'border-slate-950' : 'border-slate-300'
+                }`}>
+                  {activeWaGateway === 'none' && (
+                    <div className="h-2.5 w-2.5 rounded-full bg-slate-950" />
+                  )}
+                </div>
+                <div>
+                  <span className="text-xs font-bold text-slate-900 block">Nonaktif / Tanpa WA</span>
+                  <span className="text-[10px] text-[var(--sea-ink-soft)] font-medium">Matikan pengiriman notifikasi transaksi via WhatsApp</span>
+                </div>
+              </div>
+              <span className="text-[9px] font-black tracking-widest text-slate-500 uppercase bg-slate-100 border border-[var(--line)] px-2 py-1 rounded-md shadow-2xs shrink-0">
+                OFF
+              </span>
+            </div>
+
             {/* Fonnte Active Card */}
             <div
               onClick={() => setActiveWaGateway('fonnte')}
@@ -406,7 +433,7 @@ function AdminSettingsPage() {
                   <span className="text-[10px] text-[var(--sea-ink-soft)] font-medium">Pengiriman pesan menggunakan Fonnte WA Gateway</span>
                 </div>
               </div>
-              <span className="text-[9px] font-black tracking-widest text-[var(--sea-ink-soft)] uppercase bg-white border border-[var(--line)] px-2.5 py-1 rounded-md shadow-2xs">
+              <span className="text-[9px] font-black tracking-widest text-[var(--sea-ink-soft)] uppercase bg-white border border-[var(--line)] px-2.5 py-1 rounded-md shadow-2xs shrink-0">
                 FONNTE
               </span>
             </div>
@@ -433,7 +460,7 @@ function AdminSettingsPage() {
                   <span className="text-[10px] text-[var(--sea-ink-soft)] font-medium">Pengiriman pesan menggunakan Evolution API mandiri</span>
                 </div>
               </div>
-              <span className="text-[9px] font-black tracking-widest text-[var(--sea-ink-soft)] uppercase bg-white border border-[var(--line)] px-2.5 py-1 rounded-md shadow-2xs">
+              <span className="text-[9px] font-black tracking-widest text-[var(--sea-ink-soft)] uppercase bg-white border border-[var(--line)] px-2.5 py-1 rounded-md shadow-2xs shrink-0">
                 EVOLUTION
               </span>
             </div>
