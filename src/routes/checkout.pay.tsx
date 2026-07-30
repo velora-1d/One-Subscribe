@@ -162,50 +162,95 @@ function PaymentIframePage() {
         </div>
       </div>
 
-      {/* Main Payment Iframe Section - Compact Height & Scaled Pakasir Viewport */}
-      <div className="bg-white border border-slate-200 shadow-xs flex flex-col h-[550px] sm:h-[600px] overflow-hidden">
-        {/* Frame Title Bar */}
-        <div className="px-3 py-1.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between text-[11px] text-slate-600 font-semibold shrink-0">
-          <div className="flex items-center gap-1.5">
-            <span className="h-1.5 w-1.5 bg-emerald-500 animate-pulse" />
-            <span className="text-[11px] font-bold text-slate-700">Gerbang Pembayaran Resmi</span>
+      {/* Main Payment Section */}
+      {order.paymentRedirectUrl?.includes('pakasir.com') ? (
+        <div className="bg-white border border-slate-200 shadow-xs rounded-2xl p-8 text-center space-y-6">
+          <div className="mx-auto w-14 h-14 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 shadow-sm">
+            <span className="material-symbols-outlined text-3xl">payments</span>
           </div>
-          <a
-            href={order.paymentRedirectUrl || undefined}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-blue-600 hover:underline flex items-center gap-1 text-[10px] no-underline font-bold"
-          >
-            Buka Tab Baru
-            <span className="material-symbols-outlined text-[11px] font-bold">open_in_new</span>
-          </a>
-        </div>
 
-        {/* Embedded Iframe scaled for compact inner Pakasir layout */}
-        <div className="flex-grow bg-slate-50 relative w-full h-full overflow-hidden">
-          {order.paymentRedirectUrl ? (
-            <iframe
-              src={order.paymentRedirectUrl}
-              className="absolute top-0 left-0 border-0 bg-white"
-              style={{
-                width: '117.65%',
-                height: '117.65%',
-                transform: 'scale(0.85)',
-                transformOrigin: 'top left',
-              }}
-              title="Secure Payment Gateway Frame"
-              allow="payment"
-            />
-          ) : (
-            <div className="absolute inset-0 flex items-center justify-center p-4 text-center">
-              <div>
-                <span className="material-symbols-outlined text-[32px] text-red-500 mb-1">error</span>
-                <p className="text-xs font-bold text-slate-800 m-0">URL Pembayaran tidak valid.</p>
-              </div>
+          <div className="space-y-2 max-w-md mx-auto">
+            <h3 className="text-base font-extrabold text-slate-900">
+              Selesaikan Pembayaran Pesanan
+            </h3>
+            <p className="text-xs text-slate-500 font-medium leading-relaxed">
+              Klik tombol di bawah ini untuk membuka gerbang halaman pembayaran resmi (QRIS / Transfer Bank).
+            </p>
+          </div>
+
+          <div className="pt-2 pb-2">
+            <a
+              href={order.paymentRedirectUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-2.5 bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs sm:text-sm px-8 py-3.5 rounded-xl shadow-md transition-all hover:scale-[1.02] active:scale-[0.98] no-underline"
+            >
+              <span>Lanjut Pembayaran</span>
+              <span className="material-symbols-outlined text-base">open_in_new</span>
+            </a>
+          </div>
+
+          {/* Steps */}
+          <div className="grid gap-3 sm:grid-cols-3 text-left pt-4 border-t border-slate-100 text-xs">
+            <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 space-y-1">
+              <span className="font-extrabold text-slate-900 block text-[11px]">1. Klik Tombol</span>
+              <span className="text-[10px] text-slate-500 block leading-tight">Buka halaman pembayaran resmi di tab baru.</span>
             </div>
-          )}
+            <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 space-y-1">
+              <span className="font-extrabold text-slate-900 block text-[11px]">2. Transfer / Scan QRIS</span>
+              <span className="text-[10px] text-slate-500 block leading-tight">Lakukan pembayaran sesuai nominal transaksi.</span>
+            </div>
+            <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 space-y-1">
+              <span className="font-extrabold text-slate-900 block text-[11px]">3. Otomatis Verifikasi</span>
+              <span className="text-[10px] text-slate-500 block leading-tight">Halaman ini akan otomatis dialihkan begitu lunas.</span>
+            </div>
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="bg-white border border-slate-200 shadow-xs flex flex-col h-[550px] sm:h-[600px] overflow-hidden">
+          {/* Frame Title Bar */}
+          <div className="px-3 py-1.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between text-[11px] text-slate-600 font-semibold shrink-0">
+            <div className="flex items-center gap-1.5">
+              <span className="h-1.5 w-1.5 bg-emerald-500 animate-pulse" />
+              <span className="text-[11px] font-bold text-slate-700">Gerbang Pembayaran Resmi</span>
+            </div>
+            <a
+              href={order.paymentRedirectUrl || undefined}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:underline flex items-center gap-1 text-[10px] no-underline font-bold"
+            >
+              Buka Tab Baru
+              <span className="material-symbols-outlined text-[11px] font-bold">open_in_new</span>
+            </a>
+          </div>
+
+          {/* Embedded Iframe */}
+          <div className="flex-grow bg-slate-50 relative w-full h-full overflow-hidden">
+            {order.paymentRedirectUrl ? (
+              <iframe
+                src={order.paymentRedirectUrl}
+                className="absolute top-0 left-0 border-0 bg-white"
+                style={{
+                  width: '117.65%',
+                  height: '117.65%',
+                  transform: 'scale(0.85)',
+                  transformOrigin: 'top left',
+                }}
+                title="Secure Payment Gateway Frame"
+                allow="payment"
+              />
+            ) : (
+              <div className="absolute inset-0 flex items-center justify-center p-4 text-center">
+                <div>
+                  <span className="material-symbols-outlined text-[32px] text-red-500 mb-1">error</span>
+                  <p className="text-xs font-bold text-slate-800 m-0">URL Pembayaran tidak valid.</p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Helper notice */}
       <div className="text-center text-[10px] text-slate-400 font-medium max-w-lg mx-auto leading-relaxed">
