@@ -36,9 +36,9 @@ function LoginPage() {
 
       if (result?.success && result.user) {
         // Force router reload to refresh user context and redirect based on role
-        window.location.href = result.user.role === 'admin' ? '/admin/dashboard' : '/'
+        window.location.href = result.user.role === 'admin' ? '/admin/dashboard' : '/dashboard'
       } else {
-        setError('Login gagal. Periksa kembali email dan password Anda.')
+        setError(result?.error || 'Login gagal. Periksa kembali email dan password Anda.')
       }
     } catch (err: any) {
       setError(err?.message || 'Terjadi kesalahan saat masuk.')
