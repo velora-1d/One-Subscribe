@@ -540,13 +540,17 @@ export async function updateAdminCategoryServer(data: any, adminUserId: string) 
 }
 
 export async function deleteAdminCategoryServer(id: string, adminUserId: string) {
-  const [category] = await db.select().from(categories).where(eq(categories.id, id)).limit(1);
+  const [category] = await db
+    .select({ id: categories.id, name: categories.name })
+    .from(categories)
+    .where(eq(categories.id, id))
+    .limit(1);
   if (!category) {
     throw new Error('Kategori tidak ditemukan.');
   }
 
   const productsUsingCategory = await db
-    .select()
+    .select({ id: products.id })
     .from(products)
     .where(eq(products.category, category.name))
     .limit(1);
@@ -567,7 +571,11 @@ export async function deleteAdminCategoryServer(id: string, adminUserId: string)
 }
 
 export async function cancelAdminOrderServer(orderId: string, adminUserId: string) {
-  const [order] = await db.select().from(orders).where(eq(orders.id, orderId)).limit(1);
+  const [order] = await db
+    .select({ id: orders.id })
+    .from(orders)
+    .where(eq(orders.id, orderId))
+    .limit(1);
   if (!order) {
     throw new Error('Pesanan tidak ditemukan.');
   }
@@ -587,7 +595,11 @@ export async function cancelAdminOrderServer(orderId: string, adminUserId: strin
 }
 
 export async function deleteAdminOrderServer(orderId: string, adminUserId: string) {
-  const [order] = await db.select().from(orders).where(eq(orders.id, orderId)).limit(1);
+  const [order] = await db
+    .select({ id: orders.id })
+    .from(orders)
+    .where(eq(orders.id, orderId))
+    .limit(1);
   if (!order) {
     throw new Error('Pesanan tidak ditemukan.');
   }
@@ -629,7 +641,7 @@ export async function getAdminReportsServer() {
 
 export async function confirmRenewalServer(orderId: string, adminUserId: string) {
   const [renewalOrder] = await db
-    .select()
+    .select({ id: orders.id, parentOrderId: orders.parentOrderId, remainingDuration: orders.remainingDuration })
     .from(orders)
     .where(eq(orders.id, orderId))
     .limit(1);
@@ -643,7 +655,7 @@ export async function confirmRenewalServer(orderId: string, adminUserId: string)
   }
 
   const [parentOrder] = await db
-    .select()
+    .select({ id: orders.id, remainingDuration: orders.remainingDuration })
     .from(orders)
     .where(eq(orders.id, renewalOrder.parentOrderId))
     .limit(1);

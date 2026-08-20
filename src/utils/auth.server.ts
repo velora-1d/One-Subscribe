@@ -133,7 +133,7 @@ export function deleteSessionCookie(): void {
 export async function registerUserServer(data: any) {
   const { name, email, password, whatsapp } = data;
 
-  const existingUsers = await db.select().from(users).where(eq(users.email, email)).limit(1);
+  const existingUsers = await db.select({ id: users.id }).from(users).where(eq(users.email, email)).limit(1);
   if (existingUsers.length > 0) {
     return { success: false, error: 'Email sudah terdaftar. Silakan gunakan email lain.' };
   }
@@ -176,7 +176,19 @@ export async function registerUserServer(data: any) {
 export async function loginUserServer(data: any) {
   const { email, password } = data;
 
-  const [user] = await db.select().from(users).where(eq(users.email, email)).limit(1);
+  const [user] = await db
+    .select({
+      id: users.id,
+      name: users.name,
+      email: users.email,
+      whatsapp: users.whatsapp,
+      role: users.role,
+      passwordHash: users.passwordHash,
+      isActive: users.isActive,
+    })
+    .from(users)
+    .where(eq(users.email, email))
+    .limit(1);
   if (!user) {
     return { success: false, error: 'Email atau password salah.' };
   }
@@ -211,7 +223,7 @@ export async function updateProfileServer(data: any, user: UserSession) {
   const { name, email, whatsapp } = data;
 
   const existing = await db
-    .select()
+    .select({ id: users.id })
     .from(users)
     .where(eq(users.email, email))
     .limit(1);
@@ -252,7 +264,7 @@ export async function changePasswordServer(data: any, user: UserSession) {
   const { oldPassword, newPassword } = data;
 
   const [dbUser] = await db
-    .select()
+    .select({ passwordHash: users.passwordHash })
     .from(users)
     .where(eq(users.id, user.userId))
     .limit(1);

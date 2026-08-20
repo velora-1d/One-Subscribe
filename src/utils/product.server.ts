@@ -8,7 +8,18 @@ export async function attachPromosToProducts(productList: any[]) {
   const now = new Date();
   try {
     const activePromos = await db
-      .select()
+      .select({
+        id: promos.id,
+        discountType: promos.discountType,
+        discountValue: promos.discountValue,
+        maxDiscountAmount: promos.maxDiscountAmount,
+        minDurationMonths: promos.minDurationMonths,
+        validFrom: promos.validFrom,
+        validUntil: promos.validUntil,
+        productId: promos.productId,
+        maxUses: promos.maxUses,
+        usedCount: promos.usedCount,
+      })
       .from(promos)
       .where(
         and(

@@ -44,7 +44,7 @@ export async function createPromoServer(data: any, adminUserId: string) {
 
   if (code) {
     const [existing] = await db
-      .select()
+      .select({ id: promos.id, code: promos.code })
       .from(promos)
       .where(eq(promos.code, code))
       .limit(1);
@@ -97,7 +97,7 @@ export async function updatePromoServer(data: any, adminUserId: string) {
 
   if (code) {
     const [existing] = await db
-      .select()
+      .select({ id: promos.id, code: promos.code })
       .from(promos)
       .where(eq(promos.code, code))
       .limit(1);
@@ -163,7 +163,20 @@ export async function validateVoucherServer(data: any) {
   const { code, productId, durationMonths } = data;
 
   const [promo] = await db
-    .select()
+    .select({
+      id: promos.id,
+      code: promos.code,
+      discountType: promos.discountType,
+      discountValue: promos.discountValue,
+      maxDiscountAmount: promos.maxDiscountAmount,
+      minDurationMonths: promos.minDurationMonths,
+      validFrom: promos.validFrom,
+      validUntil: promos.validUntil,
+      maxUses: promos.maxUses,
+      usedCount: promos.usedCount,
+      productId: promos.productId,
+      isActive: promos.isActive,
+    })
     .from(promos)
     .where(eq(promos.code, code))
     .limit(1);
