@@ -29,5 +29,5 @@
     "postgresql",
     "drizzle-orm"
   ],
-  "notes": "TanStack Start fullstack routing. Integrasi payment Pakasir & Midtrans, Fonnte WA gateway, dan Resend email."
+  "notes": "TanStack Start fullstack routing. Integrasi payment Pakasir & VeraPay, Fonnte WA gateway, dan Resend email."
 }

@@ -15,7 +15,7 @@ Platform ini menggunakan kombinasi teknologi modern berperforma tinggi:
 * **Frontend & Backend**: [React 19](https://react.dev/) & [TanStack Start](https://tanstack.com/router/v1/docs/start/overview) (SSR dengan *server functions* dan kompilasi cepat menggunakan Vite).
 * **Database**: [PostgreSQL](https://www.postgresql.org/) dengan [Drizzle ORM](https://orm.drizzle.team/) untuk manajemen skema dan migrasi.
 * **Storage Gateway**: **RustFS** (S3-compatible, self-hosted storage) untuk mengunggah dan melayani gambar/foto produk.
-* **Payment Gateways**: **Midtrans** & **Pakasir** (Dapat ditoggle dan dikonfigurasi langsung dari Admin Panel secara dinamis).
+* **Payment Gateways**: **VeraPay** & **Pakasir** (Dapat ditoggle dan dikonfigurasi langsung dari Admin Panel secara dinamis).
 * **Notification Gateways**: **Fonnte** (WhatsApp API) & **Resend** (Email gateway) untuk notifikasi status pesanan, kredensial, dan pengingat masa kedaluwarsa.
 * **Styling**: Vanilla CSS modern yang dioptimalkan untuk performa tinggi dan kustomisasi visual tingkat tinggi.
 
@@ -41,9 +41,9 @@ Sistem ini mendukung 2 peran utama dengan akses yang terisolasi secara ketat:
 * **Order Management**: Memproses pesanan masuk, mengonfirmasi transaksi, mengisi kredensial premium untuk user, dan menulis catatan admin (*remarks*).
 * **User & Audit Logs**: Memantau pengguna terdaftar dan log aktivitas tindakan admin di dalam sistem demi keamanan.
 * **System Settings**:
-  * Mengaktifkan/menonaktifkan payment gateway utama (**Midtrans** vs **Pakasir**).
-  * Mengatur lingkungan kerja (**Sandbox/Production**) untuk Midtrans dan Pakasir.
-  * Tombol **Tes Koneksi API** instan untuk Midtrans, Pakasir, Fonnte, dan RustFS Storage untuk memastikan status API terhubung sebelum live.
+  * Mengaktifkan/menonaktifkan payment gateway utama (**VeraPay** vs **Pakasir**).
+  * Mengatur lingkungan kerja untuk VeraPay dan Pakasir.
+  * Tombol **Tes Koneksi API** instan untuk VeraPay, Pakasir, Fonnte, dan RustFS Storage untuk memastikan status API terhubung sebelum live.
 
 ---
 
@@ -77,9 +77,10 @@ Sistem ini mendukung 2 peran utama dengan akses yang terisolasi secara ketat:
    # Database Connection
    DATABASE_URL="postgres://username:password@localhost:5432/onesubscribe"
 
-   # Midtrans Credentials
-   MIDTRANS_SANDBOX_SERVER_KEY="SB-Mid-server-xxx"
-   MIDTRANS_PRODUCTION_SERVER_KEY="Mid-server-xxx"
+   # VeraPay Credentials
+   VERAPAY_API_URL="https://api.verapay.dimzzy.my.id"
+   VERAPAY_API_KEY="verapay_live_vlr_subs_xxx"
+   VERAPAY_WEBHOOK_URL="https://onesubscribe.dimzzy.my.id/api/v1/callback/verapay"
 
    # Pakasir Credentials
    PAKASIR_SLUG="jbr-minpo"

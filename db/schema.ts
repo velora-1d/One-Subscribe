@@ -69,7 +69,7 @@ export const orders = pgTable('orders', {
   productId: uuid('product_id').references(() => products.id, { onDelete: 'restrict' }).notNull(),
   status: text('status').$type<'menunggu_pembayaran' | 'menunggu_aktivasi' | 'aktif' | 'expired'>().default('menunggu_pembayaran').notNull(),
   price: integer('price').notNull(),
-  paymentMethod: text('payment_method').$type<'pakasir' | 'midtrans'>().notNull(),
+  paymentMethod: text('payment_method').$type<'pakasir' | 'verapay'>().notNull(),
   paymentRedirectUrl: text('payment_redirect_url'),
   paymentTransactionId: text('payment_transaction_id').unique(),
   remainingDuration: integer('remaining_duration').notNull(), // Sisa saldo durasi (dalam bulan / hari)

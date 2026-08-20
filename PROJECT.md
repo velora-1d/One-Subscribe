@@ -7,7 +7,7 @@ OneSubscribe adalah platform marketplace langganan digital yang memudahkan pengg
 - Frontend + Backend: TanStack Start (TypeScript)
 - Database: PostgreSQL
 - ORM: Drizzle ORM
-- Payment Gateway: Pakasir & Midtrans
+- Payment Gateway: Pakasir & VeraPay
 - WA Gateway: Fonnte
 - Email Service: Resend
 - Storage: RustFS (S3-compatible, self-hosted)
