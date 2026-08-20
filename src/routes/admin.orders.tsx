@@ -993,7 +993,7 @@ function AdminOrdersPage() {
                 <div className="flex justify-between text-[9px]">
                   <span className="text-slate-400 font-bold uppercase tracking-wider">Gateway Pembayaran:</span>
                   <span className="font-bold text-slate-700 font-sans">
-                    {selectedOrder.paymentMethod?.toLowerCase() === 'pakasir' || selectedOrder.paymentMethod?.toLowerCase() === 'midtrans'
+                    {selectedOrder.paymentMethod?.toLowerCase() === 'pakasir' || selectedOrder.paymentMethod?.toLowerCase() === 'verapay'
                       ? 'OneSubscribe'
                       : (selectedOrder.paymentMethod || 'OneSubscribe')}
                   </span>

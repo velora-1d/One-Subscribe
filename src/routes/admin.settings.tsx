@@ -33,8 +33,8 @@ function AdminSettingsPage() {
   const { initialSettings } = Route.useLoaderData()
   const [isReceiptPreviewOpen, setIsReceiptPreviewOpen] = useState(false)
   
-  const [activeGateway, setActiveGateway] = useState(initialSettings.active_payment_gateway || 'midtrans')
-  const [midtransEnv, setMidtransEnv] = useState(initialSettings.midtrans_env || 'sandbox')
+  const [activeGateway, setActiveGateway] = useState(initialSettings.active_payment_gateway || 'verapay')
+  const [verapayEnv, setVerapayEnv] = useState(initialSettings.verapay_env || 'live')
   const [pakasirEnv, setPakasirEnv] = useState(initialSettings.pakasir_env || 'sandbox')
   const [activeWaGateway, setActiveWaGateway] = useState(initialSettings.active_wa_gateway || 'fonnte')
   
@@ -47,7 +47,7 @@ function AdminSettingsPage() {
 
     const payload = {
       active_payment_gateway: activeGateway,
-      midtrans_env: midtransEnv,
+      verapay_env: verapayEnv,
       pakasir_env: pakasirEnv,
       active_wa_gateway: activeWaGateway,
     }
@@ -66,7 +66,7 @@ function AdminSettingsPage() {
     }
   }
 
-  const handleTestConnection = async (service: 'midtrans' | 'pakasir' | 'fonnte' | 'evolution' | 'rustfs' | 'midtrans_callback' | 'pakasir_callback' | 'email') => {
+  const handleTestConnection = async (service: 'verapay' | 'pakasir' | 'fonnte' | 'evolution' | 'rustfs' | 'verapay_callback' | 'pakasir_callback' | 'email') => {
     setTestStatus(prev => ({ ...prev, [service]: { loading: true, message: undefined } }))
 
     try {
@@ -135,30 +135,30 @@ function AdminSettingsPage() {
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            {/* Midtrans Active Card */}
+            {/* VeraPay Active Card */}
             <div
-              onClick={() => setActiveGateway('midtrans')}
+              onClick={() => setActiveGateway('verapay')}
               className={`relative flex items-center justify-between p-5 rounded-2xl border-2 cursor-pointer transition-all ${
-                activeGateway === 'midtrans'
+                activeGateway === 'verapay'
                   ? 'border-slate-900 bg-slate-50 shadow-sm'
                   : 'border-[var(--line)] hover:border-slate-300 bg-white'
               }`}
             >
               <div className="flex items-center gap-3">
                 <div className={`h-5 w-5 rounded-full border-2 flex items-center justify-center ${
-                  activeGateway === 'midtrans' ? 'border-slate-950' : 'border-slate-300'
+                  activeGateway === 'verapay' ? 'border-slate-950' : 'border-slate-300'
                 }`}>
-                  {activeGateway === 'midtrans' && (
+                  {activeGateway === 'verapay' && (
                     <div className="h-2.5 w-2.5 rounded-full bg-slate-950" />
                   )}
                 </div>
                 <div>
-                  <span className="text-xs font-bold text-slate-900 block">Midtrans Gateway</span>
-                  <span className="text-[10px] text-[var(--sea-ink-soft)]">Otomatisasi via QRIS, GoPay, Transfer VA Bank</span>
+                  <span className="text-xs font-bold text-slate-900 block">VeraPay Gateway</span>
+                  <span className="text-[10px] text-[var(--sea-ink-soft)]">Otomatisasi via VeraPay Hub (QRIS, VA, E-Wallet)</span>
                 </div>
               </div>
               <span className="text-[9px] font-black tracking-widest text-[var(--sea-ink-soft)] uppercase bg-white border border-[var(--line)] px-2.5 py-1 rounded-md shadow-2xs">
-                MIDTRANS
+                VERAPAY
               </span>
             </div>
 
@@ -191,55 +191,55 @@ function AdminSettingsPage() {
           </div>
         </div>
 
-        {/* Row 1 Grid: 3 Columns (Midtrans, Pakasir, RustFS) */}
+        {/* Row 1 Grid: 3 Columns (VeraPay, Pakasir, RustFS) */}
         <div className="grid gap-6 md:grid-cols-3 animate-fadeIn">
-          {/* Payment Gateway: Midtrans */}
+          {/* Payment Gateway: VeraPay */}
           <div className="island-shell border border-[var(--line)] rounded-3xl p-6 space-y-4 bg-white shadow-xs h-full">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-[var(--line)]">
               <h2 className="text-sm font-extrabold text-[var(--sea-ink)]">
-                Midtrans API Settings
+                VeraPay API Settings
               </h2>
               <div className="flex flex-wrap gap-2">
                 <button
                   type="button"
-                  disabled={testStatus['midtrans']?.loading}
-                  onClick={() => handleTestConnection('midtrans')}
+                  disabled={testStatus['verapay']?.loading}
+                  onClick={() => handleTestConnection('verapay')}
                   className="rounded-full bg-slate-100 hover:bg-slate-200 border border-slate-300 px-3 py-1 text-[10px] font-bold text-slate-800 transition flex items-center gap-1 cursor-pointer disabled:opacity-50"
                 >
                   <span className="material-symbols-outlined text-[12px] font-bold">sync_alt</span>
-                  {testStatus['midtrans']?.loading ? 'Menguji...' : 'Tes Koneksi'}
+                  {testStatus['verapay']?.loading ? 'Menguji...' : 'Tes Koneksi'}
                 </button>
                 <button
                   type="button"
-                  disabled={testStatus['midtrans_callback']?.loading}
-                  onClick={() => handleTestConnection('midtrans_callback')}
+                  disabled={testStatus['verapay_callback']?.loading}
+                  onClick={() => handleTestConnection('verapay_callback')}
                   className="rounded-full bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 px-3 py-1 text-[10px] font-bold text-indigo-700 transition flex items-center gap-1 cursor-pointer disabled:opacity-50"
                 >
                   <span className="material-symbols-outlined text-[12px] font-bold">webhook</span>
-                  {testStatus['midtrans_callback']?.loading ? 'Menguji...' : 'Tes Callback'}
+                  {testStatus['verapay_callback']?.loading ? 'Menguji...' : 'Tes Callback'}
                 </button>
               </div>
             </div>
 
-            {testStatus['midtrans']?.message && (
+            {testStatus['verapay']?.message && (
               <div className={`p-3 rounded-xl text-[10px] font-semibold flex items-center gap-2 ${
-                testStatus['midtrans']?.success ? 'bg-emerald-50 text-emerald-600 border border-emerald-100 animate-fadeIn' : 'bg-red-50 text-red-600 border border-red-100 animate-fadeIn'
+                testStatus['verapay']?.success ? 'bg-emerald-50 text-emerald-600 border border-emerald-100 animate-fadeIn' : 'bg-red-50 text-red-600 border border-red-100 animate-fadeIn'
               }`}>
                 <span className="material-symbols-outlined text-[14px]">
-                  {testStatus['midtrans']?.success ? 'check_circle' : 'error'}
+                  {testStatus['verapay']?.success ? 'check_circle' : 'error'}
                 </span>
-                <span>{testStatus['midtrans']?.message}</span>
+                <span>{testStatus['verapay']?.message}</span>
               </div>
             )}
 
-            {testStatus['midtrans_callback']?.message && (
+            {testStatus['verapay_callback']?.message && (
               <div className={`p-3 rounded-xl text-[10px] font-semibold flex items-center gap-2 ${
-                testStatus['midtrans_callback']?.success ? 'bg-emerald-50 text-emerald-600 border border-emerald-100 animate-fadeIn' : 'bg-red-50 text-red-600 border border-red-100 animate-fadeIn'
+                testStatus['verapay_callback']?.success ? 'bg-emerald-50 text-emerald-600 border border-emerald-100 animate-fadeIn' : 'bg-red-50 text-red-600 border border-red-100 animate-fadeIn'
               }`}>
                 <span className="material-symbols-outlined text-[14px]">
-                  {testStatus['midtrans_callback']?.success ? 'check_circle' : 'error'}
+                  {testStatus['verapay_callback']?.success ? 'check_circle' : 'error'}
                 </span>
-                <span>{testStatus['midtrans_callback']?.message}</span>
+                <span>{testStatus['verapay_callback']?.message}</span>
               </div>
             )}
 
@@ -248,17 +248,17 @@ function AdminSettingsPage() {
                 Environment Mode
               </label>
               <select
-                value={midtransEnv}
-                onChange={(e) => setMidtransEnv(e.target.value)}
+                value={verapayEnv}
+                onChange={(e) => setVerapayEnv(e.target.value)}
                 className="w-full rounded-xl border border-[var(--line)] bg-[var(--chip-bg)] px-4 py-2.5 text-xs text-[var(--sea-ink)] outline-none focus:border-slate-900 transition"
               >
-                <option value="sandbox">Sandbox (Development / Testing)</option>
-                <option value="production">Production (Live)</option>
+                <option value="live">Live / Production (VeraPay Hub)</option>
+                <option value="sandbox">Sandbox / Testing</option>
               </select>
             </div>
 
             <p className="text-[10px] text-[var(--sea-ink-soft)] leading-relaxed italic m-0">
-              Menggunakan kredensial dari `.env`: <code className="bg-slate-100 px-1 py-0.5 rounded text-slate-700">{midtransEnv === 'production' ? 'MIDTRANS_PRODUCTION_SERVER_KEY' : 'MIDTRANS_SANDBOX_SERVER_KEY'}</code>.
+              Menggunakan kredensial dari `.env`: <code className="bg-slate-100 px-1 py-0.5 rounded text-slate-700">VERAPAY_API_KEY</code> & <code className="bg-slate-100 px-1 py-0.5 rounded text-slate-700">VERAPAY_API_URL</code>.
             </p>
           </div>
 

@@ -341,7 +341,7 @@ function AdminReportsPage() {
               className="w-full rounded-xl border border-slate-200 bg-white/70 px-3 py-2 text-xs text-slate-700 outline-none focus:border-slate-900 transition font-medium cursor-pointer shadow-2xs"
             >
               <option value="semua">Semua Metode</option>
-              <option value="midtrans">Gateway Midtrans</option>
+              <option value="verapay">Gateway VeraPay</option>
               <option value="pakasir">Gateway Pakasir</option>
             </select>
           </div>
