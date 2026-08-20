@@ -35,6 +35,7 @@ import { Route as ProductsProductIdRouteImport } from './routes/products.$produc
 import { Route as ApiCronAutoDeductRouteImport } from './routes/api.cron.auto-deduct'
 import { Route as ApiWebhooksMidtransRouteImport } from './routes/api.webhooks.midtrans'
 import { Route as ApiV1CallbackPakasirRouteImport } from './routes/api.v1.callback.pakasir'
+import { Route as ApiV1CallbackVerapayRouteImport } from './routes/api.v1.callback.verapay'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -166,6 +167,11 @@ const ApiV1CallbackPakasirRoute = ApiV1CallbackPakasirRouteImport.update({
   path: '/api/v1/callback/pakasir',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiV1CallbackVerapayRoute = ApiV1CallbackVerapayRouteImport.update({
+  id: '/api/v1/callback/verapay',
+  path: '/api/v1/callback/verapay',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -194,6 +200,7 @@ export interface FileRoutesByFullPath {
   '/api/cron/auto-deduct': typeof ApiCronAutoDeductRoute
   '/api/webhooks/midtrans': typeof ApiWebhooksMidtransRoute
   '/api/v1/callback/pakasir': typeof ApiV1CallbackPakasirRoute
+  '/api/v1/callback/verapay': typeof ApiV1CallbackVerapayRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -221,6 +228,7 @@ export interface FileRoutesByTo {
   '/api/cron/auto-deduct': typeof ApiCronAutoDeductRoute
   '/api/webhooks/midtrans': typeof ApiWebhooksMidtransRoute
   '/api/v1/callback/pakasir': typeof ApiV1CallbackPakasirRoute
+  '/api/v1/callback/verapay': typeof ApiV1CallbackVerapayRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -250,6 +258,7 @@ export interface FileRoutesById {
   '/api/cron/auto-deduct': typeof ApiCronAutoDeductRoute
   '/api/webhooks/midtrans': typeof ApiWebhooksMidtransRoute
   '/api/v1/callback/pakasir': typeof ApiV1CallbackPakasirRoute
+  '/api/v1/callback/verapay': typeof ApiV1CallbackVerapayRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -280,6 +289,7 @@ export interface FileRouteTypes {
     | '/api/cron/auto-deduct'
     | '/api/webhooks/midtrans'
     | '/api/v1/callback/pakasir'
+    | '/api/v1/callback/verapay'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -307,6 +317,7 @@ export interface FileRouteTypes {
     | '/api/cron/auto-deduct'
     | '/api/webhooks/midtrans'
     | '/api/v1/callback/pakasir'
+    | '/api/v1/callback/verapay'
   id:
     | '__root__'
     | '/'
@@ -335,6 +346,7 @@ export interface FileRouteTypes {
     | '/api/cron/auto-deduct'
     | '/api/webhooks/midtrans'
     | '/api/v1/callback/pakasir'
+    | '/api/v1/callback/verapay'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -351,6 +363,7 @@ export interface RootRouteChildren {
   ApiCronAutoDeductRoute: typeof ApiCronAutoDeductRoute
   ApiWebhooksMidtransRoute: typeof ApiWebhooksMidtransRoute
   ApiV1CallbackPakasirRoute: typeof ApiV1CallbackPakasirRoute
+  ApiV1CallbackVerapayRoute: typeof ApiV1CallbackVerapayRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -537,6 +550,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiV1CallbackPakasirRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/v1/callback/verapay': {
+      id: '/api/v1/callback/verapay'
+      path: '/api/v1/callback/verapay'
+      fullPath: '/api/v1/callback/verapay'
+      preLoaderRoute: typeof ApiV1CallbackVerapayRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -598,6 +618,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiCronAutoDeductRoute: ApiCronAutoDeductRoute,
   ApiWebhooksMidtransRoute: ApiWebhooksMidtransRoute,
   ApiV1CallbackPakasirRoute: ApiV1CallbackPakasirRoute,
+  ApiV1CallbackVerapayRoute: ApiV1CallbackVerapayRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

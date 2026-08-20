@@ -44,7 +44,7 @@ export async function createOrderServer(data: any, user: any, origin: string) {
     settingsRecord[setting.key] = setting.value;
   });
 
-  const paymentMethod = (settingsRecord['active_payment_gateway'] || 'midtrans') as 'midtrans' | 'pakasir';
+  const paymentMethod = (settingsRecord['active_payment_gateway'] || 'verapay') as 'verapay' | 'pakasir';
 
   const [product] = await db
     .select()
@@ -123,44 +123,38 @@ export async function createOrderServer(data: any, user: any, origin: string) {
   let paymentRedirectUrl = `/checkout/pay?orderId=${orderId}`; 
   let paymentTransactionId = `TX-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
 
-  if (paymentMethod === 'midtrans') {
+  if (paymentMethod === 'verapay') {
     try {
-      const isProduction = process.env.NODE_ENV === 'production';
-      const serverKey = settingsRecord['midtrans_server_key'] || process.env.MIDTRANS_SERVER_KEY || 'SB-Mid-server-DUMMY_KEY';
-      const endpoint = isProduction
-        ? 'https://app.midtrans.com/snap/v1/transactions'
-        : 'https://app.sandbox.midtrans.com/snap/v1/transactions';
+      const verapayApiUrl = process.env.VERAPAY_API_URL || 'https://api.verapay.dimzzy.my.id';
+      const verapayApiKey = process.env.VERAPAY_API_KEY || 'verapay_live_vlr_subs_1041a1fdbe424909931571b6a7f60d1b';
 
-      const authHeader = Buffer.from(`${serverKey}:`).toString('base64');
-      const response = await fetch(endpoint, {
+      const response = await fetch(`${verapayApiUrl}/api/v1/pay`, {
         method: 'POST',
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
-          'Authorization': `Basic ${authHeader}`,
+          'X-Api-Key': verapayApiKey,
+          'Authorization': `Bearer ${verapayApiKey}`,
         },
         body: JSON.stringify({
-          transaction_details: {
-            order_id: orderId,
-            gross_amount: finalPrice,
-          },
-          credit_card: { secure: true },
-          customer_details: {
-            first_name: user.name,
-            email: user.email,
-          },
+          order_id: orderId,
+          gross_amount: finalPrice,
+          item_name: product.name,
+          customer_name: user.name,
+          customer_email: user.email,
         }),
       });
 
       const resData = await response.json() as any;
-      if (response.ok && resData.redirect_url) {
-        paymentRedirectUrl = resData.redirect_url;
-        paymentTransactionId = resData.token;
+      if (response.ok && (resData.data?.snap_redirect_url || resData.data?.redirect_url)) {
+        paymentRedirectUrl = resData.data.snap_redirect_url || resData.data.redirect_url;
+        paymentTransactionId = resData.data.snap_token || resData.data.token || resData.data.order_id;
       } else {
-        throw new Error(resData.error_messages?.[0] || 'Gagal membuat transaksi Midtrans.');
+        const errMsg = resData.error || resData.message || resData.error_messages?.[0] || 'Gagal membuat transaksi VeraPay.';
+        throw new Error(errMsg);
       }
     } catch (err: any) {
-      throw new Error(`Integrasi Midtrans Gagal: ${err.message}`);
+      throw new Error(`Integrasi VeraPay Gagal: ${err.message}`);
     }
   } else if (paymentMethod === 'pakasir') {
     try {

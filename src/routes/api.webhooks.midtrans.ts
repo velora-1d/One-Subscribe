@@ -9,26 +9,39 @@ export const Route = createFileRoute('/api/webhooks/midtrans')({
   server: {
     handlers: {
       GET: async () => {
-        return new Response('Midtrans Webhook Active')
+        return new Response('VeraPay Webhook Gateway Active')
       },
       POST: async ({ request }) => {
         try {
           const payload: any = await request.json()
           
-          const orderId = payload.order_id
-          const transactionStatus = payload.transaction_status
+          const orderId = payload.order_id || payload.orderId || payload.reference
+          const transactionStatus = payload.transaction_status || payload.status
           const fraudStatus = payload.fraud_status
 
           if (orderId) {
             let status: 'menunggu_pembayaran' | 'menunggu_aktivasi' | 'aktif' | 'expired' = 'menunggu_pembayaran'
+            const normStatus = String(transactionStatus || '').toLowerCase()
 
-            if (transactionStatus === 'capture' || transactionStatus === 'settlement') {
+            if (
+              normStatus === 'capture' ||
+              normStatus === 'settlement' ||
+              normStatus === 'paid' ||
+              normStatus === 'completed' ||
+              normStatus === 'success'
+            ) {
               if (fraudStatus === 'challenge') {
                 status = 'menunggu_pembayaran'
               } else {
-                status = 'menunggu_aktivasi' // Paid, waiting for admin activation
+                status = 'menunggu_aktivasi'
               }
-            } else if (transactionStatus === 'deny' || transactionStatus === 'cancel' || transactionStatus === 'expire') {
+            } else if (
+              normStatus === 'deny' ||
+              normStatus === 'cancel' ||
+              normStatus === 'expire' ||
+              normStatus === 'expired' ||
+              normStatus === 'failed'
+            ) {
               status = 'expired'
             }
 
@@ -37,7 +50,7 @@ export const Route = createFileRoute('/api/webhooks/midtrans')({
               .set({ status, updatedAt: new Date() })
               .where(eq(orders.id, orderId))
               
-            console.log(`[Webhook Midtrans] Updated order ${orderId} status to ${status}`)
+            console.log(`[Webhook VeraPay/Legacy] Updated order ${orderId} status to ${status}`)
 
             if (status === 'menunggu_aktivasi') {
               await deductProductStock(orderId)

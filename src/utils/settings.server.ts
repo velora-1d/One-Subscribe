@@ -14,8 +14,8 @@ export async function getAllSystemSettingsServer() {
     success: true, 
     error: null,
     settings: {
-      active_payment_gateway: settingsRecord['active_payment_gateway'] || 'midtrans',
-      midtrans_env: settingsRecord['midtrans_env'] || 'sandbox',
+      active_payment_gateway: settingsRecord['active_payment_gateway'] || 'verapay',
+      verapay_env: settingsRecord['verapay_env'] || 'live',
       pakasir_env: settingsRecord['pakasir_env'] || 'sandbox',
       active_wa_gateway: settingsRecord['active_wa_gateway'] || 'fonnte',
     }
@@ -52,11 +52,11 @@ export async function getActivePaymentGatewayServer() {
     .where(eq(systemSettings.key, 'active_payment_gateway'))
     .limit(1);
   
-  const value = setting?.value || 'midtrans';
+  const value = setting?.value || 'verapay';
   return { success: true, error: null, activeGateway: value };
 }
 
-export async function updateActivePaymentGatewayServer(gateway: 'midtrans' | 'pakasir') {
+export async function updateActivePaymentGatewayServer(gateway: 'verapay' | 'pakasir') {
   await db
     .insert(systemSettings)
     .values({ key: 'active_payment_gateway', value: gateway })
@@ -74,46 +74,32 @@ export async function testConnectionFromServer(data: any, origin: string) {
     settingsRecord[setting.key] = setting.value;
   });
 
-  if (data.service === 'midtrans') {
-    const env = settingsRecord['midtrans_env'] || 'sandbox';
-    const isProduction = env === 'production';
-    const serverKey = isProduction
-      ? process.env.MIDTRANS_PRODUCTION_SERVER_KEY
-      : (process.env.MIDTRANS_SANDBOX_SERVER_KEY || process.env.MIDTRANS_SERVER_KEY);
-    
-    if (!serverKey) {
-      return { success: false, error: `Koneksi Gagal: Server Key Midtrans ${env.toUpperCase()} tidak ditemukan di file .env` };
+  if (data.service === 'verapay') {
+    const apiUrl = process.env.VERAPAY_API_URL || 'https://api.verapay.dimzzy.my.id';
+    const apiKey = process.env.VERAPAY_API_KEY || 'verapay_live_vlr_subs_1041a1fdbe424909931571b6a7f60d1b';
+
+    if (!apiKey) {
+      return { success: false, message: 'Koneksi Gagal: API Key VeraPay tidak ditemukan di file .env' };
     }
 
-    const endpoint = isProduction
-      ? 'https://app.midtrans.com/snap/v1/transactions'
-      : 'https://app.sandbox.midtrans.com/snap/v1/transactions';
-    
-    const authHeader = Buffer.from(`${serverKey}:`).toString('base64');
     try {
-      const response = await fetch(endpoint, {
-        method: 'POST',
+      const response = await fetch(`${apiUrl}/health`, {
+        method: 'GET',
         headers: {
           'Accept': 'application/json',
-          'Content-Type': 'application/json',
-          'Authorization': `Basic ${authHeader}`,
           'User-Agent': 'OneSubscribe/1.0',
         },
-        body: JSON.stringify({
-          transaction_details: {
-            order_id: `CONN-TEST-${Date.now()}`,
-            gross_amount: 1000,
-          },
-        }),
       });
 
-      if (response.status === 401) {
-        return { success: false, message: 'Kredensial Tidak Valid (401 Unauthorized). Periksa kembali Server Key di file .env Anda.' };
+      if (response.ok) {
+        const body = await response.json() as any;
+        return { 
+          success: true, 
+          error: null, 
+          message: `Koneksi ke VeraPay Hub (${body.brand || 'VeraPay'}) Berhasil! Server: ${body.service || 'Active'}` 
+        };
       }
-      if (response.status === 201 || response.status === 400 || response.ok) {
-        return { success: true, error: null, message: `Koneksi ke Midtrans ${env.toUpperCase()} Berhasil!` };
-      }
-      return { success: false, message: `Respon Midtrans: ${response.statusText} (${response.status})` };
+      return { success: false, message: `Respon VeraPay API: ${response.statusText} (${response.status})` };
     } catch (err: any) {
       return { success: false, message: `Koneksi Gagal: ${err.message}` };
     }
@@ -272,8 +258,8 @@ export async function testConnectionFromServer(data: any, origin: string) {
     }
   }
 
-  if (data.service === 'midtrans_callback') {
-    const endpoint = `${origin}/api/webhooks/midtrans`;
+  if (data.service === 'verapay_callback') {
+    const endpoint = `${origin}/api/v1/callback/verapay`;
     try {
       const response = await fetch(endpoint, {
         method: 'POST',
@@ -283,14 +269,14 @@ export async function testConnectionFromServer(data: any, origin: string) {
         },
         body: JSON.stringify({
           order_id: "", 
-          transaction_status: "settlement",
+          status: "paid",
         }),
       });
 
       if (response.ok) {
         const resBody = await response.json() as any;
         if (resBody?.success) {
-          return { success: true, error: null, message: 'Koneksi Callback Midtrans Aktif & Berhasil Merespon!' };
+          return { success: true, error: null, message: 'Koneksi Callback VeraPay Aktif & Berhasil Merespon!' };
         }
       }
       return { success: false, message: `Koneksi Callback Gagal: HTTP ${response.status} (${response.statusText})` };
