@@ -178,8 +178,19 @@ export async function getAdminStatsServer() {
 }
 
 export async function getAdminProductsServer() {
-  const list = await db.select().from(products).orderBy(asc(products.sortOrder), desc(products.createdAt));
-  return { success: true, error: null, products: list };
+  try {
+    const list = await db.select().from(products).orderBy(asc(products.sortOrder), desc(products.createdAt));
+    return { success: true, error: null, products: list };
+  } catch (err: any) {
+    console.error('getAdminProductsServer error:', err);
+    try {
+      // Fallback query without sortOrder if column hasn't migrated yet
+      const fallbackList = await db.select().from(products).orderBy(desc(products.createdAt));
+      return { success: true, error: null, products: fallbackList };
+    } catch (innerErr: any) {
+      return { success: false, error: innerErr?.message || err?.message || 'Gagal memuat produk', products: [] };
+    }
+  }
 }
 
 export async function createAdminProductServer(data: any, adminUserId: string) {
