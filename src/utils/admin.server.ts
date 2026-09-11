@@ -51,92 +51,130 @@ export async function uploadBase64Image(base64Str: string): Promise<string> {
 }
 
 export async function getAdminStatsServer() {
-  const [
-    revenueRes,
-    usersRes,
-    pendingRes,
-    totalOrdersRes,
-    activeOrdersRes,
-    unpaidOrdersRes,
-    expiredOrdersRes,
-    totalProductsRes,
-    totalCategoriesRes,
-    aovRes,
-    recentOrders
-  ] = await Promise.all([
-    db
-      .select({ total: sql<number>`COALESCE(SUM(${orders.price}), 0)` })
-      .from(orders)
-      .where(sql`${orders.status} IN ('aktif', 'expired', 'menunggu_aktivasi')`),
-    db
-      .select({ count: sql<number>`COUNT(*)` })
-      .from(users)
-      .where(eq(users.role, 'customer')),
-    db
-      .select({ count: sql<number>`COUNT(*)` })
-      .from(orders)
-      .where(eq(orders.status, 'menunggu_aktivasi')),
-    db
-      .select({ count: sql<number>`COUNT(*)` })
-      .from(orders),
-    db
-      .select({ count: sql<number>`COUNT(*)` })
-      .from(orders)
-      .where(eq(orders.status, 'aktif')),
-    db
-      .select({ count: sql<number>`COUNT(*)` })
-      .from(orders)
-      .where(eq(orders.status, 'menunggu_pembayaran')),
-    db
-      .select({ count: sql<number>`COUNT(*)` })
-      .from(orders)
-      .where(eq(orders.status, 'expired')),
-    db
-      .select({ count: sql<number>`COUNT(*)` })
-      .from(products),
-    db
-      .select({ count: sql<number>`COUNT(*)` })
-      .from(categories),
-    db
-      .select({ avg: sql<number>`COALESCE(AVG(${orders.price}), 0)` })
-      .from(orders)
-      .where(sql`${orders.status} IN ('aktif', 'expired', 'menunggu_aktivasi')`),
-    db
-      .select({
-        id: orders.id,
-        status: orders.status,
-        price: orders.price,
-        parentOrderId: orders.parentOrderId,
-        createdAt: orders.createdAt,
-        productName: products.name,
-        customerName: users.name,
-        customerEmail: users.email,
-      })
-      .from(orders)
-      .innerJoin(products, eq(orders.productId, products.id))
-      .innerJoin(users, eq(orders.userId, users.id))
-      .orderBy(desc(orders.createdAt))
-      .limit(5)
-  ]);
+  try {
+    const [
+      revenueRes,
+      usersRes,
+      pendingRes,
+      totalOrdersRes,
+      activeOrdersRes,
+      unpaidOrdersRes,
+      expiredOrdersRes,
+      totalProductsRes,
+      totalCategoriesRes,
+      aovRes,
+      recentOrders
+    ] = await Promise.all([
+      db
+        .select({ total: sql<number>`COALESCE(SUM(${orders.price}), 0)` })
+        .from(orders)
+        .where(sql`${orders.status} IN ('aktif', 'expired', 'menunggu_aktivasi')`)
+        .catch(() => [{ total: 0 }]),
+      db
+        .select({ count: sql<number>`COUNT(*)` })
+        .from(users)
+        .where(eq(users.role, 'customer'))
+        .catch(() => [{ count: 0 }]),
+      db
+        .select({ count: sql<number>`COUNT(*)` })
+        .from(orders)
+        .where(eq(orders.status, 'menunggu_aktivasi'))
+        .catch(() => [{ count: 0 }]),
+      db
+        .select({ count: sql<number>`COUNT(*)` })
+        .from(orders)
+        .catch(() => [{ count: 0 }]),
+      db
+        .select({ count: sql<number>`COUNT(*)` })
+        .from(orders)
+        .where(eq(orders.status, 'aktif'))
+        .catch(() => [{ count: 0 }]),
+      db
+        .select({ count: sql<number>`COUNT(*)` })
+        .from(orders)
+        .where(eq(orders.status, 'menunggu_pembayaran'))
+        .catch(() => [{ count: 0 }]),
+      db
+        .select({ count: sql<number>`COUNT(*)` })
+        .from(orders)
+        .where(eq(orders.status, 'expired'))
+        .catch(() => [{ count: 0 }]),
+      db
+        .select({ count: sql<number>`COUNT(*)` })
+        .from(products)
+        .catch(() => [{ count: 0 }]),
+      db
+        .select({ count: sql<number>`COUNT(*)` })
+        .from(categories)
+        .catch(async () => {
+          try {
+            // If table doesn't exist yet, attempt to create it gracefully
+            await db.execute(sql`
+              CREATE TABLE IF NOT EXISTS "categories" (
+                "id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+                "name" text NOT NULL UNIQUE,
+                "description" text,
+                "created_at" timestamp DEFAULT now() NOT NULL,
+                "updated_at" timestamp DEFAULT now() NOT NULL
+              );
+            `);
+            const res = await db.select({ count: sql<number>`COUNT(*)` }).from(categories);
+            return res;
+          } catch {
+            return [{ count: 0 }];
+          }
+        }),
+      db
+        .select({ avg: sql<number>`COALESCE(AVG(${orders.price}), 0)` })
+        .from(orders)
+        .where(sql`${orders.status} IN ('aktif', 'expired', 'menunggu_aktivasi')`)
+        .catch(() => [{ avg: 0 }]),
+      db
+        .select({
+          id: orders.id,
+          status: orders.status,
+          price: orders.price,
+          parentOrderId: orders.parentOrderId,
+          createdAt: orders.createdAt,
+          productName: products.name,
+          customerName: users.name,
+          customerEmail: users.email,
+        })
+        .from(orders)
+        .innerJoin(products, eq(orders.productId, products.id))
+        .innerJoin(users, eq(orders.userId, users.id))
+        .orderBy(desc(orders.createdAt))
+        .limit(5)
+        .catch(() => [])
+    ]);
 
-  return {
-    success: true,
-    error: null,
-    stats: {
-      totalRevenue: revenueRes[0]?.total || 0,
-      totalCustomers: usersRes[0]?.count || 0,
-      pendingActivations: pendingRes[0]?.count || 0,
-      totalOrders: totalOrdersRes[0]?.count || 0,
-      activeOrders: activeOrdersRes[0]?.count || 0,
-      unpaidOrders: unpaidOrdersRes[0]?.count || 0,
-      expiredOrders: expiredOrdersRes[0]?.count || 0,
-      totalProducts: totalProductsRes[0]?.count || 0,
-      totalCategories: totalCategoriesRes[0]?.count || 0,
-      avgOrderValue: Math.round(aovRes[0]?.avg || 0),
-      recentOrders,
-    },
-    recentOrders,
-  };
+    return {
+      success: true,
+      error: null,
+      stats: {
+        totalRevenue: Number(revenueRes[0]?.total || 0),
+        totalCustomers: Number(usersRes[0]?.count || 0),
+        pendingActivations: Number(pendingRes[0]?.count || 0),
+        totalOrders: Number(totalOrdersRes[0]?.count || 0),
+        activeOrders: Number(activeOrdersRes[0]?.count || 0),
+        unpaidOrders: Number(unpaidOrdersRes[0]?.count || 0),
+        expiredOrders: Number(expiredOrdersRes[0]?.count || 0),
+        totalProducts: Number(totalProductsRes[0]?.count || 0),
+        totalCategories: Number(totalCategoriesRes[0]?.count || 0),
+        avgOrderValue: Math.round(Number(aovRes[0]?.avg || 0)),
+        recentOrders: recentOrders || [],
+      },
+      recentOrders: recentOrders || [],
+    };
+  } catch (err: any) {
+    console.error('getAdminStatsServer error:', err);
+    return {
+      success: false,
+      error: err?.message || 'Gagal memuat statistik database',
+      stats: null,
+      recentOrders: [],
+    };
+  }
 }
 
 export async function getAdminProductsServer() {

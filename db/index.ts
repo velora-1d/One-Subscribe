@@ -12,7 +12,12 @@ if (!connectionString) {
   throw new Error('DATABASE_URL is not set in the environment variables.');
 }
 
-// Disable prefetch for safe connection pooling (especially with services like Supabase/Neon)
-export const client = postgres(connectionString, { prepare: false });
+// Disable prefetch for safe connection pooling (especially with services like Supabase/Neon/Self-hosted)
+export const client = postgres(connectionString, {
+  prepare: false,
+  max: 10,
+  idle_timeout: 20,
+  connect_timeout: 10,
+});
 
 export const db = drizzle(client, { schema });
