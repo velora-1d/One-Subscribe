@@ -10,3 +10,4 @@ Design projek
 .env.development
 .env.production
 .DS_Store
+pnpm-workspace.yaml
