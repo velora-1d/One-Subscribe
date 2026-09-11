@@ -1,6 +1,7 @@
+import crypto from 'crypto'
 import { createFileRoute } from '@tanstack/react-router'
 import { db } from '../../db'
-import { orders } from '../../db/schema'
+import { orders, systemSettings } from '../../db/schema'
 import { eq } from 'drizzle-orm'
 import { triggerPaymentSuccessNotification } from '../utils/notifications.server'
 import { deductProductStock } from '../utils/order.functions'
@@ -14,6 +15,25 @@ export const Route = createFileRoute('/api/webhooks/midtrans')({
       POST: async ({ request }) => {
         try {
           const payload: any = await request.json()
+          
+          // Midtrans Signature Validation: SHA512(order_id + status_code + gross_amount + ServerKey)
+          const serverKey = process.env.MIDTRANS_SERVER_KEY
+          if (serverKey && payload.signature_key) {
+            const expectedSig = crypto
+              .createHash('sha512')
+              .update(`${payload.order_id || ''}${payload.status_code || ''}${payload.gross_amount || ''}${serverKey}`)
+              .digest('hex')
+
+            const sigBuf = Buffer.from(String(payload.signature_key))
+            const expBuf = Buffer.from(expectedSig)
+
+            if (sigBuf.length !== expBuf.length || !crypto.timingSafeEqual(sigBuf, expBuf)) {
+              return new Response(JSON.stringify({ error: 'Signature verification failed' }), {
+                status: 401,
+                headers: { 'Content-Type': 'application/json' },
+              })
+            }
+          }
           
           const orderId = payload.order_id || payload.orderId || payload.reference
           const transactionStatus = payload.transaction_status || payload.status

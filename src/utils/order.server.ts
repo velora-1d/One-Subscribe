@@ -125,8 +125,12 @@ export async function createOrderServer(data: any, user: any, origin: string) {
 
   if (paymentMethod === 'verapay') {
     try {
-      const verapayApiUrl = process.env.VERAPAY_API_URL || 'https://api.verapay.dimzzy.my.id';
-      const verapayApiKey = process.env.VERAPAY_API_KEY || 'verapay_live_vlr_subs_1041a1fdbe424909931571b6a7f60d1b';
+      const verapayApiUrl = settingsRecord['verapay_api_url'] || process.env.VERAPAY_API_URL || 'https://api.verapay.dimzzy.my.id';
+      const verapayApiKey = settingsRecord['verapay_api_key'] || process.env.VERAPAY_API_KEY;
+
+      if (!verapayApiKey) {
+        throw new Error('API Key VeraPay belum dikonfigurasi di sistem atau environment variable.');
+      }
 
       const response = await fetch(`${verapayApiUrl}/api/v1/pay`, {
         method: 'POST',
@@ -268,6 +272,10 @@ export async function getOrderByIdServer(id: string) {
 }
 
 export async function simulatePaymentSuccessServer(orderId: string) {
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('Operasi simulasi ditolak di lingkungan production.');
+  }
+
   const [order] = await db
     .select()
     .from(orders)

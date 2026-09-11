@@ -75,11 +75,11 @@ export async function testConnectionFromServer(data: any, origin: string) {
   });
 
   if (data.service === 'verapay') {
-    const apiUrl = process.env.VERAPAY_API_URL || 'https://api.verapay.dimzzy.my.id';
-    const apiKey = process.env.VERAPAY_API_KEY || 'verapay_live_vlr_subs_1041a1fdbe424909931571b6a7f60d1b';
+    const apiUrl = settingsRecord['verapay_api_url'] || process.env.VERAPAY_API_URL || 'https://api.verapay.dimzzy.my.id';
+    const apiKey = settingsRecord['verapay_api_key'] || process.env.VERAPAY_API_KEY;
 
     if (!apiKey) {
-      return { success: false, message: 'Koneksi Gagal: API Key VeraPay tidak ditemukan di file .env' };
+      return { success: false, message: 'Koneksi Gagal: API Key VeraPay belum dikonfigurasi di Pengaturan Sistem atau file .env' };
     }
 
     try {

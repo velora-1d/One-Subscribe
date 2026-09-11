@@ -86,6 +86,17 @@ export const getOrderById = createServerFn({ method: 'GET' })
 export const simulatePaymentSuccess = createServerFn({ method: 'POST' })
   .validator((data: unknown) => z.string().parse(data))
   .handler(async ({ data: orderId }) => {
+    // Strict production defense: never allow payment simulation in production
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('Akses ditolak: Simulasi pembayaran dinonaktifkan di environment produksi.');
+    }
+
+    const { getSessionUser } = await import('./auth.server');
+    const user = getSessionUser();
+    if (!user || user.role !== 'admin') {
+      throw new Error('Akses ditolak: Hanya Administrator di mode development yang dapat menjalankan simulasi ini.');
+    }
+
     try {
       const { simulatePaymentSuccessServer } = await import('./order.server');
       return await simulatePaymentSuccessServer(orderId);

@@ -257,49 +257,60 @@ function PaymentIframePage() {
         Jendela pembayaran terhubung secara aman. Halaman ini akan otomatis dialihkan setelah pembayaran terkonfirmasi.
       </div>
 
-      {/* Collapsible developer simulation panel - Sharp */}
-      <div className="border border-amber-200 bg-amber-50/50 p-3 space-y-2 text-xs">
-        <button
-          type="button"
-          onClick={() => setShowDevPanel(!showDevPanel)}
-          className="flex items-center justify-between w-full text-xs font-bold text-amber-800 bg-transparent border-0 cursor-pointer outline-none"
-        >
-          <span className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-[14px]">bug_report</span>
-            Simulasi Pembayaran (Developer Mode)
-          </span>
-          <span className="material-symbols-outlined text-[14px]">
-            {showDevPanel ? 'expand_less' : 'expand_more'}
-          </span>
-        </button>
-
-        {showDevPanel && (
-          <div className="space-y-2 pt-2 border-t border-amber-200/60">
-            <p className="text-[10px] text-amber-700 leading-relaxed m-0">
-              Gunakan simulasi ini jika ingin menandai pesanan lunas secara langsung (untuk testing dev).
-            </p>
-
-            {statusMsg && (
-              <div className={`p-2.5 border text-xs font-semibold flex items-center gap-2 ${
-                statusType === 'success' ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-red-50 border-red-200 text-red-700'
-              }`}>
-                <span className="material-symbols-outlined text-[14px]">
-                  {statusType === 'success' ? 'check_circle' : 'error'}
-                </span>
-                {statusMsg}
-              </div>
-            )}
-
-            <button
-              onClick={handleSimulatePayment}
-              disabled={isProcessing || order.status !== 'menunggu_pembayaran'}
-              className="bg-amber-600 hover:bg-amber-700 px-4 py-2 text-xs font-bold text-white shadow-xs transition disabled:opacity-50 cursor-pointer border-0"
-            >
-              {isProcessing ? 'Memproses...' : 'Simulasikan Sukses Instan'}
-            </button>
-          </div>
-        )}
+      {/* Aesthetic Live Verification Status Banner */}
+      <div className="flex items-center justify-center gap-2.5 p-3 rounded-2xl bg-blue-50/80 border border-blue-100 text-blue-800 text-xs font-medium shadow-2xs">
+        <span className="relative flex h-2.5 w-2.5">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+          <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-blue-600"></span>
+        </span>
+        <span>Mengecek status pembayaran otomatis secara real-time...</span>
       </div>
+
+      {/* Collapsible developer simulation panel - only visible in local development */}
+      {import.meta.env.DEV && (
+        <div className="border border-amber-200 bg-amber-50/70 rounded-2xl p-4 space-y-2 text-xs">
+          <button
+            type="button"
+            onClick={() => setShowDevPanel(!showDevPanel)}
+            className="flex items-center justify-between w-full text-xs font-bold text-amber-800 bg-transparent border-0 cursor-pointer outline-none"
+          >
+            <span className="flex items-center gap-2">
+              <span className="material-symbols-outlined text-[15px]">bug_report</span>
+              Simulasi Pembayaran (Dev Mode Only)
+            </span>
+            <span className="material-symbols-outlined text-[15px]">
+              {showDevPanel ? 'expand_less' : 'expand_more'}
+            </span>
+          </button>
+
+          {showDevPanel && (
+            <div className="space-y-2.5 pt-2.5 border-t border-amber-200/60">
+              <p className="text-[11px] text-amber-700 leading-relaxed m-0">
+                Gunakan simulasi ini untuk menandai pesanan lunas saat pengujian lokal.
+              </p>
+
+              {statusMsg && (
+                <div className={`p-2.5 rounded-xl border text-xs font-semibold flex items-center gap-2 ${
+                  statusType === 'success' ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-red-50 border-red-200 text-red-700'
+                }`}>
+                  <span className="material-symbols-outlined text-[14px]">
+                    {statusType === 'success' ? 'check_circle' : 'error'}
+                  </span>
+                  {statusMsg}
+                </div>
+              )}
+
+              <button
+                onClick={handleSimulatePayment}
+                disabled={isProcessing || order.status !== 'menunggu_pembayaran'}
+                className="bg-amber-600 hover:bg-amber-700 px-4 py-2 rounded-xl text-xs font-bold text-white shadow-xs transition disabled:opacity-50 cursor-pointer border-0"
+              >
+                {isProcessing ? 'Memproses...' : 'Simulasikan Sukses Instan'}
+              </button>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Custom Aesthetic Confirmation Modal */}
       {showCancelModal && typeof document !== 'undefined' && createPortal(

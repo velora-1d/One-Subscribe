@@ -75,7 +75,10 @@ export function verifyToken(token: string): UserSession | null {
 
     const expectedEncodedSignature = base64UrlEncode(expectedSignature);
 
-    if (encodedSignature !== expectedEncodedSignature) {
+    const sigBuffer = Buffer.from(encodedSignature);
+    const expectedSigBuffer = Buffer.from(expectedEncodedSignature);
+
+    if (sigBuffer.length !== expectedSigBuffer.length || !crypto.timingSafeEqual(sigBuffer, expectedSigBuffer)) {
       return null;
     }
 
@@ -298,11 +301,33 @@ export async function verifyAdminPinServer(pin: string, user: UserSession) {
     .where(eq(users.id, user.userId))
     .limit(1);
 
-  if (!dbUser) {
-    return { success: false, error: 'User tidak ditemukan.' };
+  if (!dbUser || !dbUser.pin) {
+    return { success: false, error: 'PIN Admin belum diatur atau user tidak ditemukan.' };
   }
 
-  if (dbUser.pin === pin) {
+  // Check if PIN is stored as a bcrypt hash
+  const isBcrypt = dbUser.pin.startsWith('$2a$') || dbUser.pin.startsWith('$2b$');
+  let isValid = false;
+
+  if (isBcrypt) {
+    isValid = await bcrypt.compare(pin, dbUser.pin);
+  } else {
+    // Legacy plaintext: compare using timing-safe buffer comparison
+    const pinBuf = Buffer.from(pin);
+    const storedBuf = Buffer.from(dbUser.pin);
+    if (pinBuf.length === storedBuf.length && crypto.timingSafeEqual(pinBuf, storedBuf)) {
+      isValid = true;
+      // Automatically migrate to bcrypt hash
+      try {
+        const hashedPin = await bcrypt.hash(pin, 10);
+        await db.update(users).set({ pin: hashedPin, updatedAt: new Date() }).where(eq(users.id, user.userId));
+      } catch (err) {
+        console.error('Failed to auto-hash admin pin:', err);
+      }
+    }
+  }
+
+  if (isValid) {
     return { success: true, error: null };
   }
 

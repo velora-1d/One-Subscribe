@@ -81,9 +81,9 @@ function ProductDetailPage() {
 
   return (
     <main className="page-wrap px-4 pb-20 pt-8 relative overflow-hidden">
-      {/* Decorative Floating Lights */}
-      <div className="pointer-events-none absolute left-1/4 top-10 h-72 w-72 rounded-full bg-[radial-gradient(circle,rgba(79,184,178,0.08),transparent_70%)] blur-2xl" />
-      <div className="pointer-events-none absolute right-1/4 bottom-10 h-96 w-96 rounded-full bg-[radial-gradient(circle,rgba(99,102,241,0.06),transparent_70%)] blur-3xl" />
+      {/* Decorative Floating Lights - Modern Blue Tone */}
+      <div className="pointer-events-none absolute left-1/4 top-10 h-72 w-72 rounded-full bg-[radial-gradient(circle,rgba(56,189,248,0.08),transparent_70%)] blur-2xl" />
+      <div className="pointer-events-none absolute right-1/4 bottom-10 h-96 w-96 rounded-full bg-[radial-gradient(circle,rgba(37,99,235,0.08),transparent_70%)] blur-3xl" />
 
       {/* Back button with micro-animation */}
       <div className="mb-6 relative z-10">
@@ -289,10 +289,10 @@ function ProductDetailPage() {
                 <button
                   disabled={product.stock <= 0}
                   onClick={handleOrder}
-                  className={`group inline-flex items-center justify-center gap-2 rounded-none px-8 py-4 text-xs font-black transition-all duration-300 w-full sm:w-auto border ${
+                  className={`group inline-flex items-center justify-center gap-2 rounded-xl px-8 py-3.5 text-xs font-bold transition-all duration-300 w-full sm:w-auto border ${
                     product.stock <= 0
                       ? 'bg-slate-200 text-slate-400 border-slate-200 cursor-not-allowed pointer-events-none'
-                      : 'bg-slate-950 hover:bg-slate-900 text-white shadow-md hover:shadow-lg hover:-translate-y-0.5 cursor-pointer border-slate-950'
+                      : 'bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-500/25 hover:-translate-y-0.5 cursor-pointer border-blue-600'
                   }`}
                 >
                   {product.stock <= 0 ? 'Stok Habis' : 'Order Sekarang'}
@@ -305,6 +305,29 @@ function ProductDetailPage() {
         </div>
 
       </div>
+
+      {/* Mobile Sticky Thumb-Zone Action Bar */}
+      {(!from || from !== 'admin') && (
+        <div className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-lg border-t border-slate-200/80 px-4 py-3 flex items-center justify-between shadow-lg">
+          <div>
+            <span className="text-[9px] uppercase tracking-wider font-extrabold text-slate-400 block">Total Biaya</span>
+            <span className="text-sm font-black text-slate-900 leading-tight">
+              {formatIDR(product.promo ? product.promo.priceAfterPromo : product.price)}
+            </span>
+          </div>
+          <button
+            disabled={product.stock <= 0}
+            onClick={handleOrder}
+            className={`px-5 py-2.5 rounded-xl text-xs font-bold text-white transition-all shadow-sm ${
+              product.stock <= 0
+                ? 'bg-slate-300 cursor-not-allowed'
+                : 'bg-blue-600 hover:bg-blue-700 active:scale-95 cursor-pointer shadow-blue-500/20'
+            }`}
+          >
+            {product.stock <= 0 ? 'Stok Habis' : 'Order Sekarang'}
+          </button>
+        </div>
+      )}
     </main>
   )
 }

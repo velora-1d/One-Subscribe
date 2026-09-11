@@ -17,14 +17,19 @@ async function sendEmail({
   const emailProvider = settingsRecord['email_provider'] || process.env.EMAIL_PROVIDER || 'resend'
 
   if (emailProvider.toLowerCase() === 'smtp') {
-    const host = settingsRecord['smtp_host'] || process.env.SMTP_HOST || 'smtp.sumopod.com'
+    const host = settingsRecord['smtp_host'] || process.env.SMTP_HOST
     const portStr = settingsRecord['smtp_port'] || process.env.SMTP_PORT || '465'
     const port = parseInt(portStr.toString(), 10) || 465
     const secureVal = settingsRecord['smtp_secure'] || process.env.SMTP_SECURE || 'true'
     const secure = secureVal === 'true' || secureVal === 'True'
-    const user = settingsRecord['smtp_user'] || process.env.SMTP_USER || 'cmrwb114r5zlfr208z53dy1vi'
-    const pass = settingsRecord['smtp_pass'] || process.env.SMTP_PASS || 'ZLXzytPQcNQhTUEI8mze5Dhm1GxxupSd'
+    const user = settingsRecord['smtp_user'] || process.env.SMTP_USER
+    const pass = settingsRecord['smtp_pass'] || process.env.SMTP_PASS
     const fromEmail = settingsRecord['sender_email'] || process.env.SENDER_EMAIL || 'OneSubscribe <noreply@onesubscribe.com>'
+
+    if (!host || !user || !pass) {
+      console.warn('[NOTIFICATION EMAIL SMTP] Kredensial SMTP belum lengkap di konfigurasi.');
+      return;
+    }
 
     try {
       const transporter = nodemailer.createTransport({

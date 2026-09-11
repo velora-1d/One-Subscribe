@@ -41,7 +41,7 @@ export default function Header() {
             <Link
               to="/"
               className="px-4 py-1.5 rounded-lg text-xs font-semibold text-slate-500 hover:text-slate-800 transition no-underline"
-              activeProps={{ className: 'bg-white text-slate-900 shadow-sm border border-slate-200/40 font-bold' }}
+              activeProps={{ className: 'bg-white text-blue-600 shadow-xs border border-slate-200/60 font-bold' }}
             >
               Katalog
             </Link>
@@ -49,7 +49,7 @@ export default function Header() {
               <Link
                 to="/dashboard"
                 className="px-4 py-1.5 rounded-lg text-xs font-semibold text-slate-500 hover:text-slate-800 transition no-underline"
-                activeProps={{ className: 'bg-white text-slate-900 shadow-sm border border-slate-200/40 font-bold' }}
+                activeProps={{ className: 'bg-white text-blue-600 shadow-xs border border-slate-200/60 font-bold' }}
               >
                 Dashboard
               </Link>
@@ -76,13 +76,13 @@ export default function Header() {
               <div className="flex items-center gap-2">
                 <Link
                   to="/login"
-                  className="px-3 py-2 text-xs rounded-full border border-[var(--chip-line)] text-[var(--sea-ink)] hover:bg-[var(--link-bg-hover)] transition"
+                  className="px-3.5 py-2 text-xs rounded-full border border-[var(--chip-line)] text-[var(--sea-ink)] hover:bg-[var(--link-bg-hover)] transition no-underline"
                 >
                   Masuk
                 </Link>
                 <Link
                   to="/register"
-                  className="bg-[var(--lagoon-deep)] px-4 py-2 text-xs text-white font-bold rounded-full shadow-sm hover:opacity-90 transition"
+                  className="bg-blue-600 hover:bg-blue-700 active:scale-95 px-4 py-2 text-xs text-white font-bold rounded-full shadow-xs shadow-blue-500/20 transition-all no-underline"
                 >
                   Daftar
                 </Link>

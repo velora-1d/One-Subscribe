@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useState } from 'react'
 import { getActiveProducts } from '../utils/product.functions'
-import { MagnifyingGlass, SmileySad, Sparkle, ArrowRight } from '@phosphor-icons/react'
+import { MagnifyingGlass, SmileySad, Sparkle, ArrowRight, CheckCircle } from '@phosphor-icons/react'
 
 export const Route = createFileRoute('/')({
   loader: async () => {
@@ -52,13 +52,13 @@ function CatalogPage() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center relative z-10">
           {/* Left Column: Left-Aligned Text */}
           <div className="lg:col-span-7 text-left">
-            <div className="inline-flex items-center gap-1.5 rounded-full bg-orange-500/10 px-3 py-1 text-[10px] font-bold text-[var(--lagoon)] mb-3">
-              <Sparkle size={12} weight="fill" />
+            <div className="inline-flex items-center gap-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 px-3.5 py-1 text-[11px] font-bold text-blue-600 mb-3 shadow-2xs">
+              <Sparkle size={13} weight="fill" />
               <span>Premium Subscription Hub</span>
             </div>
             <h1 className="display-title mb-4 text-2xl sm:text-4xl font-extrabold tracking-tight text-[var(--sea-ink)] leading-tight">
               Akses Layanan Premium <br />
-              <span className="text-[var(--lagoon)]">Tanpa Kartu Kredit.</span>
+              <span className="text-blue-600">Tanpa Kartu Kredit.</span>
             </h1>
             <p className="mb-6 text-xs sm:text-sm text-[var(--sea-ink-soft)] max-w-lg leading-relaxed">
               Dapatkan akses cepat ke berbagai tools AI, akun streaming, design, server/VPS, dan lisensi premium lainnya. 
@@ -66,26 +66,47 @@ function CatalogPage() {
             </p>
           </div>
 
-          {/* Right Column: Asymmetric Liquid Glass Floating Preview */}
+          {/* Right Column: High-Fidelity Glass Floating Preview Cards */}
           <div className="hidden lg:flex lg:col-span-5 relative justify-center">
-            <div className="relative w-full h-[180px] flex items-center justify-center">
-              {/* Card 1 */}
+            <div className="relative w-full h-[200px] flex items-center justify-center">
+              {/* Card 1 - AI Assistant Pro */}
               <div 
-                className="absolute top-0 left-12 w-32 rounded-xl border border-white/10 bg-white/5 p-3 shadow-[0_16px_32px_rgba(0,0,0,0.25)] backdrop-blur-md animate-float"
-                style={{ '--rotation': '-6deg' } as React.CSSProperties}
+                className="absolute -top-2 left-6 w-44 rounded-2xl border border-white/80 bg-white/85 p-3.5 shadow-[0_20px_40px_-15px_rgba(37,99,235,0.18)] backdrop-blur-xl animate-float transition-all hover:scale-105 cursor-pointer"
+                style={{ '--rotation': '-5deg' } as React.CSSProperties}
               >
-                <div className="h-1.5 w-8 rounded-full bg-[var(--lagoon)] mb-2" />
-                <div className="h-2 w-16 rounded bg-white/20 mb-3" />
-                <div className="h-4 w-full rounded bg-white/10" />
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-1.5">
+                    <div className="h-6 w-6 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-600">
+                      <Sparkle size={13} weight="fill" />
+                    </div>
+                    <span className="text-[11px] font-bold text-slate-800">AI Assistant Pro</span>
+                  </div>
+                  <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                </div>
+                <div className="flex items-center justify-between text-[10px] text-slate-500 mt-2 pt-2 border-t border-slate-100">
+                  <span>Status: Aktif</span>
+                  <span className="font-bold text-emerald-600">1 Bulan</span>
+                </div>
               </div>
-              {/* Card 2 */}
+
+              {/* Card 2 - Streaming 4K UHD */}
               <div 
-                className="absolute bottom-0 right-12 w-36 rounded-xl border border-white/15 bg-white/10 p-3 shadow-[0_20px_40px_rgba(0,0,0,0.3)] backdrop-blur-lg animate-float z-10"
-                style={{ '--rotation': '4deg', animationDelay: '1.5s' } as React.CSSProperties}
+                className="absolute bottom-1 right-6 w-48 rounded-2xl border border-white/80 bg-white/90 p-3.5 shadow-[0_24px_48px_-12px_rgba(15,23,42,0.14)] backdrop-blur-xl animate-float z-10 transition-all hover:scale-105 cursor-pointer"
+                style={{ '--rotation': '4deg', animationDelay: '1.8s' } as React.CSSProperties}
               >
-                <div className="h-1.5 w-6 rounded-full bg-[var(--palm)] mb-2" />
-                <div className="h-2 w-20 rounded bg-white/25 mb-3" />
-                <div className="h-4 w-10 rounded bg-white/15" />
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-1.5">
+                    <div className="h-6 w-6 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-600">
+                      <CheckCircle size={13} weight="fill" />
+                    </div>
+                    <span className="text-[11px] font-bold text-slate-800">Streaming 4K UHD</span>
+                  </div>
+                  <span className="text-[9px] font-extrabold bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded-full border border-blue-200/50">Ready</span>
+                </div>
+                <div className="flex items-center justify-between text-[10px] text-slate-500 mt-2 pt-2 border-t border-slate-100">
+                  <span className="font-mono font-bold text-slate-900">Rp 35.000</span>
+                  <span className="text-slate-400">Instan Delivery</span>
+                </div>
               </div>
             </div>
           </div>
@@ -102,8 +123,8 @@ function CatalogPage() {
               onClick={() => setSelectedCategory(cat)}
               className={`rounded-full px-5 py-2 text-xs font-bold transition whitespace-nowrap cursor-pointer ${
                 selectedCategory === cat
-                  ? 'bg-[var(--lagoon-deep)] text-white shadow-sm font-extrabold'
-                  : 'bg-[var(--chip-bg)] border border-[var(--chip-line)] text-[var(--sea-ink-soft)] hover:bg-[var(--link-bg-hover)]'
+                  ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20 font-extrabold'
+                  : 'bg-[var(--chip-bg)] border border-[var(--chip-line)] text-[var(--sea-ink-soft)] hover:bg-[var(--link-bg-hover)] hover:text-slate-900'
               }`}
             >
               {cat}
@@ -118,7 +139,7 @@ function CatalogPage() {
             placeholder="Cari layanan premium..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full rounded-full border border-[var(--line)] bg-[var(--header-bg)] pl-10 pr-4 py-2.5 text-xs text-[var(--sea-ink)] shadow-sm outline-none focus:border-[var(--lagoon)] transition"
+            className="w-full rounded-full border border-[var(--line)] bg-[var(--header-bg)] pl-10 pr-4 py-2.5 text-xs text-[var(--sea-ink)] shadow-2xs outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition"
           />
           <MagnifyingGlass
             size={16}
@@ -170,7 +191,7 @@ function CatalogPage() {
                   </div>
                 </div>
 
-                <h3 className="text-xs font-bold text-[var(--sea-ink)] mb-1 line-clamp-1 group-hover:text-[var(--lagoon)] transition" title={product.name}>
+                <h3 className="text-xs font-bold text-[var(--sea-ink)] mb-1 line-clamp-1 group-hover:text-blue-600 transition" title={product.name}>
                   {product.name}
                 </h3>
                 <div className="flex items-center gap-1.5 mb-2">
@@ -214,7 +235,7 @@ function CatalogPage() {
                   )}
                 </div>
                 <div
-                  className="inline-flex items-center gap-1 rounded-lg bg-slate-900 px-3 py-1.5 text-[10px] font-extrabold text-white shadow-sm group-hover:scale-95 transition-all"
+                  className="inline-flex items-center gap-1 rounded-lg bg-slate-900 group-hover:bg-blue-600 px-3 py-1.5 text-[10px] font-extrabold text-white shadow-xs transition-colors duration-200"
                 >
                   <span>Detail</span>
                   <ArrowRight size={10} weight="bold" />

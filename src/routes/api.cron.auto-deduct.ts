@@ -1,3 +1,4 @@
+import crypto from 'crypto'
 import { createFileRoute } from '@tanstack/react-router'
 import { db } from '../../db'
 import { orders, credentials, users, products } from '../../db/schema'
@@ -15,9 +16,21 @@ export const Route = createFileRoute('/api/cron/auto-deduct')({
       POST: async ({ request }) => {
         try {
           // Verify authorization token
-          const authHeader = request.headers.get('Authorization')
-          const cronSecret = process.env.CRON_SECRET || 'local-cron-secret'
-          if (authHeader !== `Bearer ${cronSecret}`) {
+          const authHeader = request.headers.get('Authorization') || ''
+          const cronSecret = process.env.CRON_SECRET
+
+          if (!cronSecret) {
+            return new Response(JSON.stringify({ error: 'CRON_SECRET belum dikonfigurasi di server.' }), {
+              status: 500,
+              headers: { 'Content-Type': 'application/json' },
+            })
+          }
+
+          const expectedAuth = `Bearer ${cronSecret}`
+          const authBuf = Buffer.from(authHeader)
+          const expectedBuf = Buffer.from(expectedAuth)
+
+          if (authBuf.length !== expectedBuf.length || !crypto.timingSafeEqual(authBuf, expectedBuf)) {
             return new Response(JSON.stringify({ error: 'Akses ditolak. Token otorisasi tidak valid.' }), {
               status: 401,
               headers: { 'Content-Type': 'application/json' },
