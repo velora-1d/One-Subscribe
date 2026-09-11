@@ -49,8 +49,8 @@ function AdminLayout() {
             <Link
               to="/admin/dashboard"
               className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 no-underline group hover:scale-[1.02]"
-              activeProps={{ className: 'bg-slate-900 text-white font-bold shadow-md hover:bg-slate-800' }}
-              inactiveProps={{ className: 'text-slate-600 hover:bg-slate-50' }}
+              activeProps={{ className: 'bg-gradient-to-r from-blue-600 to-blue-700 text-white font-bold shadow-md shadow-blue-500/25' }}
+              inactiveProps={{ className: 'text-slate-600 hover:bg-blue-50/70 hover:text-blue-700 font-medium' }}
             >
               {({ isActive }) => (
                 <>
@@ -68,8 +68,8 @@ function AdminLayout() {
             <Link
               to="/admin/products"
               className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 no-underline group hover:scale-[1.02]"
-              activeProps={{ className: 'bg-slate-900 text-white font-bold shadow-md hover:bg-slate-800' }}
-              inactiveProps={{ className: 'text-slate-600 hover:bg-slate-50' }}
+              activeProps={{ className: 'bg-gradient-to-r from-blue-600 to-blue-700 text-white font-bold shadow-md shadow-blue-500/25' }}
+              inactiveProps={{ className: 'text-slate-600 hover:bg-blue-50/70 hover:text-blue-700 font-medium' }}
             >
               {({ isActive }) => (
                 <>
@@ -87,8 +87,8 @@ function AdminLayout() {
             <Link
               to="/admin/categories"
               className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 no-underline group hover:scale-[1.02]"
-              activeProps={{ className: 'bg-slate-900 text-white font-bold shadow-md hover:bg-slate-800' }}
-              inactiveProps={{ className: 'text-slate-600 hover:bg-slate-50' }}
+              activeProps={{ className: 'bg-gradient-to-r from-blue-600 to-blue-700 text-white font-bold shadow-md shadow-blue-500/25' }}
+              inactiveProps={{ className: 'text-slate-600 hover:bg-blue-50/70 hover:text-blue-700 font-medium' }}
             >
               {({ isActive }) => (
                 <>
@@ -106,8 +106,8 @@ function AdminLayout() {
             <Link
               to="/admin/orders"
               className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 no-underline group hover:scale-[1.02]"
-              activeProps={{ className: 'bg-slate-900 text-white font-bold shadow-md hover:bg-slate-800' }}
-              inactiveProps={{ className: 'text-slate-600 hover:bg-slate-50' }}
+              activeProps={{ className: 'bg-gradient-to-r from-blue-600 to-blue-700 text-white font-bold shadow-md shadow-blue-500/25' }}
+              inactiveProps={{ className: 'text-slate-600 hover:bg-blue-50/70 hover:text-blue-700 font-medium' }}
             >
               {({ isActive }) => (
                 <>
@@ -125,8 +125,8 @@ function AdminLayout() {
             <Link
               to="/admin/reports"
               className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 no-underline group hover:scale-[1.02]"
-              activeProps={{ className: 'bg-slate-900 text-white font-bold shadow-md hover:bg-slate-800' }}
-              inactiveProps={{ className: 'text-slate-600 hover:bg-slate-50' }}
+              activeProps={{ className: 'bg-gradient-to-r from-blue-600 to-blue-700 text-white font-bold shadow-md shadow-blue-500/25' }}
+              inactiveProps={{ className: 'text-slate-600 hover:bg-blue-50/70 hover:text-blue-700 font-medium' }}
             >
               {({ isActive }) => (
                 <>
@@ -144,8 +144,8 @@ function AdminLayout() {
             <Link
               to="/admin/users"
               className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 no-underline group hover:scale-[1.02]"
-              activeProps={{ className: 'bg-slate-900 text-white font-bold shadow-md hover:bg-slate-800' }}
-              inactiveProps={{ className: 'text-slate-600 hover:bg-slate-50' }}
+              activeProps={{ className: 'bg-gradient-to-r from-blue-600 to-blue-700 text-white font-bold shadow-md shadow-blue-500/25' }}
+              inactiveProps={{ className: 'text-slate-600 hover:bg-blue-50/70 hover:text-blue-700 font-medium' }}
             >
               {({ isActive }) => (
                 <>
@@ -163,8 +163,8 @@ function AdminLayout() {
             <Link
               to="/admin/promos"
               className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 no-underline group hover:scale-[1.02]"
-              activeProps={{ className: 'bg-slate-900 text-white font-bold shadow-md hover:bg-slate-800' }}
-              inactiveProps={{ className: 'text-slate-600 hover:bg-slate-50' }}
+              activeProps={{ className: 'bg-gradient-to-r from-blue-600 to-blue-700 text-white font-bold shadow-md shadow-blue-500/25' }}
+              inactiveProps={{ className: 'text-slate-600 hover:bg-blue-50/70 hover:text-blue-700 font-medium' }}
             >
               {({ isActive }) => (
                 <>
@@ -182,8 +182,8 @@ function AdminLayout() {
             <Link
               to="/admin/templates"
               className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 no-underline group hover:scale-[1.02]"
-              activeProps={{ className: 'bg-slate-900 text-white font-bold shadow-md hover:bg-slate-800' }}
-              inactiveProps={{ className: 'text-slate-600 hover:bg-slate-50' }}
+              activeProps={{ className: 'bg-gradient-to-r from-blue-600 to-blue-700 text-white font-bold shadow-md shadow-blue-500/25' }}
+              inactiveProps={{ className: 'text-slate-600 hover:bg-blue-50/70 hover:text-blue-700 font-medium' }}
             >
               {({ isActive }) => (
                 <>
@@ -201,8 +201,8 @@ function AdminLayout() {
             <Link
               to="/admin/settings"
               className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 no-underline group hover:scale-[1.02]"
-              activeProps={{ className: 'bg-slate-900 text-white font-bold shadow-md hover:bg-slate-800' }}
-              inactiveProps={{ className: 'text-slate-600 hover:bg-slate-50' }}
+              activeProps={{ className: 'bg-gradient-to-r from-blue-600 to-blue-700 text-white font-bold shadow-md shadow-blue-500/25' }}
+              inactiveProps={{ className: 'text-slate-600 hover:bg-blue-50/70 hover:text-blue-700 font-medium' }}
             >
               {({ isActive }) => (
                 <>
@@ -220,8 +220,8 @@ function AdminLayout() {
             <Link
               to="/admin/profile"
               className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 no-underline group hover:scale-[1.02]"
-              activeProps={{ className: 'bg-slate-900 text-white font-bold shadow-md hover:bg-slate-800' }}
-              inactiveProps={{ className: 'text-slate-600 hover:bg-slate-50' }}
+              activeProps={{ className: 'bg-gradient-to-r from-blue-600 to-blue-700 text-white font-bold shadow-md shadow-blue-500/25' }}
+              inactiveProps={{ className: 'text-slate-600 hover:bg-blue-50/70 hover:text-blue-700 font-medium' }}
             >
               {({ isActive }) => (
                 <>
@@ -292,8 +292,8 @@ function AdminLayout() {
                 to="/admin/dashboard"
                 onClick={() => setMobileMenuOpen(false)}
                 className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 no-underline group"
-                activeProps={{ className: 'bg-slate-900 text-white font-bold shadow-sm' }}
-                inactiveProps={{ className: 'text-slate-600 hover:bg-slate-50' }}
+                activeProps={{ className: 'bg-gradient-to-r from-blue-600 to-blue-700 text-white font-bold shadow-md shadow-blue-500/25' }}
+                inactiveProps={{ className: 'text-slate-600 hover:bg-blue-50/70 hover:text-blue-700 font-medium' }}
               >
                 {({ isActive }) => (
                   <>
@@ -311,8 +311,8 @@ function AdminLayout() {
                 to="/admin/products"
                 onClick={() => setMobileMenuOpen(false)}
                 className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 no-underline group"
-                activeProps={{ className: 'bg-slate-900 text-white font-bold shadow-sm' }}
-                inactiveProps={{ className: 'text-slate-600 hover:bg-slate-50' }}
+                activeProps={{ className: 'bg-gradient-to-r from-blue-600 to-blue-700 text-white font-bold shadow-md shadow-blue-500/25' }}
+                inactiveProps={{ className: 'text-slate-600 hover:bg-blue-50/70 hover:text-blue-700 font-medium' }}
               >
                 {({ isActive }) => (
                   <>
@@ -330,8 +330,8 @@ function AdminLayout() {
                 to="/admin/categories"
                 onClick={() => setMobileMenuOpen(false)}
                 className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 no-underline group"
-                activeProps={{ className: 'bg-slate-900 text-white font-bold shadow-sm' }}
-                inactiveProps={{ className: 'text-slate-600 hover:bg-slate-50' }}
+                activeProps={{ className: 'bg-gradient-to-r from-blue-600 to-blue-700 text-white font-bold shadow-md shadow-blue-500/25' }}
+                inactiveProps={{ className: 'text-slate-600 hover:bg-blue-50/70 hover:text-blue-700 font-medium' }}
               >
                 {({ isActive }) => (
                   <>
@@ -349,8 +349,8 @@ function AdminLayout() {
                 to="/admin/orders"
                 onClick={() => setMobileMenuOpen(false)}
                 className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 no-underline group"
-                activeProps={{ className: 'bg-slate-900 text-white font-bold shadow-sm' }}
-                inactiveProps={{ className: 'text-slate-600 hover:bg-slate-50' }}
+                activeProps={{ className: 'bg-gradient-to-r from-blue-600 to-blue-700 text-white font-bold shadow-md shadow-blue-500/25' }}
+                inactiveProps={{ className: 'text-slate-600 hover:bg-blue-50/70 hover:text-blue-700 font-medium' }}
               >
                 {({ isActive }) => (
                   <>
@@ -368,8 +368,8 @@ function AdminLayout() {
                 to="/admin/reports"
                 onClick={() => setMobileMenuOpen(false)}
                 className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 no-underline group"
-                activeProps={{ className: 'bg-slate-900 text-white font-bold shadow-sm' }}
-                inactiveProps={{ className: 'text-slate-600 hover:bg-slate-50' }}
+                activeProps={{ className: 'bg-gradient-to-r from-blue-600 to-blue-700 text-white font-bold shadow-md shadow-blue-500/25' }}
+                inactiveProps={{ className: 'text-slate-600 hover:bg-blue-50/70 hover:text-blue-700 font-medium' }}
               >
                 {({ isActive }) => (
                   <>
@@ -387,8 +387,8 @@ function AdminLayout() {
                 to="/admin/users"
                 onClick={() => setMobileMenuOpen(false)}
                 className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 no-underline group"
-                activeProps={{ className: 'bg-slate-900 text-white font-bold shadow-sm' }}
-                inactiveProps={{ className: 'text-slate-600 hover:bg-slate-50' }}
+                activeProps={{ className: 'bg-gradient-to-r from-blue-600 to-blue-700 text-white font-bold shadow-md shadow-blue-500/25' }}
+                inactiveProps={{ className: 'text-slate-600 hover:bg-blue-50/70 hover:text-blue-700 font-medium' }}
               >
                 {({ isActive }) => (
                   <>
@@ -407,8 +407,8 @@ function AdminLayout() {
                 to="/admin/templates"
                 onClick={() => setMobileMenuOpen(false)}
                 className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 no-underline group"
-                activeProps={{ className: 'bg-slate-900 text-white font-bold shadow-sm' }}
-                inactiveProps={{ className: 'text-slate-600 hover:bg-slate-50' }}
+                activeProps={{ className: 'bg-gradient-to-r from-blue-600 to-blue-700 text-white font-bold shadow-md shadow-blue-500/25' }}
+                inactiveProps={{ className: 'text-slate-600 hover:bg-blue-50/70 hover:text-blue-700 font-medium' }}
               >
                 {({ isActive }) => (
                   <>
@@ -426,8 +426,8 @@ function AdminLayout() {
                 to="/admin/settings"
                 onClick={() => setMobileMenuOpen(false)}
                 className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 no-underline group"
-                activeProps={{ className: 'bg-slate-900 text-white font-bold shadow-sm' }}
-                inactiveProps={{ className: 'text-slate-600 hover:bg-slate-50' }}
+                activeProps={{ className: 'bg-gradient-to-r from-blue-600 to-blue-700 text-white font-bold shadow-md shadow-blue-500/25' }}
+                inactiveProps={{ className: 'text-slate-600 hover:bg-blue-50/70 hover:text-blue-700 font-medium' }}
               >
                 {({ isActive }) => (
                   <>
@@ -445,8 +445,8 @@ function AdminLayout() {
                 to="/admin/profile"
                 onClick={() => setMobileMenuOpen(false)}
                 className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 no-underline group"
-                activeProps={{ className: 'bg-slate-900 text-white font-bold shadow-sm' }}
-                inactiveProps={{ className: 'text-slate-600 hover:bg-slate-50' }}
+                activeProps={{ className: 'bg-gradient-to-r from-blue-600 to-blue-700 text-white font-bold shadow-md shadow-blue-500/25' }}
+                inactiveProps={{ className: 'text-slate-600 hover:bg-blue-50/70 hover:text-blue-700 font-medium' }}
               >
                 {({ isActive }) => (
                   <>

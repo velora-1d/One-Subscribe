@@ -49,31 +49,38 @@ function AdminDashboardPage() {
     switch (status) {
       case 'menunggu_pembayaran':
         return (
-          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-600 border border-amber-200">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200/70 shadow-2xs">
+            <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
             Unpaid
           </span>
         )
       case 'menunggu_aktivasi':
         return (
-          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-600 border border-blue-200 animate-pulse">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200/70 shadow-2xs">
+            <span className="relative flex h-1.5 w-1.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-blue-600"></span>
+            </span>
             Fulfill Required
           </span>
         )
       case 'aktif':
         return (
-          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-600 border border-emerald-200">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/70 shadow-2xs">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
             Fulfilled
           </span>
         )
       case 'expired':
         return (
-          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-500 border border-slate-200">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-600 border border-slate-200/70">
+            <span className="h-1.5 w-1.5 rounded-full bg-slate-400" />
             Expired
           </span>
         )
       default:
         return (
-          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-600">
+          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-600">
             {status}
           </span>
         )
@@ -82,182 +89,191 @@ function AdminDashboardPage() {
 
   return (
     <div className="flex flex-col gap-8 w-full text-left font-sans">
-      {/* Dashboard Header */}
-      <header className="relative bg-white/80 backdrop-blur-md border border-slate-200/80 rounded-2xl p-6 flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-lg shadow-slate-100/30">
+      {/* Dashboard Header - Glassmorphic Hero */}
+      <header className="relative bg-white/90 backdrop-blur-xl border border-slate-200/80 rounded-2xl p-6 flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-sm overflow-hidden">
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-600 via-sky-500 to-emerald-500" />
+        
         <div className="flex items-center gap-4">
-          <div className="p-3 bg-slate-900 text-white rounded-xl flex items-center justify-center shadow-md shrink-0">
-            <span className="material-symbols-outlined text-[24px]">analytics</span>
+          <div className="p-3 bg-gradient-to-tr from-blue-600 to-blue-700 text-white rounded-2xl flex items-center justify-center shadow-md shadow-blue-500/25 shrink-0">
+            <span className="material-symbols-outlined text-[26px]">analytics</span>
           </div>
           <div>
             <h1 className="text-2xl font-black text-slate-900 tracking-tight font-display">Overview</h1>
-            <p className="text-xs text-slate-500 font-semibold mt-0.5">Welcome back. Here is the latest system data.</p>
+            <p className="text-xs text-slate-500 font-medium mt-0.5">Welcome back, Administrator. Real-time overview of subscriptions & revenue.</p>
           </div>
         </div>
-        <div className="flex gap-2 shrink-0">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 shadow-2xs">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+
+        <div className="flex items-center gap-2.5 shrink-0">
+          <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/60 shadow-2xs">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-600"></span>
+            </span>
             System Live
           </span>
         </div>
       </header>
 
-      {/* Key Metrics Grid (Bento style) */}
-      <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-        {/* 1. Total Revenue */}
-        <div className="bg-white/80 backdrop-blur-md border border-slate-200/80 rounded-2xl p-5 flex flex-col justify-between min-h-[140px] shadow-lg shadow-slate-100/20 transition-all hover:scale-[1.02] hover:-translate-y-0.5 hover:shadow-xl group">
+      {/* Key Metrics Grid - Ultra Aesthetic Bento Cards (No Purple) */}
+      <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5">
+        {/* 1. Total Revenue (Primary Accent Card) */}
+        <div className="bg-gradient-to-b from-white/95 to-emerald-50/20 backdrop-blur-xl border border-emerald-200/80 rounded-2xl p-5 flex flex-col justify-between min-h-[140px] shadow-sm hover:shadow-xl hover:border-emerald-300 hover:-translate-y-1 transition-all duration-300 group cursor-default">
           <div className="flex justify-between items-start">
-            <div className="p-2.5 bg-emerald-500/10 text-emerald-600 rounded-xl flex items-center justify-center shadow-inner transition-transform group-hover:scale-105">
-              <span className="material-symbols-outlined text-[18px] font-bold">payments</span>
+            <div className="p-2.5 bg-emerald-500/10 text-emerald-600 rounded-xl flex items-center justify-center border border-emerald-200/50 group-hover:scale-110 transition-transform">
+              <span className="material-symbols-outlined text-[20px] font-bold">payments</span>
             </div>
-            <span className="text-[9px] font-black bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-full border border-emerald-100">Live</span>
+            <span className="text-[10px] font-extrabold bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full border border-emerald-200/60">Live</span>
           </div>
           <div className="mt-3">
-            <p className="text-[9px] text-slate-400 font-black uppercase tracking-widest leading-none">Total Revenue</p>
-            <h3 className="text-xl font-black text-slate-900 mt-1.5 tracking-tight line-clamp-1">{formatIDR(stats.totalRevenue)}</h3>
+            <p className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider leading-none">Total Revenue</p>
+            <h3 className="text-2xl font-black text-slate-900 mt-1.5 tracking-tight line-clamp-1">{formatIDR(stats.totalRevenue)}</h3>
           </div>
         </div>
 
         {/* 2. Active Customers */}
-        <div className="bg-white/80 backdrop-blur-md border border-slate-200/80 rounded-2xl p-5 flex flex-col justify-between min-h-[140px] shadow-lg shadow-slate-100/20 transition-all hover:scale-[1.02] hover:-translate-y-0.5 hover:shadow-xl group">
+        <div className="bg-white/90 backdrop-blur-xl border border-slate-200/80 rounded-2xl p-5 flex flex-col justify-between min-h-[140px] shadow-sm hover:shadow-xl hover:border-blue-300/70 hover:-translate-y-1 transition-all duration-300 group cursor-default">
           <div className="flex justify-between items-start">
-            <div className="p-2.5 bg-blue-500/10 text-blue-600 rounded-xl flex items-center justify-center shadow-inner transition-transform group-hover:scale-105">
-              <span className="material-symbols-outlined text-[18px] font-bold">group</span>
+            <div className="p-2.5 bg-blue-500/10 text-blue-600 rounded-xl flex items-center justify-center border border-blue-200/50 group-hover:scale-110 transition-transform">
+              <span className="material-symbols-outlined text-[20px] font-bold">group</span>
             </div>
-            <span className="text-[9px] font-black bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full border border-blue-100">Active</span>
+            <span className="text-[10px] font-extrabold bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full border border-blue-200/60">Active</span>
           </div>
           <div className="mt-3">
-            <p className="text-[9px] text-slate-400 font-black uppercase tracking-widest leading-none">Active Users</p>
-            <h3 className="text-xl font-black text-slate-900 mt-1.5 tracking-tight">{stats.totalCustomers}</h3>
+            <p className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider leading-none">Active Users</p>
+            <h3 className="text-2xl font-black text-slate-900 mt-1.5 tracking-tight">{stats.totalCustomers}</h3>
           </div>
         </div>
 
         {/* 3. Pending Activations */}
-        <div className="bg-white/80 backdrop-blur-md border border-slate-200/80 rounded-2xl p-5 flex flex-col justify-between min-h-[140px] shadow-lg shadow-slate-100/20 transition-all hover:scale-[1.02] hover:-translate-y-0.5 hover:shadow-xl group">
+        <div className="bg-white/90 backdrop-blur-xl border border-slate-200/80 rounded-2xl p-5 flex flex-col justify-between min-h-[140px] shadow-sm hover:shadow-xl hover:border-amber-300/70 hover:-translate-y-1 transition-all duration-300 group cursor-default">
           <div className="flex justify-between items-start">
-            <div className={`p-2.5 rounded-xl flex items-center justify-center shadow-inner transition-transform group-hover:scale-105 ${stats.pendingActivations > 0 ? 'bg-amber-500/10 text-amber-600 animate-pulse' : 'bg-slate-100 text-slate-500'}`}>
-              <span className="material-symbols-outlined text-[18px] font-bold">hourglass_empty</span>
+            <div className={`p-2.5 rounded-xl flex items-center justify-center border group-hover:scale-110 transition-transform ${stats.pendingActivations > 0 ? 'bg-amber-500/10 text-amber-600 border-amber-200' : 'bg-slate-100 text-slate-500 border-slate-200'}`}>
+              <span className="material-symbols-outlined text-[20px] font-bold">hourglass_empty</span>
             </div>
             {stats.pendingActivations > 0 ? (
-              <span className="text-[9px] font-black bg-amber-50 text-amber-600 px-2 py-0.5 rounded-full border border-amber-200 animate-bounce">Pending</span>
+              <span className="text-[10px] font-extrabold bg-amber-50 text-amber-700 px-2 py-0.5 rounded-full border border-amber-200 animate-pulse">Pending</span>
             ) : (
-              <span className="text-[9px] font-black bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full border border-slate-200">Done</span>
+              <span className="text-[10px] font-extrabold bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full border border-slate-200">Done</span>
             )}
           </div>
           <div className="mt-3">
-            <p className="text-[9px] text-slate-400 font-black uppercase tracking-widest leading-none">Pending Orders</p>
-            <h3 className="text-xl font-black text-slate-900 mt-1.5 tracking-tight">{stats.pendingActivations}</h3>
+            <p className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider leading-none">Pending Orders</p>
+            <h3 className="text-2xl font-black text-slate-900 mt-1.5 tracking-tight">{stats.pendingActivations}</h3>
           </div>
         </div>
 
         {/* 4. Active Subscriptions */}
-        <div className="bg-white/80 backdrop-blur-md border border-slate-200/80 rounded-2xl p-5 flex flex-col justify-between min-h-[140px] shadow-lg shadow-slate-100/20 transition-all hover:scale-[1.02] hover:-translate-y-0.5 hover:shadow-xl group">
+        <div className="bg-white/90 backdrop-blur-xl border border-slate-200/80 rounded-2xl p-5 flex flex-col justify-between min-h-[140px] shadow-sm hover:shadow-xl hover:border-sky-300/70 hover:-translate-y-1 transition-all duration-300 group cursor-default">
           <div className="flex justify-between items-start">
-            <div className="p-2.5 bg-teal-500/10 text-teal-600 rounded-xl flex items-center justify-center shadow-inner transition-transform group-hover:scale-105">
-              <span className="material-symbols-outlined text-[18px] font-bold">card_membership</span>
+            <div className="p-2.5 bg-sky-500/10 text-sky-600 rounded-xl flex items-center justify-center border border-sky-200/50 group-hover:scale-110 transition-transform">
+              <span className="material-symbols-outlined text-[20px] font-bold">card_membership</span>
             </div>
-            <span className="text-[9px] font-black bg-teal-50 text-teal-600 px-2 py-0.5 rounded-full border border-teal-100">Active</span>
+            <span className="text-[10px] font-extrabold bg-sky-50 text-sky-700 px-2 py-0.5 rounded-full border border-sky-200/60">Running</span>
           </div>
           <div className="mt-3">
-            <p className="text-[9px] text-slate-400 font-black uppercase tracking-widest leading-none">Active Subs</p>
-            <h3 className="text-xl font-black text-slate-900 mt-1.5 tracking-tight">{stats.activeOrders}</h3>
+            <p className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider leading-none">Active Subs</p>
+            <h3 className="text-2xl font-black text-slate-900 mt-1.5 tracking-tight">{stats.activeOrders}</h3>
           </div>
         </div>
 
         {/* 5. Unpaid Orders */}
-        <div className="bg-white/80 backdrop-blur-md border border-slate-200/80 rounded-2xl p-5 flex flex-col justify-between min-h-[140px] shadow-lg shadow-slate-100/20 transition-all hover:scale-[1.02] hover:-translate-y-0.5 hover:shadow-xl group">
+        <div className="bg-white/90 backdrop-blur-xl border border-slate-200/80 rounded-2xl p-5 flex flex-col justify-between min-h-[140px] shadow-sm hover:shadow-xl hover:border-rose-300/70 hover:-translate-y-1 transition-all duration-300 group cursor-default">
           <div className="flex justify-between items-start">
-            <div className="p-2.5 bg-rose-500/10 text-rose-600 rounded-xl flex items-center justify-center shadow-inner transition-transform group-hover:scale-105">
-              <span className="material-symbols-outlined text-[18px] font-bold">pending_actions</span>
+            <div className="p-2.5 bg-rose-500/10 text-rose-600 rounded-xl flex items-center justify-center border border-rose-200/50 group-hover:scale-110 transition-transform">
+              <span className="material-symbols-outlined text-[20px] font-bold">pending_actions</span>
             </div>
-            <span className="text-[9px] font-black bg-rose-50 text-rose-600 px-2 py-0.5 rounded-full border border-rose-100">Unpaid</span>
+            <span className="text-[10px] font-extrabold bg-rose-50 text-rose-700 px-2 py-0.5 rounded-full border border-rose-200/60">Unpaid</span>
           </div>
           <div className="mt-3">
-            <p className="text-[9px] text-slate-400 font-black uppercase tracking-widest leading-none">Unpaid Orders</p>
-            <h3 className="text-xl font-black text-slate-900 mt-1.5 tracking-tight">{stats.unpaidOrders}</h3>
+            <p className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider leading-none">Unpaid Orders</p>
+            <h3 className="text-2xl font-black text-slate-900 mt-1.5 tracking-tight">{stats.unpaidOrders}</h3>
           </div>
         </div>
 
-        {/* 6. Total Orders */}
-        <div className="bg-white/80 backdrop-blur-md border border-slate-200/80 rounded-2xl p-5 flex flex-col justify-between min-h-[140px] shadow-lg shadow-slate-100/20 transition-all hover:scale-[1.02] hover:-translate-y-0.5 hover:shadow-xl group">
+        {/* 6. Total Orders (Pure Sapphire Blue - No Indigo) */}
+        <div className="bg-white/90 backdrop-blur-xl border border-slate-200/80 rounded-2xl p-5 flex flex-col justify-between min-h-[140px] shadow-sm hover:shadow-xl hover:border-blue-300/70 hover:-translate-y-1 transition-all duration-300 group cursor-default">
           <div className="flex justify-between items-start">
-            <div className="p-2.5 bg-indigo-500/10 text-indigo-600 rounded-xl flex items-center justify-center shadow-inner transition-transform group-hover:scale-105">
-              <span className="material-symbols-outlined text-[18px] font-bold">shopping_bag</span>
+            <div className="p-2.5 bg-blue-600/10 text-blue-700 rounded-xl flex items-center justify-center border border-blue-200/50 group-hover:scale-110 transition-transform">
+              <span className="material-symbols-outlined text-[20px] font-bold">shopping_bag</span>
             </div>
-            <span className="text-[9px] font-black bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-full border border-indigo-100">Total</span>
+            <span className="text-[10px] font-extrabold bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full border border-blue-200/60">Total</span>
           </div>
           <div className="mt-3">
-            <p className="text-[9px] text-slate-400 font-black uppercase tracking-widest leading-none">Total Orders</p>
-            <h3 className="text-xl font-black text-slate-900 mt-1.5 tracking-tight">{stats.totalOrders}</h3>
+            <p className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider leading-none">Total Orders</p>
+            <h3 className="text-2xl font-black text-slate-900 mt-1.5 tracking-tight">{stats.totalOrders}</h3>
           </div>
         </div>
 
-        {/* 7. Average Order Value */}
-        <div className="bg-white/80 backdrop-blur-md border border-slate-200/80 rounded-2xl p-5 flex flex-col justify-between min-h-[140px] shadow-lg shadow-slate-100/20 transition-all hover:scale-[1.02] hover:-translate-y-0.5 hover:shadow-xl group">
+        {/* 7. Average Order Value (Marine Cyan - No Violet/Purple) */}
+        <div className="bg-white/90 backdrop-blur-xl border border-slate-200/80 rounded-2xl p-5 flex flex-col justify-between min-h-[140px] shadow-sm hover:shadow-xl hover:border-cyan-300/70 hover:-translate-y-1 transition-all duration-300 group cursor-default">
           <div className="flex justify-between items-start">
-            <div className="p-2.5 bg-violet-500/10 text-violet-600 rounded-xl flex items-center justify-center shadow-inner transition-transform group-hover:scale-105">
-              <span className="material-symbols-outlined text-[18px] font-bold">account_balance_wallet</span>
+            <div className="p-2.5 bg-cyan-600/10 text-cyan-700 rounded-xl flex items-center justify-center border border-cyan-200/50 group-hover:scale-110 transition-transform">
+              <span className="material-symbols-outlined text-[20px] font-bold">account_balance_wallet</span>
             </div>
-            <span className="text-[9px] font-black bg-violet-50 text-violet-600 px-2 py-0.5 rounded-full border border-violet-100">AOV</span>
+            <span className="text-[10px] font-extrabold bg-cyan-50 text-cyan-700 px-2 py-0.5 rounded-full border border-cyan-200/60">AOV</span>
           </div>
           <div className="mt-3">
-            <p className="text-[9px] text-slate-400 font-black uppercase tracking-widest leading-none">Avg Order Value</p>
-            <h3 className="text-xl font-black text-slate-900 mt-1.5 tracking-tight line-clamp-1">{formatIDR(stats.avgOrderValue)}</h3>
+            <p className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider leading-none">Avg Order Value</p>
+            <h3 className="text-2xl font-black text-slate-900 mt-1.5 tracking-tight line-clamp-1">{formatIDR(stats.avgOrderValue)}</h3>
           </div>
         </div>
 
         {/* 8. Total Products */}
-        <div className="bg-white/80 backdrop-blur-md border border-slate-200/80 rounded-2xl p-5 flex flex-col justify-between min-h-[140px] shadow-lg shadow-slate-100/20 transition-all hover:scale-[1.02] hover:-translate-y-0.5 hover:shadow-xl group">
+        <div className="bg-white/90 backdrop-blur-xl border border-slate-200/80 rounded-2xl p-5 flex flex-col justify-between min-h-[140px] shadow-sm hover:shadow-xl hover:border-slate-300 hover:-translate-y-1 transition-all duration-300 group cursor-default">
           <div className="flex justify-between items-start">
-            <div className="p-2.5 bg-sky-500/10 text-sky-600 rounded-xl flex items-center justify-center shadow-inner transition-transform group-hover:scale-105">
-              <span className="material-symbols-outlined text-[18px] font-bold">inventory</span>
+            <div className="p-2.5 bg-slate-600/10 text-slate-700 rounded-xl flex items-center justify-center border border-slate-200 group-hover:scale-110 transition-transform">
+              <span className="material-symbols-outlined text-[20px] font-bold">inventory_2</span>
             </div>
-            <span className="text-[9px] font-black bg-sky-50 text-sky-600 px-2 py-0.5 rounded-full border border-sky-100">Catalog</span>
+            <span className="text-[10px] font-extrabold bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full border border-slate-200">Catalog</span>
           </div>
           <div className="mt-3">
-            <p className="text-[9px] text-slate-400 font-black uppercase tracking-widest leading-none">Total Products</p>
-            <h3 className="text-xl font-black text-slate-900 mt-1.5 tracking-tight">{stats.totalProducts}</h3>
+            <p className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider leading-none">Total Products</p>
+            <h3 className="text-2xl font-black text-slate-900 mt-1.5 tracking-tight">{stats.totalProducts}</h3>
           </div>
         </div>
 
-        {/* 9. Total Categories */}
-        <div className="bg-white/80 backdrop-blur-md border border-slate-200/80 rounded-2xl p-5 flex flex-col justify-between min-h-[140px] shadow-lg shadow-slate-100/20 transition-all hover:scale-[1.02] hover:-translate-y-0.5 hover:shadow-xl group">
+        {/* 9. Total Categories (Teal) */}
+        <div className="bg-white/90 backdrop-blur-xl border border-slate-200/80 rounded-2xl p-5 flex flex-col justify-between min-h-[140px] shadow-sm hover:shadow-xl hover:border-teal-300 hover:-translate-y-1 transition-all duration-300 group cursor-default">
           <div className="flex justify-between items-start">
-            <div className="p-2.5 bg-pink-500/10 text-pink-600 rounded-xl flex items-center justify-center shadow-inner transition-transform group-hover:scale-105">
-              <span className="material-symbols-outlined text-[18px] font-bold">category</span>
+            <div className="p-2.5 bg-teal-500/10 text-teal-600 rounded-xl flex items-center justify-center border border-teal-200/50 group-hover:scale-110 transition-transform">
+              <span className="material-symbols-outlined text-[20px] font-bold">category</span>
             </div>
-            <span className="text-[9px] font-black bg-pink-50 text-pink-600 px-2 py-0.5 rounded-full border border-pink-100">Kategori</span>
+            <span className="text-[10px] font-extrabold bg-teal-50 text-teal-700 px-2 py-0.5 rounded-full border border-teal-200/60">Kategori</span>
           </div>
           <div className="mt-3">
-            <p className="text-[9px] text-slate-400 font-black uppercase tracking-widest leading-none">Total Categories</p>
-            <h3 className="text-xl font-black text-slate-900 mt-1.5 tracking-tight">{stats.totalCategories}</h3>
+            <p className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider leading-none">Total Categories</p>
+            <h3 className="text-2xl font-black text-slate-900 mt-1.5 tracking-tight">{stats.totalCategories}</h3>
           </div>
         </div>
 
         {/* 10. Expired Subscriptions */}
-        <div className="bg-white/80 backdrop-blur-md border border-slate-200/80 rounded-2xl p-5 flex flex-col justify-between min-h-[140px] shadow-lg shadow-slate-100/20 transition-all hover:scale-[1.02] hover:-translate-y-0.5 hover:shadow-xl group">
+        <div className="bg-white/90 backdrop-blur-xl border border-slate-200/80 rounded-2xl p-5 flex flex-col justify-between min-h-[140px] shadow-sm hover:shadow-xl hover:border-slate-300 hover:-translate-y-1 transition-all duration-300 group cursor-default">
           <div className="flex justify-between items-start">
-            <div className="p-2.5 bg-slate-500/10 text-slate-600 rounded-xl flex items-center justify-center shadow-inner transition-transform group-hover:scale-105">
-              <span className="material-symbols-outlined text-[18px] font-bold">event_busy</span>
+            <div className="p-2.5 bg-slate-400/10 text-slate-600 rounded-xl flex items-center justify-center border border-slate-200 group-hover:scale-110 transition-transform">
+              <span className="material-symbols-outlined text-[20px] font-bold">event_busy</span>
             </div>
-            <span className="text-[9px] font-black bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full border border-slate-200">Expired</span>
+            <span className="text-[10px] font-extrabold bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full border border-slate-200">Expired</span>
           </div>
           <div className="mt-3">
-            <p className="text-[9px] text-slate-400 font-black uppercase tracking-widest leading-none">Expired Subs</p>
-            <h3 className="text-xl font-black text-slate-900 mt-1.5 tracking-tight">{stats.expiredOrders}</h3>
+            <p className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider leading-none">Expired Subs</p>
+            <h3 className="text-2xl font-black text-slate-900 mt-1.5 tracking-tight">{stats.expiredOrders}</h3>
           </div>
         </div>
       </section>
 
-      {/* Orders Management Table Section */}
-      <section className="bg-white/80 backdrop-blur-md border border-slate-200/80 rounded-2xl overflow-hidden flex flex-col shadow-xl shadow-slate-100/40">
-        <div className="px-6 py-5 border-b border-slate-200 flex flex-col sm:flex-row justify-between sm:items-center gap-4 bg-slate-50/40">
-          <h2 className="text-xs font-black text-slate-800 uppercase tracking-widest">Recent Orders</h2>
+      {/* Orders Management Table Section - Polished Glassmorphism */}
+      <section className="bg-white/90 backdrop-blur-xl border border-slate-200/80 rounded-2xl overflow-hidden flex flex-col shadow-sm">
+        <div className="px-6 py-4.5 border-b border-slate-200/80 flex flex-col sm:flex-row justify-between sm:items-center gap-4 bg-slate-50/50">
           <div className="flex items-center gap-2">
-            <span className="text-[10px] text-slate-400 font-bold uppercase">Filter Status:</span>
+            <span className="material-symbols-outlined text-[18px] text-blue-600">receipt_long</span>
+            <h2 className="text-xs font-black text-slate-800 uppercase tracking-widest">Recent Orders</h2>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] text-slate-400 font-extrabold uppercase">Filter Status:</span>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value as any)}
-              className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-700 outline-none focus:border-slate-900 transition font-medium cursor-pointer shadow-2xs"
+              className="rounded-xl border border-slate-200 bg-white px-3.5 py-1.5 text-xs text-slate-700 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all font-semibold cursor-pointer shadow-2xs"
             >
               <option value="semua">Semua Status</option>
               <option value="menunggu_pembayaran">Menunggu Pembayaran</option>
@@ -272,38 +288,42 @@ function AdminDashboardPage() {
           <div className="overflow-x-auto w-full">
             <table className="w-full text-left border-collapse whitespace-nowrap">
               <thead>
-                <tr className="bg-slate-50/20 text-[10px] text-slate-400 font-bold uppercase tracking-wider border-b border-slate-100">
-                  <th className="pl-6 pr-2 py-4 w-16 text-left whitespace-nowrap">No</th>
-                  <th className="px-6 py-4">Order ID</th>
-                  <th className="px-6 py-4">Customer</th>
-                  <th className="px-6 py-4">Product</th>
-                  <th className="px-6 py-4">Status</th>
-                  <th className="px-6 py-4 text-right pr-12">Actions</th>
+                <tr className="bg-slate-50/70 text-[10px] text-slate-400 font-extrabold uppercase tracking-wider border-b border-slate-200/60">
+                  <th className="pl-6 pr-2 py-3.5 w-14 text-left whitespace-nowrap">No</th>
+                  <th className="px-6 py-3.5">Order ID</th>
+                  <th className="px-6 py-3.5">Customer</th>
+                  <th className="px-6 py-3.5">Product</th>
+                  <th className="px-6 py-3.5">Status</th>
+                  <th className="px-6 py-3.5 text-right pr-8">Actions</th>
                 </tr>
               </thead>
               <tbody className="text-sm text-slate-700 divide-y divide-slate-100">
                 {filteredOrders.map((order: any, index: number) => {
                   const initials = order.customerName ? order.customerName.slice(0, 2).toUpperCase() : 'CU'
                   return (
-                    <tr key={order.id} className="hover:bg-slate-50/50 transition-colors">
-                      <td className="pl-6 pr-2 py-4 text-left font-bold text-slate-400 w-16 whitespace-nowrap">{index + 1}</td>
-                      <td className="px-6 py-4 font-bold text-slate-900">#{order.id}</td>
+                    <tr key={order.id} className="hover:bg-blue-50/30 transition-colors">
+                      <td className="pl-6 pr-2 py-4 text-left font-bold text-slate-400 w-14 whitespace-nowrap">{index + 1}</td>
+                      <td className="px-6 py-4 font-bold text-slate-900">
+                        <span className="font-mono text-xs font-bold text-slate-800 bg-slate-100/90 px-2.5 py-1 rounded-lg border border-slate-200/60">
+                          #{order.id}
+                        </span>
+                      </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-slate-100 to-slate-200 flex items-center justify-center text-xs font-black text-slate-700 border border-slate-200/60 shadow-2xs">
+                          <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-blue-600 to-sky-500 flex items-center justify-center text-xs font-black text-white shadow-2xs shrink-0">
                             {initials}
                           </div>
                           <div className="flex flex-col text-left">
                             <span className="font-extrabold text-slate-900 leading-tight">{order.customerName}</span>
-                            <span className="text-[10px] text-slate-400 font-semibold mt-0.5">{order.customerEmail || 'pelanggan@onesubscribe.com'}</span>
+                            <span className="text-[10px] text-slate-400 font-medium mt-0.5">{order.customerEmail || 'pelanggan@onesubscribe.com'}</span>
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4 font-bold text-slate-800">
                         <div className="flex flex-col">
-                          <span>{order.productName}</span>
+                          <span className="text-xs font-bold text-slate-900">{order.productName}</span>
                           {order.parentOrderId && (
-                            <span className="inline-flex self-start mt-1 px-1.5 py-0.5 rounded text-[8px] font-black bg-indigo-50 border border-indigo-150 text-indigo-600 uppercase tracking-wide">
+                            <span className="inline-flex self-start mt-1 px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-blue-50 border border-blue-200 text-blue-700 uppercase tracking-wide">
                               Perpanjangan
                             </span>
                           )}
@@ -312,11 +332,11 @@ function AdminDashboardPage() {
                       <td className="px-6 py-4">
                         {getStatusBadge(order.status)}
                       </td>
-                      <td className="px-6 py-4 text-right pr-12">
+                      <td className="px-6 py-4 text-right pr-8">
                         <div className="flex justify-end gap-2">
                           <Link
                             to="/admin/orders"
-                            className="inline-flex items-center justify-center bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-xl text-xs font-bold hover:scale-95 transition-all no-underline shadow-sm"
+                            className="inline-flex items-center justify-center bg-slate-900 hover:bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-bold hover:shadow-md hover:-translate-y-0.5 active:scale-95 transition-all no-underline shadow-2xs"
                           >
                             Manage
                           </Link>
@@ -329,8 +349,8 @@ function AdminDashboardPage() {
             </table>
           </div>
         ) : (
-          <div className="text-center py-16 bg-white border border-slate-200/80 rounded-2xl p-8 max-w-sm mx-auto shadow-xs flex flex-col items-center mt-6">
-            <div className="w-12 h-12 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 mb-4 shadow-3xs">
+          <div className="text-center py-16 bg-white border border-slate-200/80 rounded-2xl p-8 max-w-sm mx-auto shadow-xs flex flex-col items-center my-8">
+            <div className="w-12 h-12 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-500 mb-4 shadow-3xs">
               <span className="material-symbols-outlined text-2xl">inbox</span>
             </div>
             <h3 className="text-sm font-extrabold text-slate-800 mb-1">Pesanan Kosong</h3>
