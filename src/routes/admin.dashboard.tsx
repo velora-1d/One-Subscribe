@@ -51,7 +51,7 @@ function AdminDashboardPage() {
         return (
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200/70 shadow-2xs">
             <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
-            Unpaid
+            Belum Bayar
           </span>
         )
       case 'menunggu_aktivasi':
@@ -61,21 +61,21 @@ function AdminDashboardPage() {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-blue-600"></span>
             </span>
-            Fulfill Required
+            Butuh Aktivasi
           </span>
         )
       case 'aktif':
         return (
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/70 shadow-2xs">
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-            Fulfilled
+            Aktif
           </span>
         )
       case 'expired':
         return (
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-600 border border-slate-200/70">
             <span className="h-1.5 w-1.5 rounded-full bg-slate-400" />
-            Expired
+            Kedaluwarsa
           </span>
         )
       default:
@@ -98,8 +98,8 @@ function AdminDashboardPage() {
             <span className="material-symbols-outlined text-[26px]">analytics</span>
           </div>
           <div>
-            <h1 className="text-2xl font-black text-slate-900 tracking-tight font-display">Overview</h1>
-            <p className="text-xs text-slate-500 font-medium mt-0.5">Welcome back, Administrator. Real-time overview of subscriptions & revenue.</p>
+            <h1 className="text-2xl font-black text-slate-900 tracking-tight font-display">Ringkasan Sistem</h1>
+            <p className="text-xs text-slate-500 font-medium mt-0.5">Selamat datang, Administrator. Pantau performa langganan dan pendapatan secara real-time.</p>
           </div>
         </div>
 
@@ -109,7 +109,7 @@ function AdminDashboardPage() {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-600"></span>
             </span>
-            System Live
+            Sistem Aktif
           </span>
         </div>
       </header>
@@ -125,7 +125,7 @@ function AdminDashboardPage() {
             <span className="text-[10px] font-extrabold bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full border border-emerald-200/60">Live</span>
           </div>
           <div className="mt-3">
-            <p className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider leading-none">Total Revenue</p>
+            <p className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider leading-none">Total Pendapatan</p>
             <h3 className="text-2xl font-black text-slate-900 mt-1.5 tracking-tight line-clamp-1">{formatIDR(stats.totalRevenue)}</h3>
           </div>
         </div>
@@ -136,10 +136,10 @@ function AdminDashboardPage() {
             <div className="p-2.5 bg-blue-500/10 text-blue-600 rounded-xl flex items-center justify-center border border-blue-200/50 group-hover:scale-110 transition-transform">
               <span className="material-symbols-outlined text-[20px] font-bold">group</span>
             </div>
-            <span className="text-[10px] font-extrabold bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full border border-blue-200/60">Active</span>
+            <span className="text-[10px] font-extrabold bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full border border-blue-200/60">Aktif</span>
           </div>
           <div className="mt-3">
-            <p className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider leading-none">Active Users</p>
+            <p className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider leading-none">Total Pelanggan</p>
             <h3 className="text-2xl font-black text-slate-900 mt-1.5 tracking-tight">{stats.totalCustomers}</h3>
           </div>
         </div>
@@ -151,13 +151,13 @@ function AdminDashboardPage() {
               <span className="material-symbols-outlined text-[20px] font-bold">hourglass_empty</span>
             </div>
             {stats.pendingActivations > 0 ? (
-              <span className="text-[10px] font-extrabold bg-amber-50 text-amber-700 px-2 py-0.5 rounded-full border border-amber-200 animate-pulse">Pending</span>
+              <span className="text-[10px] font-extrabold bg-amber-50 text-amber-700 px-2 py-0.5 rounded-full border border-amber-200 animate-pulse">Menunggu</span>
             ) : (
-              <span className="text-[10px] font-extrabold bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full border border-slate-200">Done</span>
+              <span className="text-[10px] font-extrabold bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full border border-slate-200">Selesai</span>
             )}
           </div>
           <div className="mt-3">
-            <p className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider leading-none">Pending Orders</p>
+            <p className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider leading-none">Butuh Aktivasi</p>
             <h3 className="text-2xl font-black text-slate-900 mt-1.5 tracking-tight">{stats.pendingActivations}</h3>
           </div>
         </div>
@@ -168,10 +168,10 @@ function AdminDashboardPage() {
             <div className="p-2.5 bg-sky-500/10 text-sky-600 rounded-xl flex items-center justify-center border border-sky-200/50 group-hover:scale-110 transition-transform">
               <span className="material-symbols-outlined text-[20px] font-bold">card_membership</span>
             </div>
-            <span className="text-[10px] font-extrabold bg-sky-50 text-sky-700 px-2 py-0.5 rounded-full border border-sky-200/60">Running</span>
+            <span className="text-[10px] font-extrabold bg-sky-50 text-sky-700 px-2 py-0.5 rounded-full border border-sky-200/60">Aktif</span>
           </div>
           <div className="mt-3">
-            <p className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider leading-none">Active Subs</p>
+            <p className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider leading-none">Langganan Aktif</p>
             <h3 className="text-2xl font-black text-slate-900 mt-1.5 tracking-tight">{stats.activeOrders}</h3>
           </div>
         </div>
@@ -182,15 +182,15 @@ function AdminDashboardPage() {
             <div className="p-2.5 bg-rose-500/10 text-rose-600 rounded-xl flex items-center justify-center border border-rose-200/50 group-hover:scale-110 transition-transform">
               <span className="material-symbols-outlined text-[20px] font-bold">pending_actions</span>
             </div>
-            <span className="text-[10px] font-extrabold bg-rose-50 text-rose-700 px-2 py-0.5 rounded-full border border-rose-200/60">Unpaid</span>
+            <span className="text-[10px] font-extrabold bg-rose-50 text-rose-700 px-2 py-0.5 rounded-full border border-rose-200/60">Belum Bayar</span>
           </div>
           <div className="mt-3">
-            <p className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider leading-none">Unpaid Orders</p>
+            <p className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider leading-none">Pesanan Belum Bayar</p>
             <h3 className="text-2xl font-black text-slate-900 mt-1.5 tracking-tight">{stats.unpaidOrders}</h3>
           </div>
         </div>
 
-        {/* 6. Total Orders (Pure Sapphire Blue - No Indigo) */}
+        {/* 6. Total Orders */}
         <div className="bg-white/90 backdrop-blur-xl border border-slate-200/80 rounded-2xl p-5 flex flex-col justify-between min-h-[140px] shadow-sm hover:shadow-xl hover:border-blue-300/70 hover:-translate-y-1 transition-all duration-300 group cursor-default">
           <div className="flex justify-between items-start">
             <div className="p-2.5 bg-blue-600/10 text-blue-700 rounded-xl flex items-center justify-center border border-blue-200/50 group-hover:scale-110 transition-transform">
@@ -199,12 +199,12 @@ function AdminDashboardPage() {
             <span className="text-[10px] font-extrabold bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full border border-blue-200/60">Total</span>
           </div>
           <div className="mt-3">
-            <p className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider leading-none">Total Orders</p>
+            <p className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider leading-none">Total Pesanan</p>
             <h3 className="text-2xl font-black text-slate-900 mt-1.5 tracking-tight">{stats.totalOrders}</h3>
           </div>
         </div>
 
-        {/* 7. Average Order Value (Marine Cyan - No Violet/Purple) */}
+        {/* 7. Average Order Value */}
         <div className="bg-white/90 backdrop-blur-xl border border-slate-200/80 rounded-2xl p-5 flex flex-col justify-between min-h-[140px] shadow-sm hover:shadow-xl hover:border-cyan-300/70 hover:-translate-y-1 transition-all duration-300 group cursor-default">
           <div className="flex justify-between items-start">
             <div className="p-2.5 bg-cyan-600/10 text-cyan-700 rounded-xl flex items-center justify-center border border-cyan-200/50 group-hover:scale-110 transition-transform">
@@ -213,7 +213,7 @@ function AdminDashboardPage() {
             <span className="text-[10px] font-extrabold bg-cyan-50 text-cyan-700 px-2 py-0.5 rounded-full border border-cyan-200/60">AOV</span>
           </div>
           <div className="mt-3">
-            <p className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider leading-none">Avg Order Value</p>
+            <p className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider leading-none">Rata-rata Pesanan</p>
             <h3 className="text-2xl font-black text-slate-900 mt-1.5 tracking-tight line-clamp-1">{formatIDR(stats.avgOrderValue)}</h3>
           </div>
         </div>
@@ -224,10 +224,10 @@ function AdminDashboardPage() {
             <div className="p-2.5 bg-slate-600/10 text-slate-700 rounded-xl flex items-center justify-center border border-slate-200 group-hover:scale-110 transition-transform">
               <span className="material-symbols-outlined text-[20px] font-bold">inventory_2</span>
             </div>
-            <span className="text-[10px] font-extrabold bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full border border-slate-200">Catalog</span>
+            <span className="text-[10px] font-extrabold bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full border border-slate-200">Katalog</span>
           </div>
           <div className="mt-3">
-            <p className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider leading-none">Total Products</p>
+            <p className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider leading-none">Total Produk</p>
             <h3 className="text-2xl font-black text-slate-900 mt-1.5 tracking-tight">{stats.totalProducts}</h3>
           </div>
         </div>
@@ -241,7 +241,7 @@ function AdminDashboardPage() {
             <span className="text-[10px] font-extrabold bg-teal-50 text-teal-700 px-2 py-0.5 rounded-full border border-teal-200/60">Kategori</span>
           </div>
           <div className="mt-3">
-            <p className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider leading-none">Total Categories</p>
+            <p className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider leading-none">Total Kategori</p>
             <h3 className="text-2xl font-black text-slate-900 mt-1.5 tracking-tight">{stats.totalCategories}</h3>
           </div>
         </div>
@@ -252,10 +252,10 @@ function AdminDashboardPage() {
             <div className="p-2.5 bg-slate-400/10 text-slate-600 rounded-xl flex items-center justify-center border border-slate-200 group-hover:scale-110 transition-transform">
               <span className="material-symbols-outlined text-[20px] font-bold">event_busy</span>
             </div>
-            <span className="text-[10px] font-extrabold bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full border border-slate-200">Expired</span>
+            <span className="text-[10px] font-extrabold bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full border border-slate-200">Kedaluwarsa</span>
           </div>
           <div className="mt-3">
-            <p className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider leading-none">Expired Subs</p>
+            <p className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider leading-none">Langganan Kedaluwarsa</p>
             <h3 className="text-2xl font-black text-slate-900 mt-1.5 tracking-tight">{stats.expiredOrders}</h3>
           </div>
         </div>
@@ -266,7 +266,7 @@ function AdminDashboardPage() {
         <div className="px-6 py-4.5 border-b border-slate-200/80 flex flex-col sm:flex-row justify-between sm:items-center gap-4 bg-slate-50/50">
           <div className="flex items-center gap-2">
             <span className="material-symbols-outlined text-[18px] text-blue-600">receipt_long</span>
-            <h2 className="text-xs font-black text-slate-800 uppercase tracking-widest">Recent Orders</h2>
+            <h2 className="text-xs font-black text-slate-800 uppercase tracking-widest">Pesanan Terbaru</h2>
           </div>
           <div className="flex items-center gap-2">
             <span className="text-[10px] text-slate-400 font-extrabold uppercase">Filter Status:</span>
@@ -276,10 +276,10 @@ function AdminDashboardPage() {
               className="rounded-xl border border-slate-200 bg-white px-3.5 py-1.5 text-xs text-slate-700 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all font-semibold cursor-pointer shadow-2xs"
             >
               <option value="semua">Semua Status</option>
-              <option value="menunggu_pembayaran">Menunggu Pembayaran</option>
-              <option value="menunggu_aktivasi">Menunggu Aktivasi</option>
+              <option value="menunggu_pembayaran">Belum Bayar</option>
+              <option value="menunggu_aktivasi">Butuh Aktivasi</option>
               <option value="aktif">Aktif</option>
-              <option value="expired">Expired</option>
+              <option value="expired">Kedaluwarsa</option>
             </select>
           </div>
         </div>
@@ -290,11 +290,11 @@ function AdminDashboardPage() {
               <thead>
                 <tr className="bg-slate-50/70 text-[10px] text-slate-400 font-extrabold uppercase tracking-wider border-b border-slate-200/60">
                   <th className="pl-6 pr-2 py-3.5 w-14 text-left whitespace-nowrap">No</th>
-                  <th className="px-6 py-3.5">Order ID</th>
-                  <th className="px-6 py-3.5">Customer</th>
-                  <th className="px-6 py-3.5">Product</th>
+                  <th className="px-6 py-3.5">ID Pesanan</th>
+                  <th className="px-6 py-3.5">Pelanggan</th>
+                  <th className="px-6 py-3.5">Produk Layanan</th>
                   <th className="px-6 py-3.5">Status</th>
-                  <th className="px-6 py-3.5 text-right pr-8">Actions</th>
+                  <th className="px-6 py-3.5 text-right pr-8">Aksi</th>
                 </tr>
               </thead>
               <tbody className="text-sm text-slate-700 divide-y divide-slate-100">
@@ -338,7 +338,7 @@ function AdminDashboardPage() {
                             to="/admin/orders"
                             className="inline-flex items-center justify-center bg-slate-900 hover:bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-bold hover:shadow-md hover:-translate-y-0.5 active:scale-95 transition-all no-underline shadow-2xs"
                           >
-                            Manage
+                            Kelola
                           </Link>
                         </div>
                       </td>

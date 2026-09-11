@@ -344,7 +344,7 @@ function AdminOrdersPage() {
       case 'expired':
         return (
           <span className="text-[10px] font-black text-slate-500 bg-slate-50 border border-slate-200 px-2.5 py-1 rounded-full whitespace-nowrap">
-            Expired
+            Kedaluwarsa
           </span>
         )
       case 'dibatalkan':
@@ -398,13 +398,13 @@ function AdminOrdersPage() {
               {tab === 'semua'
                 ? 'Semua Pesanan'
                 : tab === 'menunggu_pembayaran'
-                ? 'Unpaid'
+                ? 'Belum Bayar'
                 : tab === 'menunggu_aktivasi'
                 ? 'Butuh Aktivasi'
                 : tab === 'aktif'
                 ? 'Aktif'
                 : tab === 'expired'
-                ? 'Expired'
+                ? 'Kedaluwarsa'
                 : 'Dibatalkan'}
             </button>
           ))}

@@ -202,25 +202,25 @@ function AdminReportsPage() {
       case 'menunggu_pembayaran':
         return (
           <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-600 border border-amber-200">
-            Unpaid
+            Belum Bayar
           </span>
         )
       case 'menunggu_aktivasi':
         return (
           <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-600 border border-blue-200 animate-pulse">
-            Pending
+            Butuh Aktivasi
           </span>
         )
       case 'aktif':
         return (
           <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-600 border border-emerald-200">
-            Active
+            Aktif
           </span>
         )
       case 'expired':
         return (
           <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-500 border border-slate-200">
-            Expired
+            Kedaluwarsa
           </span>
         )
       default:
@@ -310,10 +310,10 @@ function AdminReportsPage() {
               className="w-full rounded-xl border border-slate-200 bg-white/70 px-3 py-2 text-xs text-slate-700 outline-none focus:border-slate-900 transition font-medium cursor-pointer shadow-2xs"
             >
               <option value="semua">Semua Status</option>
-              <option value="menunggu_pembayaran">Menunggu Pembayaran (Unpaid)</option>
-              <option value="menunggu_aktivasi">Menunggu Aktivasi (Pending)</option>
-              <option value="aktif">Aktif (Active)</option>
-              <option value="expired">Expired</option>
+              <option value="menunggu_pembayaran">Belum Bayar</option>
+              <option value="menunggu_aktivasi">Butuh Aktivasi</option>
+              <option value="aktif">Aktif</option>
+              <option value="expired">Kedaluwarsa</option>
             </select>
           </div>
 
