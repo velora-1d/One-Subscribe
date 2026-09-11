@@ -2,13 +2,13 @@
 FROM node:20-alpine AS builder
 WORKDIR /app
 
-# Install pnpm
-RUN npm install -g pnpm
+# Install pnpm (pinned to v9 for stability and non-interactive builds)
+RUN npm install -g pnpm@9
 
 # Copy package files
-COPY package.json pnpm-lock.yaml .npmrc* ./
+COPY package.json pnpm-lock.yaml* .npmrc* ./
 
-# Install all dependencies with build scripts allowed for esbuild
+# Install all dependencies
 RUN pnpm install --frozen-lockfile
 
 # Copy application source
@@ -22,7 +22,7 @@ FROM node:20-alpine AS runner
 WORKDIR /app
 
 # Install pnpm
-RUN npm install -g pnpm
+RUN npm install -g pnpm@9
 
 # Set environment
 ENV NODE_ENV=production
