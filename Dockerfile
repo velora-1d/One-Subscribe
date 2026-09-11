@@ -6,9 +6,9 @@ WORKDIR /app
 RUN npm install -g pnpm
 
 # Copy package files
-COPY package.json pnpm-lock.yaml ./
+COPY package.json pnpm-lock.yaml .npmrc* ./
 
-# Install all dependencies (including devDependencies for build)
+# Install all dependencies with build scripts allowed for esbuild
 RUN pnpm install --frozen-lockfile
 
 # Copy application source
@@ -31,6 +31,7 @@ ENV PORT=3000
 # Copy necessary runtime assets and dependencies from build stage
 COPY --from=builder /app/package.json ./
 COPY --from=builder /app/pnpm-lock.yaml ./
+COPY --from=builder /app/.npmrc* ./
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/db ./db
@@ -42,4 +43,4 @@ COPY --from=builder /app/src ./src
 EXPOSE 3000
 
 # Startup script: Run database migrations, then start the server
-CMD pnpm db:migrate && pnpm start
+CMD ["sh", "-c", "pnpm db:migrate && pnpm start"]
