@@ -12,12 +12,24 @@ if (!connectionString) {
   throw new Error('DATABASE_URL is not set in the environment variables.');
 }
 
-// Disable prefetch for safe connection pooling (especially with services like Supabase/Neon/Self-hosted)
-export const client = postgres(connectionString, {
-  prepare: false,
-  max: 10,
-  idle_timeout: 20,
-  connect_timeout: 10,
-});
+// Use globalThis singleton in development to prevent Vite HMR from opening new connection pools on every file reload
+const globalForDb = globalThis as unknown as {
+  postgresClient: postgres.Sql | undefined;
+  drizzleDb: ReturnType<typeof drizzle> | undefined;
+};
 
-export const db = drizzle(client, { schema });
+export const client =
+  globalForDb.postgresClient ??
+  postgres(connectionString, {
+    prepare: false,
+    max: 5,
+    idle_timeout: 10,
+    connect_timeout: 10,
+  });
+
+export const db = globalForDb.drizzleDb ?? drizzle(client, { schema });
+
+if (process.env.NODE_ENV !== 'production') {
+  globalForDb.postgresClient = client;
+  globalForDb.drizzleDb = db;
+}
