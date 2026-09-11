@@ -439,12 +439,12 @@ function AdminProductsPage() {
       {filteredProducts.length > 0 ? (
         <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
           {filteredProducts.map((p) => (
-          <Card key={p.id} className="bg-white/80 backdrop-blur-md border border-slate-200/80 rounded-xl overflow-hidden relative group flex flex-col p-0 shadow-lg shadow-slate-100/20 hover:shadow-xl hover:scale-[1.02] hover:-translate-y-0.5 transition-all duration-300">
+          <Card key={p.id} className="bg-white border border-slate-200/80 rounded-xl overflow-hidden relative group flex flex-col p-0 shadow-xs hover:shadow-md hover:-translate-y-0.5 transition-all duration-200" style={{ contentVisibility: 'auto', containIntrinsicSize: 'auto 280px' }}>
             {/* Image Section (Forced 1:1 aspect ratio) */}
             <div className="relative aspect-square w-full bg-slate-50/50 overflow-hidden border-b border-slate-100 flex items-center justify-center shrink-0">
               <Link to="/products/$productId" params={{ productId: p.id }} search={{ from: 'admin' }} className="absolute inset-0 w-full h-full cursor-pointer z-0">
                 {p.imageUrl ? (
-                  <img src={p.imageUrl} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                  <img src={p.imageUrl} alt={p.name} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200" />
                 ) : (
                   <div className="flex flex-col items-center justify-center text-slate-300 w-full h-full">
                     <span className="material-symbols-outlined text-3xl">inventory_2</span>
@@ -455,7 +455,7 @@ function AdminProductsPage() {
               
               {/* Category overlay */}
               <div className="absolute top-2 left-2 z-10">
-                <span className="bg-white/95 backdrop-blur-sm text-slate-700 border border-slate-200/60 text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider shadow-sm">
+                <span className="bg-white/95 text-slate-700 border border-slate-200/80 text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider shadow-xs">
                   {p.category}
                 </span>
               </div>
@@ -465,7 +465,7 @@ function AdminProductsPage() {
                 <button
                   type="button"
                   onClick={() => handleToggleStatus(p.id, p.isActive)}
-                  className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold cursor-pointer transition-all border shadow-sm ${
+                  className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold cursor-pointer transition-all border shadow-xs ${
                     p.isActive 
                       ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100/80' 
                       : 'bg-slate-100 text-slate-500 border-slate-200 hover:bg-slate-200'

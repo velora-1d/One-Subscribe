@@ -165,7 +165,9 @@ function CatalogPage() {
                     <img
                       src={product.imageUrl}
                       alt={product.name}
-                      className="w-full h-full object-contain p-1 group-hover:scale-105 transition duration-500"
+                      loading="lazy"
+                      decoding="async"
+                      className="w-full h-full object-contain p-1 group-hover:scale-105 transition-transform duration-300"
                     />
                   ) : (
                     <div className="flex flex-col items-center justify-center text-slate-300">
@@ -174,18 +176,18 @@ function CatalogPage() {
                   )}
                   {/* Category overlay */}
                   <div className="absolute top-2 left-2 flex flex-col gap-1 items-start">
-                    <span className="bg-white/95 backdrop-blur-sm text-slate-700 border border-slate-200/60 text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider shadow-sm">
+                    <span className="bg-white/95 text-slate-700 border border-slate-200/80 text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider shadow-xs">
                       {product.category}
                     </span>
                     {product.promo && (
-                      <span className="bg-rose-500 text-white text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-wider shadow-sm border-0">
+                      <span className="bg-rose-500 text-white text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-wider shadow-xs border-0">
                         Diskon {product.promo.discountType === 'percentage' ? `${product.promo.discountValue}%` : 'Hemat'}
                       </span>
                     )}
                   </div>
                   {/* Duration overlay */}
                   <div className="absolute top-2 right-2">
-                    <span className="bg-slate-900/90 backdrop-blur-sm text-white border border-white/10 text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider shadow-sm">
+                    <span className="bg-slate-900/90 text-white border border-white/10 text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider shadow-xs">
                       {product.durationMonths} Bulan
                     </span>
                   </div>
