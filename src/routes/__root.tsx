@@ -3,7 +3,7 @@ import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 import { Toaster } from 'sonner'
 import Header from '../components/Header'
-import { getCurrentUser } from '../utils/auth.functions'
+import { getCachedCurrentUser } from '../utils/auth.functions'
 import type { UserSession } from '../utils/auth.server'
 
 import appCss from '../styles.css?url'
@@ -59,7 +59,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
   }),
   beforeLoad: async () => {
     try {
-      const { user } = await getCurrentUser()
+      const { user } = await getCachedCurrentUser()
       return { user }
     } catch {
       return { user: null }

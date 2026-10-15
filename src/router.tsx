@@ -9,7 +9,10 @@ export function getRouter() {
     },
     scrollRestoration: true,
     defaultPreload: 'intent',
-    defaultPreloadStaleTime: 0,
+    // ponytail: 30s cache prevents duplicate fetch storms on link hover & route transitions
+    defaultPreloadStaleTime: 30_000,
+    defaultStaleTime: 30_000,
+    defaultGcTime: 1000 * 60 * 5,
   })
 
   return router

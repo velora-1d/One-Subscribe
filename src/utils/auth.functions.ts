@@ -70,8 +70,16 @@ export const loginUser = createServerFn({ method: 'POST' })
 export const logoutUser = createServerFn({ method: 'POST' }).handler(async () => {
   const { deleteSessionCookie } = await import('./auth.server');
   deleteSessionCookie();
+  invalidateClientUserCache();
   return { success: true, error: null };
 });
+
+// ponytail: 30s client memory cache for user session to eliminate redundant server roundtrips during SPA navigation
+let clientUserCache: { user: any; ts: number } | null = null;
+
+export function invalidateClientUserCache() {
+  clientUserCache = null;
+}
 
 /**
  * Server function to retrieve current user info.
@@ -81,6 +89,19 @@ export const getCurrentUser = createServerFn({ method: 'GET' }).handler(async ()
   const user = getSessionUser();
   return { user };
 });
+
+export async function getCachedCurrentUser(forceRefresh = false) {
+  if (typeof window !== 'undefined' && !forceRefresh && clientUserCache) {
+    if (Date.now() - clientUserCache.ts < 30_000) {
+      return { user: clientUserCache.user };
+    }
+  }
+  const result = await getCurrentUser();
+  if (typeof window !== 'undefined') {
+    clientUserCache = { user: result?.user ?? null, ts: Date.now() };
+  }
+  return result;
+}
 
 /**
  * Server function to update the authenticated user's profile info.
