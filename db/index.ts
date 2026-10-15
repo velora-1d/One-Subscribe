@@ -18,18 +18,17 @@ const globalForDb = globalThis as unknown as {
   drizzleDb: ReturnType<typeof drizzle> | undefined;
 };
 
+// ponytail: pool of 10 connections with globalThis singleton across all environments avoids connection spikes and exhaustion
 export const client =
   globalForDb.postgresClient ??
   postgres(connectionString, {
     prepare: false,
-    max: 5,
-    idle_timeout: 10,
+    max: 10,
+    idle_timeout: 20,
     connect_timeout: 10,
   });
 
 export const db = globalForDb.drizzleDb ?? drizzle(client, { schema });
 
-if (process.env.NODE_ENV !== 'production') {
-  globalForDb.postgresClient = client;
-  globalForDb.drizzleDb = db;
-}
+globalForDb.postgresClient = client;
+globalForDb.drizzleDb = db;

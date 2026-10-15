@@ -52,52 +52,32 @@ export async function uploadBase64Image(base64Str: string): Promise<string> {
 
 export async function getAdminStatsServer() {
   try {
-    const [
-      revenueRes,
-      usersRes,
-      pendingRes,
-      totalOrdersRes,
-      activeOrdersRes,
-      unpaidOrdersRes,
-      expiredOrdersRes,
-      totalProductsRes,
-      totalCategoriesRes,
-      aovRes,
-      recentOrders
-    ] = await Promise.all([
+    // ponytail: single aggregation query on orders collapses 7 table scans into 1
+    const [ordersAggregateRes, usersRes, totalProductsRes, totalCategoriesRes, recentOrders] = await Promise.all([
       db
-        .select({ total: sql<number>`COALESCE(SUM(${orders.price}), 0)` })
+        .select({
+          totalRevenue: sql<number>`COALESCE(SUM(CASE WHEN ${orders.status} IN ('aktif', 'expired', 'menunggu_aktivasi') THEN ${orders.price} ELSE 0 END), 0)`,
+          avgAov: sql<number>`COALESCE(AVG(CASE WHEN ${orders.status} IN ('aktif', 'expired', 'menunggu_aktivasi') THEN ${orders.price} ELSE NULL END), 0)`,
+          totalOrders: sql<number>`COUNT(*)`,
+          pendingActivations: sql<number>`COUNT(*) FILTER (WHERE ${orders.status} = 'menunggu_aktivasi')`,
+          activeOrders: sql<number>`COUNT(*) FILTER (WHERE ${orders.status} = 'aktif')`,
+          unpaidOrders: sql<number>`COUNT(*) FILTER (WHERE ${orders.status} = 'menunggu_pembayaran')`,
+          expiredOrders: sql<number>`COUNT(*) FILTER (WHERE ${orders.status} = 'expired')`,
+        })
         .from(orders)
-        .where(sql`${orders.status} IN ('aktif', 'expired', 'menunggu_aktivasi')`)
-        .catch(() => [{ total: 0 }]),
+        .catch(() => [{
+          totalRevenue: 0,
+          avgAov: 0,
+          totalOrders: 0,
+          pendingActivations: 0,
+          activeOrders: 0,
+          unpaidOrders: 0,
+          expiredOrders: 0,
+        }]),
       db
         .select({ count: sql<number>`COUNT(*)` })
         .from(users)
         .where(eq(users.role, 'customer'))
-        .catch(() => [{ count: 0 }]),
-      db
-        .select({ count: sql<number>`COUNT(*)` })
-        .from(orders)
-        .where(eq(orders.status, 'menunggu_aktivasi'))
-        .catch(() => [{ count: 0 }]),
-      db
-        .select({ count: sql<number>`COUNT(*)` })
-        .from(orders)
-        .catch(() => [{ count: 0 }]),
-      db
-        .select({ count: sql<number>`COUNT(*)` })
-        .from(orders)
-        .where(eq(orders.status, 'aktif'))
-        .catch(() => [{ count: 0 }]),
-      db
-        .select({ count: sql<number>`COUNT(*)` })
-        .from(orders)
-        .where(eq(orders.status, 'menunggu_pembayaran'))
-        .catch(() => [{ count: 0 }]),
-      db
-        .select({ count: sql<number>`COUNT(*)` })
-        .from(orders)
-        .where(eq(orders.status, 'expired'))
         .catch(() => [{ count: 0 }]),
       db
         .select({ count: sql<number>`COUNT(*)` })
@@ -106,29 +86,7 @@ export async function getAdminStatsServer() {
       db
         .select({ count: sql<number>`COUNT(*)` })
         .from(categories)
-        .catch(async () => {
-          try {
-            // If table doesn't exist yet, attempt to create it gracefully
-            await db.execute(sql`
-              CREATE TABLE IF NOT EXISTS "categories" (
-                "id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-                "name" text NOT NULL UNIQUE,
-                "description" text,
-                "created_at" timestamp DEFAULT now() NOT NULL,
-                "updated_at" timestamp DEFAULT now() NOT NULL
-              );
-            `);
-            const res = await db.select({ count: sql<number>`COUNT(*)` }).from(categories);
-            return res;
-          } catch {
-            return [{ count: 0 }];
-          }
-        }),
-      db
-        .select({ avg: sql<number>`COALESCE(AVG(${orders.price}), 0)` })
-        .from(orders)
-        .where(sql`${orders.status} IN ('aktif', 'expired', 'menunggu_aktivasi')`)
-        .catch(() => [{ avg: 0 }]),
+        .catch(() => [{ count: 0 }]),
       db
         .select({
           id: orders.id,
@@ -148,20 +106,30 @@ export async function getAdminStatsServer() {
         .catch(() => [])
     ]);
 
+    const orderStats = ordersAggregateRes[0] || {
+      totalRevenue: 0,
+      avgAov: 0,
+      totalOrders: 0,
+      pendingActivations: 0,
+      activeOrders: 0,
+      unpaidOrders: 0,
+      expiredOrders: 0,
+    };
+
     return {
       success: true,
       error: null,
       stats: {
-        totalRevenue: Number(revenueRes[0]?.total || 0),
+        totalRevenue: Number(orderStats.totalRevenue || 0),
         totalCustomers: Number(usersRes[0]?.count || 0),
-        pendingActivations: Number(pendingRes[0]?.count || 0),
-        totalOrders: Number(totalOrdersRes[0]?.count || 0),
-        activeOrders: Number(activeOrdersRes[0]?.count || 0),
-        unpaidOrders: Number(unpaidOrdersRes[0]?.count || 0),
-        expiredOrders: Number(expiredOrdersRes[0]?.count || 0),
+        pendingActivations: Number(orderStats.pendingActivations || 0),
+        totalOrders: Number(orderStats.totalOrders || 0),
+        activeOrders: Number(orderStats.activeOrders || 0),
+        unpaidOrders: Number(orderStats.unpaidOrders || 0),
+        expiredOrders: Number(orderStats.expiredOrders || 0),
         totalProducts: Number(totalProductsRes[0]?.count || 0),
         totalCategories: Number(totalCategoriesRes[0]?.count || 0),
-        avgOrderValue: Math.round(Number(aovRes[0]?.avg || 0)),
+        avgOrderValue: Math.round(Number(orderStats.avgAov || 0)),
         recentOrders: recentOrders || [],
       },
       recentOrders: recentOrders || [],
